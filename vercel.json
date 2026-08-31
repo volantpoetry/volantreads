@@ -1,0 +1,9 @@
+{
+  "redirects": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://volantpoetry.vercel.app/api/:path*",
+      "permanent": true
+    }
+  ]
+}
