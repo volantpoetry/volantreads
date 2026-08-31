@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>FAQ | Volant Reads</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <link rel="icon" type="image/png" href="../images/volant-reads-favicon.png" />
+  <style>
+    :root {
+      --primary: #4b2aad;
+      --primary-dark: #3a1f8a;
+      --primary-light: #6c3ddd;
+      --accent: #b76e4b;
+      --accent-dark: #9f5e3f;
+      --gold: #b89b5e;
+      --gold-dark: #9b7e48;
+      --bg-main: #f5f3ff;
+      --bg-card: #ffffff;
+      --text-primary: #1a1a1a;
+      --text-secondary: #4a4a4a;
+      --text-muted: #6b6b6b;
+      --border-light: #e8e4f0;
+      --shadow: 0 2px 8px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.02);
+      --shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.08);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-main);
+      color: var(--text-primary);
+      line-height: 1.6;
+    }
+
+    .page-header {
+      background: var(--bg-card);
+      border-bottom: 2px solid var(--gold);
+      padding: 2.5rem 2rem 1.5rem;
+      text-align: center;
+    }
+
+    .page-header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.8rem;
+      font-weight: 700;
+      color: var(--primary);
+      letter-spacing: -0.5px;
+      margin-bottom: 0.5rem;
+    }
+
+    .page-header h1 i {
+      color: var(--accent);
+      font-size: 2.4rem;
+      margin-right: 0.5rem;
+    }
+
+    .page-header .subtitle {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .page-header .breadcrumb {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      letter-spacing: 0.3px;
+      margin-top: 0.5rem;
+    }
+
+    .page-header .breadcrumb a {
+      color: var(--primary);
+      text-decoration: none;
+    }
+
+    .page-header .breadcrumb a:hover {
+      text-decoration: underline;
+    }
+
+    .faq-container {
+      max-width: 920px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+    }
+
+    .faq-card {
+      background: var(--bg-card);
+      border-radius: 0;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border-light);
+      overflow: hidden;
+      margin-bottom: 2rem;
+    }
+
+    .faq-content {
+      padding: 2.5rem 3rem;
+    }
+
+    .category-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 2rem;
+      border-bottom: 1px solid var(--border-light);
+      padding-bottom: 1rem;
+    }
+
+    .category-tab {
+      padding: 0.5rem 1.2rem;
+      background: transparent;
+      border: 1px solid var(--border-light);
+      border-radius: 0;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      transition: all 0.3s ease;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .category-tab:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .category-tab.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    .faq-section {
+      margin-bottom: 2rem;
+      display: none;
+    }
+
+    .faq-section.active {
+      display: block;
+    }
+
+    .faq-section:last-child {
+      margin-bottom: 0;
+    }
+
+    .faq-section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: var(--primary-dark);
+      margin-bottom: 1rem;
+      padding-bottom: 0.3rem;
+      border-bottom: 2px solid var(--gold);
+    }
+
+    .faq-item {
+      border-bottom: 1px solid var(--border-light);
+      padding: 0.2rem 0;
+      transition: all 0.3s ease;
+    }
+
+    .faq-item:last-child {
+      border-bottom: none;
+    }
+
+    .faq-item:hover {
+      background: #faf9fe;
+      padding-left: 0.5rem;
+    }
+
+    .faq-question {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.8rem 0;
+      cursor: pointer;
+      gap: 1rem;
+    }
+
+    .faq-question .q {
+      font-weight: 600;
+      color: var(--primary-dark);
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .faq-question .q i {
+      color: var(--gold);
+      font-size: 0.8rem;
+    }
+
+    .faq-question .toggle-icon {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      transition: transform 0.3s ease;
+      flex-shrink: 0;
+    }
+
+    .faq-question .toggle-icon.open {
+      transform: rotate(180deg);
+    }
+
+    .faq-answer {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.4s ease, padding 0.3s ease;
+      padding: 0 0 0 1.8rem;
+    }
+
+    .faq-answer.open {
+      max-height: 500px;
+      padding: 0 0 1rem 1.8rem;
+    }
+
+    .faq-answer p {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      line-height: 1.7;
+      margin: 0;
+    }
+
+    .faq-answer ul {
+      margin: 0.5rem 0 0 1.2rem;
+      padding: 0;
+      list-style: none;
+    }
+
+    .faq-answer ul li {
+      padding: 0.2rem 0 0.2rem 1.2rem;
+      position: relative;
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+    }
+
+    .faq-answer ul li::before {
+      content: "›";
+      color: var(--gold);
+      font-size: 1.2rem;
+      position: absolute;
+      left: 0;
+      top: -0.1rem;
+    }
+
+    .faq-answer a {
+      color: var(--primary);
+      text-decoration: none;
+    }
+
+    .faq-answer a:hover {
+      text-decoration: underline;
+    }
+
+    .contact-cta {
+      text-align: center;
+      padding: 1.5rem 2rem;
+      background: linear-gradient(135deg, #faf9fe, #f0ecf8);
+      border: 1px solid var(--border-light);
+      margin-top: 1rem;
+    }
+
+    .contact-cta p {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      margin-bottom: 0.8rem;
+    }
+
+    .contact-cta .btn {
+      display: inline-block;
+      background: var(--primary);
+      color: white;
+      padding: 0.6rem 2rem;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.95rem;
+      transition: all 0.3s ease;
+    }
+
+    .contact-cta .btn:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(75, 42, 173, 0.3);
+    }
+
+    .contact-cta .btn i {
+      margin-right: 0.5rem;
+    }
+
+    /* ===== ROLE BADGE ===== */
+    .role-badge {
+      display: inline-block;
+      padding: 0.15rem 0.8rem;
+      border-radius: 30px;
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      margin-left: 0.5rem;
+      vertical-align: middle;
+    }
+
+    .role-badge.author {
+      background: var(--primary);
+      color: white;
+    }
+
+    .role-badge.seller {
+      background: var(--accent);
+      color: white;
+    }
+
+    .role-badge.buyer {
+      background: var(--gold);
+      color: white;
+    }
+
+    /* ===== AUTHOR GUIDANCE BOX ===== */
+    .author-guidance {
+      background: #f0f4ff;
+      border-left: 4px solid var(--primary);
+      padding: 1rem 1.5rem;
+      margin: 1rem 0;
+      border-radius: 0 8px 8px 0;
+    }
+
+    .author-guidance h4 {
+      color: var(--primary-dark);
+      font-size: 0.95rem;
+      margin-bottom: 0.2rem;
+    }
+
+    .author-guidance p {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      margin: 0;
+    }
+
+    .author-guidance ul {
+      list-style: none;
+      padding: 0;
+      margin: 0.3rem 0 0 0;
+    }
+
+    .author-guidance ul li {
+      padding: 0.2rem 0;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+
+    .author-guidance ul li i {
+      color: var(--primary);
+      margin-top: 0.15rem;
+      flex-shrink: 0;
+    }
+
+    @media (max-width: 768px) {
+      .page-header {
+        padding: 1.8rem 1rem 1.2rem;
+      }
+
+      .page-header h1 {
+        font-size: 2rem;
+      }
+
+      .faq-content {
+        padding: 1.5rem;
+      }
+
+      .faq-question .q {
+        font-size: 0.9rem;
+      }
+
+      .faq-answer p {
+        font-size: 0.9rem;
+      }
+
+      .faq-answer ul li {
+        font-size: 0.9rem;
+      }
+
+      .category-tabs {
+        gap: 0.3rem;
+      }
+
+      .category-tab {
+        padding: 0.3rem 0.8rem;
+        font-size: 0.75rem;
+      }
+    }
+
+    @media (max-width: 550px) {
+      .faq-container {
+        padding: 0 1rem;
+        margin: 1.5rem auto;
+      }
+
+      .faq-content {
+        padding: 1.25rem;
+      }
+
+      .page-header h1 {
+        font-size: 1.75rem;
+      }
+
+      .page-header h1 i {
+        font-size: 1.4rem;
+      }
+
+      .faq-question {
+        padding: 0.6rem 0;
+      }
+
+      .faq-question .q {
+        font-size: 0.85rem;
+      }
+
+      .faq-answer {
+        padding: 0 0 0 1.2rem;
+      }
+
+      .faq-answer.open {
+        padding: 0 0 0.8rem 1.2rem;
+      }
+
+      .faq-answer p {
+        font-size: 0.85rem;
+      }
+
+      .faq-answer ul li {
+        font-size: 0.85rem;
+        padding: 0.15rem 0 0.15rem 1rem;
+      }
+
+      .contact-cta {
+        padding: 1rem;
+      }
+
+      .author-guidance {
+        padding: 0.8rem 1rem;
+      }
+
+      .author-guidance ul li {
+        font-size: 0.8rem;
+      }
+    }
+
+    @media (max-width: 380px) {
+      .role-badge {
+        font-size: 0.5rem;
+        padding: 0.1rem 0.5rem;
+        margin-left: 0.2rem;
+      }
+    }
+
+    @media print {
+      .page-header,
+      .page-footer {
+        background: none;
+        border: none;
+      }
+      .faq-card {
+        box-shadow: none;
+        border: 1px solid #ccc;
+      }
+      body {
+        background: white;
+      }
+    }
+
+    .platform-badge.reads { 
+      background: linear-gradient(135deg, #d4a574, #c9944d); 
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <h1><i class="fas fa-question-circle"></i> Frequently Asked Questions</h1>
+    <p class="subtitle">Volant Reads is a literary marketplace that empowers independent authors by providing a platform to sell their works while retaining ownership and receiving the majority of sales revenue.</p>
+    <div class="breadcrumb">
+      <a href="index.html">📚 Bookstore</a> / <a href="../shared/about.html">About Us</a> / FAQ
+    </div>
+  </div>
+
+  <div class="faq-container">
+
+    <div class="faq-card">
+      <div class="faq-content">
+
+        <div class="category-tabs" id="categoryTabs">
+          <button class="category-tab active" data-category="all">All</button>
+          <button class="category-tab" data-category="publishing">Publishing</button>
+          <button class="category-tab" data-category="payments">Payments &amp; Royalties</button>
+          <button class="category-tab" data-category="buying">Buying &amp; Reading</button>
+          <button class="category-tab" data-category="account">Account</button>
+        </div>
+
+        <!-- ===== PUBLISHING SECTION ===== -->
+        <div class="faq-section active" data-category="publishing" id="section-publishing">
+          <h3 class="faq-section-title">
+            Publishing Your Book
+            <span class="role-badge author">For Authors</span>
+          </h3>
+
+          <!-- AUTHOR GUIDANCE BOX -->
+          <div class="author-guidance">
+            <h4><i class="fas fa-lightbulb"></i> Quick Publishing Tips</h4>
+            <ul>
+              <li><i class="fas fa-check-circle"></i> Complete your author profile before submitting</li>
+              <li><i class="fas fa-check-circle"></i> Use a professional cover image to attract readers</li>
+              <li><i class="fas fa-check-circle"></i> Write a compelling synopsis that hooks readers</li>
+              <li><i class="fas fa-check-circle"></i> Add 3-5 keywords to help readers discover your book</li>
+              <li><i class="fas fa-check-circle"></i> Set your price strategically — free books get more downloads</li>
+              <li><i class="fas fa-check-circle"></i> Share your book link everywhere to drive sales</li>
+            </ul>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">
+              <span class="q"><i class="fas fa-question"></i> Who can publish on Volant Reads?</span>
+              <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+            </div>
+            <div class="faq-answer">
+              <p>
+                <strong>Anyone can publish on Volant Reads!</strong> Volant Reads is a literary marketplace that empowers independent authors by providing a platform to sell their works while retaining ownership and receiving the majority of sales revenue. You do not need to be a member of Volant Reads. Poets, novelists, non-fiction writers, and authors of all genres are welcome.
+              </p>
+              <p style="margin-top:0.5rem;">
+                <span class="role-badge author" style="font-size:0.6rem;">Author Tip</span>
+                <span style="color:var(--text-muted); font-size:0.85rem;">Make sure you have a completed manuscript and cover image ready before you start the submission process.</span>
+              </p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">
+              <span class="q"><i class="fas fa-question"></i> How much do authors earn?</span>
+              <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+            </div>
+            <div class="faq-answer">
+              <p>
+                Authors receive <strong>90% of net revenue</strong> from sales of their works. Net revenue is calculated after payment processing fees, taxes, refunds, and chargebacks. Volant Reads retains 10% to cover platform and processing costs.
+              </p>
+              <p style="margin-top:0.5rem;">
+                <span class="role-badge seller" style="font-size:0.6rem;">Seller Info</span>
+                <span style="color:var(--text-muted); font-size:0.85rem;">Track your earnings in real time through your <a href="dashboard.html" style="color:var(--primary);">author dashboard</a>.</span>
+              </p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">
+              <span class="q"><i class="fas fa-question"></i> Do I keep my copyright?</span>
+              <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+            </div>
+            <div class="faq-answer">
+              <p>
+                <strong>Yes!</strong> Authors retain full ownership and copyright of their works. Volant Reads is a literary marketplace that empowers independent authors by providing a platform to sell their works while retaining ownership and receiving the majority of sales revenue. You grant Volant Reads permission to display and sell your book, but the rights remain yours.
+              </p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">
+              <span class="q"><i class="fas fa-question"></i> Who promotes my book?</span>
+              <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+            </div>
+            <div class="faq-answer">
+              <p>
+                <strong>Authors are responsible for promoting their books.</strong> We provide you with a store link and book page link that you can share with your audience. Promote your book on social media, your website, email newsletters, and through your personal networks to drive sales.
+              </p>
+              <div style="margin-top:0.5rem; background:#f0f4ff; padding:0.6rem 1rem; border-radius:8px;">
+                <p style="font-size:0.85rem; color:var(--text-secondary); margin:0;">
+                  <i class="fas fa-bullhorn" style="color:var(--primary);"></i>
+                  <strong>Promotion Tips:</strong> Share your book link on Facebook, Twitter, Instagram, LinkedIn, writing groups, and email newsletters. The more you share, the more sales you'll generate!
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">
+              <span class="q"><i class="fas fa-question"></i> How do I track my sales?</span>
+              <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+            </div>
+            <div class="faq-answer">
+              <p>
+                Sales are recorded in <strong>real time</strong>. You can track your earnings instantly through your <strong><a href="dashboard.html" style="color:var(--primary);">author dashboard</a></strong>. Monitor your sales, view your earnings, and see your performance at a glance.
+              </p>
+              <p style="margin-top:0.5rem;">
+                <span class="role-badge seller" style="font-size:0.6rem;">Seller Info</span>
+                <span style="color:var(--text-muted); font-size:0.85rem;">Your dashboard shows total sales, revenue, and daily performance charts.</span>
+              </p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">
+              <span class="q"><i class="fas fa-question"></i> When are authors paid?</span>
+              <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+            </div>
+            <div class="faq-answer">
+              <p>
+                Payouts are issued <strong>monthly</strong>. You receive your share of sales on a regular, predictable schedule. Payments are made via Mobile Money, Bank Transfer, or other available methods.
+              </p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">
+              <span class="q"><i class="fas fa-question"></i> How long does the approval process take?</span>
+              <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+            </div>
+            <div class="faq-answer">
+              <p>
+                Most books are reviewed and approved within <strong>24–48 hours</strong>. You will receive an email notification once your book is approved and live in the bookstore. If your submission requires changes, you will be contacted with feedback.
+              </p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">
+              <span class="q"><i class="fas fa-question"></i> What do I need to submit my book?</span>
+              <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+            </div>
+            <div class="faq-answer">
+              <p>To submit your book, you will need:</p>
+              <ul>
+                <li>Your manuscript in PDF format</li>
+                <li>A cover image (JPG, PNG, or WEBP)</li>
+                <li>Book details: title, subtitle (optional), synopsis, author bio</li>
+                <li>Genre, language, and number of pages</li>
+                <li>Your chosen price (free or paid)</li>
+                <li>3–5 keywords for discoverability</li>
+              </ul>
+              <p style="margin-top:0.5rem;">
+                <span class="role-badge author" style="font-size:0.6rem;">Author Tip</span>
+                <span style="color:var(--text-muted); font-size:0.85rem;">Make sure your PDF is properly formatted and your cover image is high-quality before submitting.</span>
+              </p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">
+              <span class="q"><i class="fas fa-question"></i> Can I update my book after it's published?</span>
+              <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+            </div>
+            <div class="faq-answer">
+              <p>
+                Yes. You can contact us with updates to your book listing, including price changes, updated manuscript files, or cover image changes. Please email us at <a href="mailto:reach.volant@gmail.com">reach.volant@gmail.com</a> with your request.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== PAYMENTS SECTION ===== -->
+        <div class="faq-section" data-category="payments" id="section-payments">
+          <h3 class="faq-section-title">
+            Payments &amp; Royalties
+            <span class="role-badge seller">For Sellers</span>
+          </h3>
+
+          <div class="author-guidance">
+            <h4><i class="fas fa-wallet"></i> Payment & Earnings Overview</h4>
+            <ul>
+              <li><i class="fas fa-check-circle"></i> <strong>90%</strong> of net revenue goes to you</li>
+              <li><i class="fas fa-check-circle"></i> <strong>Monthly payouts</strong> via Mobile Money or Bank Transfer</li>
+              <li><i class="fas fa-check-circle"></i> <strong>Real-time sales tracking</strong> in your dashboard</li>
+              <li><i class="fas fa-check-circle"></i> <strong>10%</strong> platform fee covers hosting and processing</li>
+            </ul>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">
+              <span class="q"><i class="fas fa-question"></i> How much do authors earn from book sales?</span>
+              <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+            </div>
+            <div class="faq-answer">
+              <p>
+                Authors receive <strong>90% of net revenue</strong> from sales of their works. Net revenue is calculated after payment processing fees, taxes, refunds, and chargebacks. Volant Reads retains 10% to cover platform and processing costs.
+              </p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">
+              <span class="q"><i class="fas fa-question"></i> When are authors paid?</span>
+              <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+            </div>
+            <div class="faq-answer">
+              <p>
+                Payouts are issued <strong>monthly</strong>. You receive your share of sales on a regular schedule. Payments are made via Mobile Money, Bank Transfer, or other available methods.
+              </p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">
+              <span class="q"><i class="fas fa-question"></i> How do I track my sales?</span>
+              <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+            </div>
+            <div class="faq-answer">
+              <p>
+                Sales are recorded in <strong>real time</strong>. You can track your earnings instantly through your <strong><a href="dashboard.html" style="color:var(--primary);">author dashboard</a></strong>. Monitor your sales, view your earnings, and see your performance at a glance.
+              </p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">
+              <span class="q"><i class="fas fa-question"></i> What payment methods are accepted for purchases?</span>
+              <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+            </div>
+            <div class="faq-answer">
+              <p>
+                Purchases are processed through <strong>third-party payment providers</strong>. Accepted methods typically include credit/debit cards, mobile money, and other available options. Payment details are handled securely by our payment partners.
+              </p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">
+              <span class="q"><i class="fas fa-question"></i> What is the refund policy for purchases?</span>
+              <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+            </div>
+            <div class="faq-answer">
+              <p>
+                Digital products are generally <strong>non-refundable</strong> after download. However, refunds may be considered for duplicate purchases or technical issues. To request a refund, please email <a href="mailto:reach.volant@gmail.com">reach.volant@gmail.com</a> with your order details, reason, and any supporting evidence.
+                <br><br>
+                Please see our <a href="refund.html">Refund Policy</a> for more details.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== BUYING SECTION ===== -->
+        <div class="faq-section" data-category="buying" id="section-buying">
+          <h3 class="faq-section-title">
+            Buying &amp; Reading
+            <span class="role-badge buyer">For Readers</span>
+          </h3>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">
+              <span class="q"><i class="fas fa-question"></i> How do I purchase a book?</span>
+              <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+            </div>
+            <div class="faq-answer">
+              <p>
+                To purchase a book, simply browse the <a href="index.html">bookstore</a>, select a book, and click the purchase button. You will be guided through the payment process. After payment, you will be able to download your book immediately.
+              </p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">
+              <span class="q"><i class="fas fa-question"></i> Are there free books available?</span>
+              <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+            </div>
+            <div class="faq-answer">
+              <p>
+                Yes! Authors have the option to offer their books for free. You can find free books by browsing the bookstore and looking for books marked as "Free". No payment is required to download free books.
+              </p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">
+              <span class="q"><i class="fas fa-question"></i> What format are the books in?</span>
+              <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+            </div>
+            <div class="faq-answer">
+              <p>
+                All books on Volant Reads are provided as <strong>PDF (Portable Document Format)</strong> files. This format works on all devices including computers, tablets, and smartphones. You will need a PDF reader app to view your purchased books.
+              </p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">
+              <span class="q"><i class="fas fa-question"></i> Can I share purchased books with others?</span>
+              <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+            </div>
+            <div class="faq-answer">
+              <p>
+                <strong>No.</strong> Purchased ebooks are for <strong>personal use only</strong>. Sharing, distributing, or uploading purchased books to any platform is strictly prohibited. This helps protect authors' rights and supports their work.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== ACCOUNT SECTION ===== -->
+        <div class="faq-section" data-category="account" id="section-account">
+          <h3 class="faq-section-title">Account</h3>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">
+              <span class="q"><i class="fas fa-question"></i> Do I need an account to buy or download books?</span>
+              <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+            </div>
+            <div class="faq-answer">
+              <p>
+                <strong>Yes.</strong> You need to create an account and sign in to purchase and download books. This helps us keep track of your purchases and ensure secure access to books on sale. Registration is quick and free.
+              </p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">
+              <span class="q"><i class="fas fa-question"></i> How do I create an account?</span>
+              <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+            </div>
+            <div class="faq-answer">
+              <p>
+                To create an account, visit the <a href="universal-signup.html?platform=reads&redirect=store/index.html">Sign Up</a> page, fill in your details, and click "Sign Up". You will need a valid email address and a secure password. <b>You can also sign in with your google account.</b> Once registered, you can start browsing and purchasing books.
+              </p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">
+              <span class="q"><i class="fas fa-question"></i> Is my personal information safe?</span>
+              <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+            </div>
+            <div class="faq-answer">
+              <p>
+                <strong>Yes.</strong> We take your privacy seriously. Your data is encrypted and stored securely. We do not sell or share your personal information with third parties for marketing purposes. Payments are processed through secure third-party providers. Please see our <a href="../shared/privacy.html">Privacy Policy</a> for more details.
+              </p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">
+              <span class="q"><i class="fas fa-question"></i> How do I delete my account?</span>
+              <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+            </div>
+            <div class="faq-answer">
+              <p>
+                To delete your account, please contact us at <a href="mailto:reach.volant@gmail.com">reach.volant@gmail.com</a> with your request. We will process your request and remove your personal data from our systems in accordance with our <a href="../shared/privacy.html">Privacy Policy</a>.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="contact-cta">
+          <p>Didn't find what you were looking for? We're here to help.</p>
+          <a href="../shared/contact.html" class="btn"><i class="fas fa-envelope"></i> Contact Us</a>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="page-footer" style="background:#1a1714; color:#e8e0d8; padding:2rem 1.5rem; text-align:center; margin-top:2rem; border-top:1px solid rgba(255,255,255,0.06);">
+    <div style="max-width:920px; margin:0 auto;">
+      <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:8px 20px; margin-bottom:10px;">
+        <a href="../shared/privacy.html" style="color:#c4b8aa; text-decoration:none; font-size:0.8rem;">Privacy Policy</a>
+        <a href="../shared/terms.html" style="color:#c4b8aa; text-decoration:none; font-size:0.8rem;">Terms &amp; Conditions</a>
+        <a href="refund.html" style="color:#c4b8aa; text-decoration:none; font-size:0.8rem;">Refund Policy</a>
+        <a href="dashboard.html" style="color:#c4b8aa; text-decoration:none; font-size:0.8rem;">📊 Author Dashboard</a>
+        <a href="../volant_foundry/index.html" style="color:#b76e4b; text-decoration:none; font-size:0.8rem; font-weight:600;">🏛️ Volant Foundry</a>
+      </div>
+      
+      <div style="margin:6px 0;">
+        <span style="background:rgba(183,110,75,0.12); padding:3px 16px; border-radius:20px; font-size:0.7rem; color:#b76e4b; font-weight:500; display:inline-block;">
+          Part of the Volant Foundry Platform
+        </span>
+      </div>
+      
+      <div style="font-size:0.75rem; color:#6a5f55; margin-top:6px;">
+        &copy; 2026 <strong style="color:#c4b8aa;">Volant Reads</strong>. All Rights Reserved.
+      </div>
+    </div>
+  </footer>
+
+  <style>
+    @media (max-width: 480px) {
+      footer .footer-links-row {
+        gap: 4px 10px !important;
+      }
+      footer .footer-links-row a {
+        font-size: 0.65rem !important;
+        padding: 2px 8px;
+        background: rgba(255,255,255,0.04);
+        border-radius: 12px;
+      }
+      footer .footer-links-row a:last-child {
+        color: #b76e4b !important;
+        background: rgba(183,110,75,0.1);
+      }
+    }
+
+    @media (max-width: 380px) {
+      footer .footer-links-row a {
+        font-size: 0.55rem !important;
+        padding: 2px 6px;
+      }
+      footer .footer-links-row {
+        gap: 3px 6px !important;
+      }
+    }
+  </style>
+
+  <script>
+    function toggleFAQ(element) {
+      const answer = element.nextElementSibling;
+      const icon = element.querySelector('.toggle-icon i');
+
+      const section = element.closest('.faq-section');
+      if (section) {
+        const allAnswers = section.querySelectorAll('.faq-answer');
+        const allIcons = section.querySelectorAll('.toggle-icon i');
+        allAnswers.forEach(a => {
+          if (a !== answer) {
+            a.classList.remove('open');
+          }
+        });
+        allIcons.forEach(ic => {
+          if (ic !== icon) {
+            ic.classList.remove('fa-chevron-up');
+            ic.classList.add('fa-chevron-down');
+          }
+        });
+      }
+
+      answer.classList.toggle('open');
+      icon.classList.toggle('fa-chevron-down');
+      icon.classList.toggle('fa-chevron-up');
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const tabs = document.querySelectorAll('.category-tab');
+      const sections = document.querySelectorAll('.faq-section');
+      const DEFAULT_CATEGORY = 'publishing';
+
+      // Load saved tab from localStorage
+      let savedCategory = localStorage.getItem('volant_reads_faq_tab');
+      if (!savedCategory || !document.querySelector(`.category-tab[data-category="${savedCategory}"]`)) {
+        savedCategory = DEFAULT_CATEGORY;
+      }
+
+      function showCategory(category) {
+        // Update tabs
+        tabs.forEach(tab => {
+          tab.classList.toggle('active', tab.dataset.category === category);
+        });
+
+        // Update sections
+        let anyVisible = false;
+        sections.forEach(section => {
+          const sectionCategory = section.dataset.category;
+          if (category === 'all' || sectionCategory === category) {
+            section.classList.add('active');
+            anyVisible = true;
+          } else {
+            section.classList.remove('active');
+          }
+        });
+
+        // Save to localStorage
+        localStorage.setItem('volant_reads_faq_tab', category);
+      }
+
+      // Tab click handlers
+      tabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+          const category = this.dataset.category;
+          showCategory(category);
+        });
+      });
+
+      // Show the saved tab on load
+      showCategory(savedCategory);
+    });
+  </script>
+
+<script src="../shared/return-url-handler.js"></script>
+</body>
+</html>

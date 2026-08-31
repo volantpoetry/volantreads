@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Publish With Us | Volant Reads</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <link rel="icon" type="image/png" href="../images/volant-reads-favicon.png" />
+  <style>
+    :root {
+      --primary: #4b2aad;
+      --primary-dark: #3a1f8a;
+      --primary-light: #6c3ddd;
+      --accent: #b76e4b;
+      --accent-dark: #9f5e3f;
+      --gold: #b89b5e;
+      --gold-dark: #9b7e48;
+      --bg-main: #f5f3ff;
+      --bg-card: #ffffff;
+      --text-primary: #1a1a1a;
+      --text-secondary: #4a4a4a;
+      --text-muted: #6b6b6b;
+      --border-light: #e8e4f0;
+      --shadow: 0 2px 8px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.02);
+      --shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.08);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-main);
+      color: var(--text-primary);
+      line-height: 1.6;
+    }
+
+    .page-header {
+      background: var(--bg-card);
+      border-bottom: 2px solid var(--gold);
+      padding: 2.5rem 2rem 1.5rem;
+      text-align: center;
+    }
+
+    .page-header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.8rem;
+      font-weight: 700;
+      color: var(--primary);
+      letter-spacing: -0.5px;
+      margin-bottom: 0.5rem;
+    }
+
+    .page-header h1 i {
+      color: var(--accent);
+      font-size: 2.4rem;
+      margin-right: 0.5rem;
+    }
+
+    .page-header .subtitle {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .page-header .breadcrumb {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      letter-spacing: 0.3px;
+      margin-top: 0.5rem;
+    }
+
+    .page-header .breadcrumb a {
+      color: var(--primary);
+      text-decoration: none;
+    }
+
+    .page-header .breadcrumb a:hover {
+      text-decoration: underline;
+    }
+
+    .publish-container {
+      max-width: 1000px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+    }
+
+    .publish-card {
+      background: var(--bg-card);
+      border-radius: 0;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border-light);
+      overflow: hidden;
+      margin-bottom: 2rem;
+    }
+
+    .publish-content {
+      padding: 2.5rem 3rem;
+    }
+
+    .hero-section {
+      text-align: center;
+      padding: 1.5rem 2rem 2rem;
+      background: linear-gradient(135deg, #faf9fe, #f0ecf8);
+      border-bottom: 2px solid var(--gold);
+    }
+
+    .hero-section h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.2rem;
+      color: var(--primary-dark);
+      margin-bottom: 0.5rem;
+    }
+
+    .hero-section p {
+      color: var(--text-secondary);
+      font-size: 1.05rem;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .hero-section .hero-icons {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      margin-top: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .hero-section .hero-icons .icon-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    .hero-section .hero-icons .icon-item i {
+      font-size: 2.2rem;
+      color: var(--primary);
+    }
+
+    .hero-section .hero-icons .icon-item span {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--primary-dark);
+      margin-bottom: 0.8rem;
+    }
+
+    .section-subtitle {
+      color: var(--text-muted);
+      margin-bottom: 1.2rem;
+      font-size: 0.95rem;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin: 1.5rem 0;
+    }
+
+    .feature-item {
+      background: #faf9fe;
+      padding: 1.2rem 1.5rem;
+      border-left: 3px solid var(--gold);
+      transition: all 0.3s ease;
+    }
+
+    .feature-item:hover {
+      background: #f5f3ff;
+      transform: translateX(4px);
+      box-shadow: var(--shadow-hover);
+    }
+
+    .feature-item h4 {
+      font-weight: 600;
+      color: var(--primary);
+      font-size: 1rem;
+      margin-bottom: 0.2rem;
+    }
+
+    .feature-item h4 i {
+      color: var(--accent);
+      margin-right: 0.4rem;
+    }
+
+    .feature-item p {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      margin: 0;
+    }
+
+    .feature-item .badge {
+      display: inline-block;
+      background: var(--gold);
+      color: white;
+      padding: 0.05rem 0.6rem;
+      border-radius: 20px;
+      font-size: 0.6rem;
+      font-weight: 600;
+      margin-left: 0.4rem;
+    }
+
+    .feature-item .badge.orange {
+      background: var(--accent);
+    }
+
+    .royalty-box {
+      background: linear-gradient(135deg, #faf9fe, #f0ecf8);
+      border: 2px solid var(--gold);
+      padding: 1.8rem 2rem;
+      margin: 1.5rem 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2rem;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .royalty-item {
+      text-align: center;
+    }
+
+    .royalty-item .percentage {
+      font-family: 'Playfair Display', serif;
+      font-size: 3.5rem;
+      font-weight: 700;
+      color: var(--primary);
+      line-height: 1;
+    }
+
+    .royalty-item .percentage .small {
+      font-size: 1.5rem;
+    }
+
+    .royalty-item .label {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+
+    .royalty-divider {
+      width: 2px;
+      height: 4rem;
+      background: var(--gold);
+      opacity: 0.4;
+    }
+
+    .steps-list {
+      counter-reset: step;
+      list-style: none;
+      padding: 0;
+      margin: 1rem 0;
+    }
+
+    .steps-list li {
+      counter-increment: step;
+      padding: 0.8rem 1.2rem 0.8rem 3.5rem;
+      position: relative;
+      background: #faf9fe;
+      margin-bottom: 0.6rem;
+      border-left: 3px solid var(--primary-light);
+      transition: all 0.3s ease;
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+    }
+
+    .steps-list li:hover {
+      background: #f5f3ff;
+      transform: translateX(4px);
+    }
+
+    .steps-list li::before {
+      content: counter(step);
+      position: absolute;
+      left: 1rem;
+      top: 0.7rem;
+      width: 1.8rem;
+      height: 1.8rem;
+      background: var(--primary);
+      color: white;
+      font-weight: 700;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+    }
+
+    .steps-list li strong {
+      color: var(--primary-dark);
+    }
+
+    .note-box {
+      background: #fff8f0;
+      border-left: 4px solid var(--accent);
+      padding: 1rem 1.5rem;
+      margin: 1rem 0;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+
+    .note-box i {
+      color: var(--accent);
+      margin-right: 0.5rem;
+    }
+
+    .note-box strong {
+      color: var(--primary-dark);
+    }
+
+    .note-box.info {
+      background: #f0ecf8;
+      border-left-color: var(--primary);
+    }
+
+    .note-box.success {
+      background: #dff7e5;
+      border-left-color: #2d7d46;
+    }
+
+    .key-points {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin: 1rem 0;
+    }
+
+    .key-point {
+      background: #faf9fe;
+      padding: 0.8rem 1.2rem;
+      border-left: 3px solid var(--primary-light);
+    }
+
+    .key-point h4 {
+      color: var(--primary);
+      font-size: 0.95rem;
+      margin-bottom: 0.2rem;
+    }
+
+    .key-point p {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      margin: 0;
+    }
+
+    .cta-section {
+      text-align: center;
+      padding: 1.5rem 2rem;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: white;
+    }
+
+    .cta-section h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.6rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .cta-section p {
+      opacity: 0.9;
+      margin-bottom: 1.2rem;
+      font-size: 0.95rem;
+    }
+
+    .btn {
+      display: inline-block;
+      background: white;
+      color: var(--primary);
+      padding: 0.8rem 2.5rem;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .btn i {
+      margin-right: 0.5rem;
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: white;
+      border: 2px solid white;
+      box-shadow: none;
+    }
+
+    .btn-outline:hover {
+      background: white;
+      color: var(--primary);
+    }
+
+    .payment-methods {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin: 1rem 0;
+    }
+
+    .payment-method {
+      background: var(--bg-card);
+      border: 1px solid var(--border-light);
+      padding: 0.6rem 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      transition: all 0.3s ease;
+    }
+
+    .payment-method:hover {
+      border-color: var(--primary);
+      box-shadow: var(--shadow-hover);
+    }
+
+    .payment-method i {
+      color: var(--accent);
+      font-size: 1.1rem;
+    }
+
+    /* ===== NEW: AUTHOR GUIDANCE SECTIONS ===== */
+    .author-guidance {
+      background: #f0f4ff;
+      border-left: 4px solid var(--primary);
+      padding: 1.2rem 1.8rem;
+      margin: 1.2rem 0;
+      border-radius: 0 8px 8px 0;
+    }
+
+    .author-guidance h4 {
+      color: var(--primary-dark);
+      font-size: 1rem;
+      margin-bottom: 0.3rem;
+    }
+
+    .author-guidance p {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      margin: 0;
+    }
+
+    .author-guidance ul {
+      list-style: none;
+      padding: 0;
+      margin: 0.5rem 0 0 0;
+    }
+
+    .author-guidance ul li {
+      padding: 0.2rem 0;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .author-guidance ul li i {
+      color: var(--primary);
+      width: 18px;
+    }
+
+    .quick-tips {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1rem;
+      margin: 1rem 0;
+    }
+
+    .quick-tip {
+      background: #faf9fe;
+      padding: 1rem;
+      text-align: center;
+      border: 1px solid var(--border-light);
+      transition: all 0.3s ease;
+    }
+
+    .quick-tip:hover {
+      border-color: var(--primary);
+      box-shadow: var(--shadow-hover);
+      transform: translateY(-4px);
+    }
+
+    .quick-tip .tip-icon {
+      font-size: 2rem;
+      color: var(--primary);
+      margin-bottom: 0.3rem;
+    }
+
+    .quick-tip h5 {
+      color: var(--primary-dark);
+      font-size: 0.9rem;
+      margin-bottom: 0.2rem;
+    }
+
+    .quick-tip p {
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      margin: 0;
+    }
+
+    .role-badge {
+      display: inline-block;
+      background: var(--primary);
+      color: white;
+      padding: 0.2rem 1rem;
+      border-radius: 30px;
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    .role-badge.seller {
+      background: var(--accent);
+    }
+
+    .role-badge.author {
+      background: var(--primary);
+    }
+
+    @media (max-width: 768px) {
+      .page-header {
+        padding: 1.8rem 1rem 1.2rem;
+      }
+
+      .page-header h1 {
+        font-size: 2rem;
+      }
+
+      .publish-content {
+        padding: 1.5rem;
+      }
+
+      .feature-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-section h2 {
+        font-size: 1.6rem;
+      }
+
+      .royalty-box {
+        flex-direction: column;
+        gap: 0.8rem;
+        padding: 1.5rem;
+      }
+
+      .royalty-divider {
+        width: 80%;
+        height: 2px;
+      }
+
+      .royalty-item .percentage {
+        font-size: 2.8rem;
+      }
+
+      .steps-list li {
+        font-size: 0.9rem;
+        padding: 0.6rem 1rem 0.6rem 3rem;
+      }
+
+      .steps-list li::before {
+        width: 1.5rem;
+        height: 1.5rem;
+        font-size: 0.75rem;
+        left: 0.8rem;
+        top: 0.6rem;
+      }
+
+      .key-points {
+        grid-template-columns: 1fr;
+      }
+
+      .quick-tips {
+        grid-template-columns: 1fr;
+      }
+
+      .author-guidance {
+        padding: 1rem 1.2rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .publish-container {
+        padding: 0 1rem;
+        margin: 1.5rem auto;
+      }
+
+      .publish-content {
+        padding: 1.25rem;
+      }
+
+      .page-header h1 {
+        font-size: 1.6rem;
+      }
+
+      .page-header h1 i {
+        font-size: 1.4rem;
+      }
+
+      .hero-section {
+        padding: 1rem;
+      }
+
+      .hero-section h2 {
+        font-size: 1.3rem;
+      }
+
+      .hero-section .hero-icons {
+        gap: 1rem;
+      }
+
+      .hero-section .hero-icons .icon-item i {
+        font-size: 1.6rem;
+      }
+
+      .cta-section {
+        padding: 1.2rem 1rem;
+      }
+
+      .cta-section h3 {
+        font-size: 1.2rem;
+      }
+
+      .btn {
+        padding: 0.6rem 1.5rem;
+        font-size: 0.9rem;
+        display: block;
+        margin: 0.5rem auto;
+        max-width: 250px;
+      }
+
+      .payment-methods {
+        gap: 0.6rem;
+      }
+
+      .payment-method {
+        font-size: 0.8rem;
+        padding: 0.4rem 0.8rem;
+      }
+
+      .quick-tip .tip-icon {
+        font-size: 1.5rem;
+      }
+    }
+
+    @media print {
+      .page-header,
+      .page-footer {
+        background: none;
+        border: none;
+      }
+      .publish-card {
+        box-shadow: none;
+        border: 1px solid #ccc;
+      }
+      body {
+        background: white;
+      }
+    }
+
+    .platform-badge.reads { 
+      background: linear-gradient(135deg, #d4a574, #c9944d); 
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <h1><i class="fas fa-feather-alt"></i> Publish With Us</h1>
+    <p class="subtitle">Volant Reads is a literary marketplace that empowers independent authors by providing a platform to sell their works while retaining ownership and receiving the majority of sales revenue.</p>
+    <div class="breadcrumb">
+      <a href="index.html">📚 Bookstore</a> / <a href="../shared/about.html">About Us</a> / Publish With Us
+    </div>
+  </div>
+
+  <div class="publish-container">
+
+    <!-- ===== HERO CARD ===== -->
+    <div class="publish-card">
+      <div class="publish-content">
+        <div class="hero-section">
+          <h2>Your Book, Your Voice, Your Royalties</h2>
+          <p>
+            Volant Reads is a literary marketplace that empowers independent authors by providing a platform to sell their works while retaining ownership and receiving the majority of sales revenue.
+          </p>
+          <div class="hero-icons">
+            <div class="icon-item">
+              <i class="fas fa-copyright"></i>
+              <span>Keep Your Copyright</span>
+            </div>
+            <div class="icon-item">
+              <i class="fas fa-percent"></i>
+              <span>90% Royalties</span>
+            </div>
+            <div class="icon-item">
+              <i class="fas fa-globe-africa"></i>
+              <span>Open to All Authors</span>
+            </div>
+            <div class="icon-item">
+              <i class="fas fa-chart-line"></i>
+              <span>Real-Time Sales</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== QUICK TIPS FOR AUTHORS ===== -->
+    <div class="publish-card">
+      <div class="publish-content">
+        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.5rem;">
+          <h2 class="section-title" style="margin-bottom:0;">📖 Author Quick Tips</h2>
+          <span class="role-badge author"><i class="fas fa-user-edit"></i> For Authors</span>
+        </div>
+        <p class="section-subtitle">Essential advice to help you succeed on Volant Reads.</p>
+
+        <div class="quick-tips">
+          <div class="quick-tip">
+            <div class="tip-icon">📝</div>
+            <h5>Write a Compelling Description</h5>
+            <p>Your synopsis is the first thing readers see. Make it engaging and professional.</p>
+          </div>
+          <div class="quick-tip">
+            <div class="tip-icon">🎨</div>
+            <h5>Use a Professional Cover</h5>
+            <p>A good cover significantly increases sales. Ensure it's high-quality and relevant.</p>
+          </div>
+          <div class="quick-tip">
+            <div class="tip-icon">📣</div>
+            <h5>Promote Your Book</h5>
+            <p>Share your book link on social media, your website, and with your network.</p>
+          </div>
+        </div>
+
+     <!-- ===== PROMOTION GUIDANCE - FIXED FOR MOBILE ===== -->
+<div class="author-guidance">
+  <h4><i class="fas fa-bullhorn"></i> How to Promote Your Book</h4>
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.3rem 1rem; margin-top:0.3rem;">
+    <div style="display:flex; align-items:center; gap:0.4rem; font-size:0.9rem; color:var(--text-secondary); padding:0.2rem 0;">
+      <i class="fas fa-link" style="color:var(--primary); width:16px; flex-shrink:0;"></i>
+      <span>Share your <strong>book page link</strong> on social media</span>
+    </div>
+    <div style="display:flex; align-items:center; gap:0.4rem; font-size:0.9rem; color:var(--text-secondary); padding:0.2rem 0;">
+      <i class="fas fa-envelope" style="color:var(--primary); width:16px; flex-shrink:0;"></i>
+      <span>Send the link to your email list</span>
+    </div>
+    <div style="display:flex; align-items:center; gap:0.4rem; font-size:0.9rem; color:var(--text-secondary); padding:0.2rem 0;">
+      <i class="fas fa-globe" style="color:var(--primary); width:16px; flex-shrink:0;"></i>
+      <span>Add to your personal website or blog</span>
+    </div>
+    <div style="display:flex; align-items:center; gap:0.4rem; font-size:0.9rem; color:var(--text-secondary); padding:0.2rem 0;">
+      <i class="fas fa-users" style="color:var(--primary); width:16px; flex-shrink:0;"></i>
+      <span>Share in writing groups and forums</span>
+    </div>
+    <div style="display:flex; align-items:center; gap:0.4rem; font-size:0.9rem; color:var(--text-secondary); padding:0.2rem 0;">
+      <i class="fas fa-star" style="color:var(--primary); width:16px; flex-shrink:0;"></i>
+      <span>Encourage readers to leave reviews</span>
+    </div>
+    <div style="display:flex; align-items:center; gap:0.4rem; font-size:0.9rem; color:var(--text-secondary); padding:0.2rem 0;">
+      <i class="fas fa-share-alt" style="color:var(--primary); width:16px; flex-shrink:0;"></i>
+      <span>Share your store link everywhere</span>
+    </div>
+  </div>
+</div>
+
+    <!-- ===== HOW VOLANT READS WORKS ===== -->
+    <div class="publish-card">
+      <div class="publish-content">
+        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.5rem;">
+          <h2 class="section-title" style="margin-bottom:0;">How Volant Reads Works</h2>
+          <span class="role-badge seller"><i class="fas fa-store"></i> For Sellers</span>
+        </div>
+        <p class="section-subtitle">Volant Reads is a literary marketplace that empowers independent authors by providing a platform to sell their works while retaining ownership and receiving the majority of sales revenue.</p>
+
+        <div class="feature-grid">
+          <div class="feature-item">
+            <h4><i class="fas fa-copyright"></i> You Keep Full Copyright</h4>
+            <p>You retain <strong>full ownership</strong> and copyright of your work. You grant us permission to display and sell your book — but the rights remain yours.</p>
+          </div>
+          <div class="feature-item">
+            <h4><i class="fas fa-percent"></i> 90% Net Revenue</h4>
+            <p>Authors receive <strong>90%</strong> of net sales revenue. Volant Reads retains only <strong>10%</strong> to cover platform costs.</p>
+          </div>
+          <div class="feature-item">
+            <h4><i class="fas fa-chart-line"></i> Real-Time Sales Tracking</h4>
+            <p>All sales are recorded in <strong>real time</strong>. Track your earnings instantly through your author dashboard.</p>
+          </div>
+          <div class="feature-item">
+            <h4><i class="fas fa-calendar-check"></i> Monthly Payouts</h4>
+            <p>Earnings are issued via <strong>monthly payouts</strong>. You receive your share of sales on a regular, predictable schedule.</p>
+          </div>
+          <div class="feature-item">
+            <h4><i class="fas fa-bullhorn"></i> You Promote Your Book</h4>
+            <p>Authors are responsible for <strong>promoting their books</strong>. Share your store link or book page link to drive sales and grow your readership.</p>
+          </div>
+          <div class="feature-item">
+            <h4><i class="fas fa-coins"></i> Flexible Payment Options</h4>
+            <p>Receive your earnings via <strong>Mobile Money, Bank Transfer,</strong> or other available methods.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== ROYALTY BREAKDOWN ===== -->
+    <div class="publish-card">
+      <div class="publish-content">
+        <h2 class="section-title">Royalty Breakdown</h2>
+
+        <div class="royalty-box">
+          <div class="royalty-item">
+            <div class="percentage">90<span class="small">%</span></div>
+            <div class="label">Author Share</div>
+          </div>
+          <div class="royalty-divider"></div>
+          <div class="royalty-item">
+            <div class="percentage" style="color: var(--accent);">10<span class="small">%</span></div>
+            <div class="label">Volant Reads Share</div>
+          </div>
+        </div>
+
+        <div class="note-box">
+          <i class="fas fa-info-circle"></i>
+          <strong>Net Sales Revenue</strong> is the amount received after payment processing fees, taxes, refunds, and similar transaction costs.
+          Payments are processed through third-party providers and issued after processing fees are deducted.
+        </div>
+
+        <div class="key-points">
+          <div class="key-point">
+            <h4><i class="fas fa-chart-line" style="color: var(--accent);"></i> Real-Time Earnings</h4>
+            <p>Sales are recorded in real time. View your earnings instantly through your author dashboard.</p>
+          </div>
+          <div class="key-point">
+            <h4><i class="fas fa-calendar-check" style="color: var(--accent);"></i> Monthly Payouts</h4>
+            <p>Payouts are issued monthly. You receive your share of sales on a regular schedule.</p>
+          </div>
+        </div>
+
+        <div style="margin-top: 1rem;">
+          <h4 style="color: var(--primary); font-size: 1rem; margin-bottom: 0.4rem;">Payment Methods</h4>
+          <div class="payment-methods">
+            <div class="payment-method"><i class="fas fa-mobile-alt"></i> Mobile Money (Momo)</div>
+            <div class="payment-method"><i class="fas fa-university"></i> Bank Transfer</div>
+            <div class="payment-method"><i class="fas fa-wallet"></i> Other Available Methods</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== HOW TO SUBMIT ===== -->
+    <div class="publish-card">
+      <div class="publish-content">
+        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.5rem;">
+          <h2 class="section-title" style="margin-bottom:0;">How to Submit Your Manuscript</h2>
+          <span class="role-badge author"><i class="fas fa-upload"></i> Step-by-Step</span>
+        </div>
+        <p class="section-subtitle">Follow these simple steps to publish your book on Volant Reads.</p>
+
+        <ol class="steps-list">
+          <li><strong>Create an Account</strong> — Sign up on Volant Reads (or log in if you already have an account).</li>
+          <li><strong>Prepare Your Files</strong> — Have your <strong>PDF manuscript</strong> and <strong>cover image</strong> ready (JPG, PNG, or WEBP).</li>
+          <li><strong>Fill in Book Details</strong> — Provide title, subtitle, author name, synopsis, genre, language, and number of pages.</li>
+          <li><strong>Set Your Price</strong> — Choose your currency and set your price. You can offer your book for <strong>free</strong> or sell it.</li>
+          <li><strong>Add Keywords</strong> — Add 3–5 keywords to help readers discover your book.</li>
+          <li><strong>Submit for Approval</strong> — All submissions go through a review process. Approved books appear in the bookstore within 24 hours.</li>
+          <li><strong>Track Your Sales</strong> — Monitor your earnings in real time through your author dashboard.</li>
+          <li><strong>Promote Your Book</strong> — Share your store link or book page link to drive sales and grow your readership.</li>
+        </ol>
+
+        <div class="note-box info">
+          <i class="fas fa-clock"></i>
+          <strong>Approval Time:</strong> Most books are reviewed and approved within <strong>24–48 hours</strong>. You will be notified via email once your book is live.
+        </div>
+
+        <!-- ===== SELLER CHECKLIST ===== -->
+        <div style="margin-top:1.5rem; background:#f8f6ff; border-radius:12px; padding:1.2rem 1.5rem; border:1px solid #ede8ff;">
+          <h4 style="color:var(--primary); font-size:1rem; margin-bottom:0.5rem;"><i class="fas fa-clipboard-check"></i> Seller Checklist</h4>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.4rem 1.5rem; font-size:0.85rem; color:var(--text-secondary);">
+            <span><i class="fas fa-check-circle" style="color:#2d7d46;"></i> Complete your author profile</span>
+            <span><i class="fas fa-check-circle" style="color:#2d7d46;"></i> Set up payout details</span>
+            <span><i class="fas fa-check-circle" style="color:#2d7d46;"></i> Upload PDF & cover</span>
+            <span><i class="fas fa-check-circle" style="color:#2d7d46;"></i> Add keywords & description</span>
+            <span><i class="fas fa-check-circle" style="color:#2d7d46;"></i> Set your price</span>
+            <span><i class="fas fa-check-circle" style="color:#2d7d46;"></i> Submit for approval</span>
+          </div>
+          <p style="margin-top:0.6rem; font-size:0.8rem; color:var(--text-muted);">
+            <i class="fas fa-arrow-right" style="color:var(--primary);"></i> 
+            Go to <a href="dashboard.html" style="color:var(--primary); font-weight:500;">your dashboard</a> to manage your books and track sales.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== COPYRIGHT & TERMS ===== -->
+    <div class="publish-card">
+      <div class="publish-content">
+        <h2 class="section-title">Copyright & Terms</h2>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin: 1rem 0;">
+          <div style="background: #faf9fe; padding: 1.2rem; border-left: 3px solid var(--gold);">
+            <h4 style="color: var(--primary); font-size: 1rem; margin-bottom: 0.3rem;"><i class="fas fa-check-circle" style="color: var(--gold);"></i> You Keep Your Copyright</h4>
+            <p style="color: var(--text-secondary); font-size: 0.9rem; margin: 0;">
+              Authors <strong>retain full ownership</strong> and copyright of their works. You grant Volant Reads permission to display and sell your book, but the rights remain yours.
+            </p>
+          </div>
+          <div style="background: #faf9fe; padding: 1.2rem; border-left: 3px solid var(--accent);">
+            <h4 style="color: var(--primary); font-size: 1rem; margin-bottom: 0.3rem;"><i class="fas fa-shield-alt" style="color: var(--accent);"></i> Protection & Policies</h4>
+            <p style="color: var(--text-secondary); font-size: 0.9rem; margin: 0;">
+              Volant Reads may remove content that violates its policies. Users may <strong>not redistribute</strong> purchased ebooks. By publishing with us, you agree to our <a href="../shared/terms.html" style="color: var(--primary);">Terms &amp; Conditions</a>.
+            </p>
+          </div>
+        </div>
+
+        <div class="note-box">
+          <i class="fas fa-bullhorn"></i>
+          <strong>Authors are responsible for promoting their books.</strong> Share your store link or book page link to drive sales and grow your readership.
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== CTA SECTION ===== -->
+    <div class="publish-card">
+      <div class="cta-section">
+        <h3>Ready to Publish?</h3>
+        <p>Submit your manuscript today and join the Volant community of published authors.</p>
+        <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:0.8rem;">
+          <a href="submit.html" class="btn"><i class="fas fa-upload"></i> Submit Your Book</a>
+          <a href="dashboard.html" class="btn btn-outline"><i class="fas fa-chart-line"></i> Go to Dashboard</a>
+          <a href="index.html" class="btn btn-outline" style="margin-left:0;"><i class="fas fa-store"></i> Browse Bookstore</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="page-footer" style="background:#1a1714; color:#e8e0d8; padding:2rem 1.5rem; text-align:center; margin-top:2rem; border-top:1px solid rgba(255,255,255,0.06);">
+    <div style="max-width:1000px; margin:0 auto;">
+      <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:8px 20px; margin-bottom:10px;">
+        <a href="../shared/terms.html" style="color:#c4b8aa; text-decoration:none; font-size:0.8rem;">Terms</a>
+        <a href="../shared/contact.html" style="color:#c4b8aa; text-decoration:none; font-size:0.8rem;">Contact</a>
+        <a href="index.html" style="color:#c4b8aa; text-decoration:none; font-size:0.8rem;">📚 Bookstore</a>
+        <a href="../volant_foundry/index.html" style="color:#b76e4b; text-decoration:none; font-size:0.8rem; font-weight:600;">🏛️ Volant Foundry</a>
+        <a href="dashboard.html" style="color:#c4b8aa; text-decoration:none; font-size:0.8rem;">📊 Author Dashboard</a>
+      </div>
+      
+      <div style="margin:6px 0;">
+        <span style="background:rgba(183,110,75,0.12); padding:3px 16px; border-radius:20px; font-size:0.7rem; color:#b76e4b; font-weight:500; display:inline-block;">
+          Part of the Volant Foundry Platform
+        </span>
+      </div>
+      
+      <div style="font-size:0.75rem; color:#6a5f55; margin-top:6px;">
+        &copy; 2026 <strong style="color:#c4b8aa;">Volant Reads</strong>. All Rights Reserved.
+      </div>
+    </div>
+  </footer>
+
+  <script src="../shared/return-url-handler.js"></script>
+</body>
+</html>

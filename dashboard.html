@@ -1,0 +1,5648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<script>
+// Better auth check - wait for Firebase to initialize
+(function() {
+    if (window.location.pathname.includes('universal-login') || 
+        window.location.pathname.includes('verify-email')) {
+        return;
+    }
+    
+    const firebaseAuth = localStorage.getItem('firebase:authUser');
+    const hasAuth = firebaseAuth !== null && firebaseAuth !== 'null' && firebaseAuth !== 'undefined';
+    
+    if (!hasAuth) {
+        if (!sessionStorage.getItem('auth_redirect_attempted')) {
+            sessionStorage.setItem('auth_redirect_attempted', 'true');
+            const currentPage = window.location.pathname + window.location.search;
+            window.location.href = '../shared/universal-login.html?platform=reads&redirect=' + 
+                                  encodeURIComponent(currentPage);
+        }
+    } else {
+        sessionStorage.removeItem('auth_redirect_attempted');
+    }
+})();
+</script>
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Volant Reads | Dashboard</title>
+
+  <script>
+    // Simple console blocker - production only
+    (function() {
+        if (window.location.hostname.includes('localhost') || 
+            window.location.hostname.includes('127.0.0.1')) {
+            return; // Allow in development
+        }
+        
+        // Block all console methods
+        var methods = ['log', 'info', 'warn', 'error', 'debug', 'trace', 'table', 'group', 'groupEnd', 'dir'];
+        methods.forEach(function(m) {
+            console[m] = function() {};
+            try {
+                Object.defineProperty(console, m, { configurable: false, writable: false });
+            } catch(e) {}
+        });
+        
+        window.onerror = function() { return true; };
+        window.onunhandledrejection = function() { return true; };
+    })();
+</script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="icon" type="image/png" href="../images/volant-reads-favicon.png" />
+  <link rel="apple-touch-icon" href="../images/volant-reads-favicon.png" />
+
+  <style>
+   * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter',sans-serif; }
+body { background:#f7f7fb; color:#1d1833; }
+.dashboard { display:grid; grid-template-columns:260px 1fr; min-height:100vh; }
+.sidebar {
+  background:white; padding:28px 20px; border-right:1px solid #ececec;
+  position:sticky; top:0; height:100vh; overflow-y:auto;
+}
+.logo { text-align:center; margin-bottom:40px; }
+.logo-circle {
+  width:90px; height:90px; border-radius:50%; background:#6a34ff;
+  margin:0 auto; display:flex; align-items:center; justify-content:center;
+  color:white; font-size:38px; font-weight:700; box-shadow:0 8px 18px rgba(106,52,255,0.25);
+}
+.logo h2 { margin-top:18px; letter-spacing:3px; font-weight:600; }
+.nav {
+  display:flex; flex-direction:column; gap:6px; margin-top:8px;
+}
+.nav a {
+  padding:14px 16px; text-decoration:none; color:#444; border-radius:14px;
+  font-weight:500; display:flex; align-items:center; gap:12px; transition:0.2s;
+  cursor:pointer;
+}
+.nav a i { width:22px; font-size:1.1rem; color:#6b6b80; }
+.nav a:hover { background:#f0eaff; color:#6a34ff; }
+.nav a:hover i { color:#6a34ff; }
+.nav .active { background:#f0eaff; color:#6a34ff; }
+.nav .active i { color:#6a34ff; }
+.card-side {
+  margin-top:40px; background:#f7f2ff; padding:24px 20px; border-radius:24px; text-align:center;
+}
+.card-side h3 { font-weight:600; font-size:1.2rem; }
+.card-side p { margin-top:12px; font-size:0.9rem; color:#3d3a4a; line-height:1.5; }
+.card-side button {
+  margin-top:24px; width:100%; height:48px; border:none; border-radius:40px;
+  background:#6a34ff; color:white; font-weight:600; cursor:pointer; transition:0.2s;
+}
+.card-side button:hover { background:#5428d9; transform:scale(0.98); }
+.content { padding:34px 40px; background:#f7f7fb; }
+
+.topbar {
+  display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:20px;
+  margin-bottom: 12px;
+}
+.topbar-left {
+  display:flex; flex-direction:column; gap: 4px;
+}
+.topbar h1 { font-size:2rem; font-weight:700; margin:0; }
+.topbar p { color:#5f5b70; margin-top: 2px; font-size:0.95rem; }
+
+.page-section {
+  display: none;
+  animation: fadeIn 0.3s ease;
+  margin-top: 18px;
+}
+.page-section.active {
+  display: block;
+}
+@keyframes fadeIn {
+  from { opacity:0; transform:translateY(10px); }
+  to { opacity:1; transform:translateY(0); }
+}
+
+.user { display:flex; align-items:center; gap:16px; }
+.avatar {
+  width:48px; height:48px; border-radius:50%; background:#cbc3e0;
+  background-size:cover; background-position:center;
+}
+.action-btn {
+  background:#6a34ff; color:white; border:none; height:50px; padding:0 28px;
+  border-radius:40px; font-weight:600; cursor:pointer; transition:0.2s;
+  display:flex; align-items:center; gap:10px; font-size:0.95rem;
+  text-decoration:none;
+}
+.action-btn:hover { background:#5428d9; transform:translateY(-2px); }
+.action-btn:disabled { opacity:0.6; cursor:not-allowed; }
+
+.stats {
+  margin-top:28px; display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+  gap:18px;
+}
+.stat {
+  background:white; padding:24px 20px; border-radius:24px; border:1px solid #eee;
+  transition:0.25s;
+}
+.stat:hover { box-shadow:0 8px 20px rgba(0,0,0,0.02); border-color:#d9d0f0; }
+.stat h4 { color:#666; font-weight:500; font-size:0.85rem; letter-spacing:0.4px; text-transform:uppercase; margin-bottom:10px; }
+.stat .value { font-size:2.2rem; font-weight:700; color:#1d1833; }
+.stat .value small { font-size:0.9rem; font-weight:400; color:#777; }
+
+.grid { margin-top:24px; display:grid; grid-template-columns:1.4fr 1fr; gap:24px; }
+.panel {
+  background:white; padding:28px 26px; border-radius:28px; border:1px solid #eee;
+  box-shadow:0 2px 10px rgba(0,0,0,0.02);
+}
+.section-title {
+  display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;
+}
+.section-title h2 { font-size:1.3rem; font-weight:600; }
+.section-title a { color:#6a34ff; font-weight:500; text-decoration:none; font-size:0.9rem; cursor:pointer; }
+.section-title a:hover { text-decoration:underline; }
+
+.page-grid {
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+  gap:20px; margin-top:20px;
+}
+.page-card {
+  background:transparent; border:none; transition:all 0.3s ease;
+  display:flex; flex-direction:column;
+  position:relative;
+}
+.page-card:hover { transform:translateY(-4px); }
+.page-card .cover-wrapper {
+  position:relative; padding-top:140%; background:#f0ebe4;
+  overflow:hidden; border-radius:0 !important;
+  box-shadow:0 4px 12px rgba(0,0,0,0.06); transition:box-shadow 0.3s ease;
+  cursor:pointer;
+}
+.page-card:hover .cover-wrapper { box-shadow:0 8px 25px rgba(0,0,0,0.12); }
+.page-card .cover-wrapper img {
+  position:absolute; top:0; left:0; width:100%; height:100%;
+  object-fit:cover; transition:transform 0.3s ease;
+}
+.page-card:hover .cover-wrapper img { transform:scale(1.03); }
+.page-card .cover-wrapper .no-image {
+  position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+  font-size:3.5rem; color:#cbb9a8;
+}
+.page-card .book-body {
+  padding:0.6rem 0.2rem 0; display:flex; flex-direction:column;
+}
+.page-card .book-title {
+  font-family:'Playfair Display',serif; font-weight:700; font-size:1.15rem;
+  color:#2d2a24; line-height:1.3; margin-bottom:0.1rem;
+  display:-webkit-box; -webkit-line-clamp:2; line-clamp:2;
+  -webkit-box-orient:vertical; box-orient:vertical; overflow:hidden;
+}
+.page-card .book-subtitle {
+  font-size:0.85rem; color:#8a7b6a; font-style:italic; margin-bottom:0.1rem;
+  display:-webkit-box; -webkit-line-clamp:1; line-clamp:1;
+  -webkit-box-orient:vertical; box-orient:vertical; overflow:hidden;
+}
+.page-card .book-author {
+  font-size:0.9rem; color:#6f6252; margin-bottom:0.1rem; font-weight:500;
+}
+.page-card .book-price {
+  font-weight:700; font-size:1.05rem; color:#4b2aad; margin-top:0.1rem;
+}
+.page-card .badge-status {
+  display:inline-block; padding:2px 10px; border-radius:999px;
+  font-size:0.65rem; font-weight:600; margin-top:4px; align-self:flex-start;
+}
+.page-card .badge-status.pending { background:#fff2d6; color:#a8640b; }
+.page-card .badge-status.approved { background:#dff7e5; color:#15723d; }
+.page-card .badge-status.rejected { background:#fde8e8; color:#c62828; }
+.page-card .badge-status.draft { background:#f0f0f0; color:#666; }
+
+.sales-badge {
+  display:inline-block; padding:2px 12px; border-radius:999px;
+  font-size:0.7rem; font-weight:600; margin-top:4px; align-self:flex-start;
+  background:#e8e0f0; color:#4b2aad;
+}
+.sales-badge i { margin-right:4px; }
+.revenue-badge {
+  display:inline-block; padding:2px 12px; border-radius:999px;
+  font-size:0.7rem; font-weight:600; margin-top:4px; align-self:flex-start;
+  background:#dff7e5; color:#15723d;
+}
+.revenue-badge i { margin-right:4px; }
+
+.update-book-btn {
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  background:#6a34ff;
+  color:white;
+  border:none;
+  padding:6px 16px;
+  border-radius:20px;
+  font-size:0.7rem;
+  font-weight:600;
+  cursor:pointer;
+  transition:0.2s;
+  margin-top:6px;
+  align-self:flex-start;
+  text-decoration:none;
+}
+.update-book-btn:hover {
+  background:#5428d9;
+  transform:scale(1.05);
+}
+.update-book-btn i {
+  font-size:0.65rem;
+}
+
+.share-book-btn {
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  background:#15723d;
+  color:white;
+  border:none;
+  padding:6px 16px;
+  border-radius:20px;
+  font-size:0.7rem;
+  font-weight:600;
+  cursor:pointer;
+  transition:0.2s;
+  margin-top:6px;
+  align-self:flex-start;
+  text-decoration:none;
+}
+.share-book-btn:hover {
+  background:#0f5a2f;
+  transform:scale(1.05);
+}
+.share-book-btn i {
+  font-size:0.65rem;
+}
+
+.btn-group {
+  display:flex;
+  gap:6px;
+  margin-top:6px;
+  flex-wrap:wrap;
+  align-items:center;
+}
+
+.table { margin-top:6px; }
+.row {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:16px 0; border-bottom:1px solid #f0f0f0;
+}
+.row:last-child { border-bottom:none; }
+.badge {
+  background:#dff7e5; padding:6px 16px; border-radius:999px; color:#15723d;
+  font-size:0.8rem; font-weight:600;
+}
+.badge.pending { background:#fff2d6; color:#a8640b; }
+.badge.approved { background:#dff7e5; color:#15723d; }
+.badge.rejected { background:#fde8e8; color:#c62828; }
+.badge.draft { background:#f0f0f0; color:#666; }
+
+.chart-wrapper { 
+  display:flex; 
+  flex-direction:column; 
+  gap:8px;
+  padding-top:4px;
+}
+.chart {
+  height:160px;
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-around;
+  gap:12px;
+  padding-top:8px;
+  margin-top:4px;
+}
+.bar-item {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  flex:1;
+  gap:6px;
+}
+.bar {
+  width:100%;
+  max-width:45px;
+  background:linear-gradient(180deg,#8e6cff,#6a34ff);
+  border-radius:20px 20px 0 0;
+  min-height:8px;
+  transition:0.3s;
+  position:relative;
+  cursor:pointer;
+}
+.bar:hover { 
+  opacity:0.85; 
+  transform:scaleY(1.03); 
+  transform-origin:bottom; 
+}
+.bar-label {
+  font-size:0.6rem;
+  color:#6b6b80;
+  text-align:center;
+  font-weight:500;
+  line-height:1.2;
+  margin-top:2px;
+}
+.bar-value {
+  font-size:0.55rem;
+  color:#4b2aad;
+  font-weight:600;
+  text-align:center;
+  background:rgba(106,52,255,0.08);
+  padding:1px 6px;
+  border-radius:8px;
+}
+.chart-days {
+  display:flex;
+  justify-content:space-around;
+  font-size:0.65rem;
+  color:#6b6b80;
+  padding-top:4px;
+}
+.chart-days span {
+  flex:1;
+  text-align:center;
+}
+
+.sales-list { display:flex; flex-direction:column; gap:14px; margin-top:10px; }
+.sale-item {
+  padding:16px 18px; border:1px solid #eee; border-radius:18px;
+  display:flex; align-items:center; gap:14px; background:#fbfafd;
+  font-weight:500; transition:0.2s; cursor:pointer;
+}
+.sale-item i { color:#6a34ff; font-size:1.2rem; }
+.sale-item:hover { border-color:#c6b8e6; background:#f6f2ff; }
+
+.page-header {
+  margin-bottom: 20px;
+}
+.page-header h2 {
+  font-size:1.8rem;
+  font-weight:700;
+  margin-bottom: 4px;
+}
+.page-header p {
+  color:#5f5b70;
+  margin-top: 2px;
+}
+
+.settings-group {
+  margin-bottom:20px;
+}
+.settings-group label {
+  display:block;
+  font-weight:500;
+  margin-bottom:6px;
+  color:#333;
+}
+.settings-group input, .settings-group select, .settings-group textarea {
+  width:100%;
+  padding:12px 16px;
+  border:1px solid #ddd;
+  border-radius:10px;
+  font-size:0.95rem;
+  transition:0.3s;
+  font-family:inherit;
+}
+.settings-group input:focus, .settings-group select:focus, .settings-group textarea:focus {
+  outline:none;
+  border-color:#6a34ff;
+  box-shadow:0 0 0 3px rgba(106,52,255,0.1);
+}
+.settings-group .hint {
+  font-size:0.8rem;
+  color:#888;
+  margin-top:4px;
+}
+
+/* ===== NEW VALIDATION STYLES ===== */
+.settings-group .input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.settings-group .input-wrapper input {
+  padding-right: 40px;
+}
+
+.settings-group .validation-icon {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.1rem;
+  transition: 0.2s;
+  pointer-events: none;
+}
+
+.settings-group .validation-icon.valid {
+  color: #15723d;
+}
+
+.settings-group .validation-icon.invalid {
+  color: #b33;
+}
+
+.settings-group .validation-icon.loading {
+  color: #6a34ff;
+  animation: spin 1s linear infinite;
+}
+
+.settings-group .validation-message {
+  font-size: 0.8rem;
+  margin-top: 4px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  display: none;
+}
+
+.settings-group .validation-message.show {
+  display: block;
+}
+
+.settings-group .validation-message.success {
+  color: #15723d;
+  background: #dff7e5;
+}
+
+.settings-group .validation-message.error {
+  color: #b33;
+  background: #fde8e8;
+}
+
+.settings-group .validation-message.info {
+  color: #6a34ff;
+  background: #f0eaff;
+}
+
+.settings-group .validation-message.warning {
+  color: #a8640b;
+  background: #fff2d6;
+}
+
+@keyframes spin {
+  0% { transform: translateY(-50%) rotate(0deg); }
+  100% { transform: translateY(-50%) rotate(360deg); }
+}
+
+/* ===== PAYOUT SETTINGS STYLES ===== */
+.payout-settings-section {
+  margin-top: 30px;
+  border-top: 2px solid #eee;
+  padding-top: 20px;
+}
+.payout-settings-section h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.3rem;
+  margin-bottom: 4px;
+}
+.payout-settings-section .payout-sub {
+  color: #888;
+  font-size: 0.9rem;
+  margin-bottom: 16px;
+}
+#payoutType {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  background: white;
+}
+#payoutType:focus {
+  outline: none;
+  border-color: #6a34ff;
+  box-shadow: 0 0 0 3px rgba(106,52,255,0.1);
+}
+#payoutStatus {
+  margin-top: 12px;
+  font-size: 0.9rem;
+  padding: 10px 14px;
+  border-radius: 10px;
+}
+#payoutStatus.success { 
+  color: #15723d; 
+  background: #dff7e5;
+  border: 1px solid #a8d5b5;
+}
+#payoutStatus.error { 
+  color: #b33; 
+  background: #fde8e8;
+  border: 1px solid #f5c6cb;
+}
+#payoutStatus.loading { 
+  color: #6a34ff; 
+  background: #f0eaff;
+  border: 1px solid #d9d0f0;
+}
+
+/* ===== SETUP ALERT BANNER ===== */
+#setupAlertBanner {
+  display: none;
+  background: linear-gradient(135deg, #fef3e2 0%, #fcf7f0 100%);
+  border-left: 4px solid #e67e22;
+  padding: 18px 22px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(230, 126, 34, 0.08);
+}
+#setupAlertBanner.show {
+  display: block;
+}
+#setupAlertBanner .banner-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+#setupAlertBanner .banner-content .banner-icon {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #fff3e0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  color: #e67e22;
+  margin-top: 2px;
+}
+#setupAlertBanner .banner-content .banner-text {
+  flex: 1;
+}
+#setupAlertBanner .banner-content .banner-text h4 {
+  margin: 0 0 4px 0;
+  color: #a8640b;
+  font-size: 1rem;
+  font-weight: 700;
+}
+#setupAlertBanner .banner-content .banner-text p {
+  margin: 0 0 6px 0;
+  color: #7a4a2a;
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+#setupAlertBanner .banner-content .banner-text .banner-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 6px;
+}
+#setupAlertBanner .banner-content .banner-text .btn-go-settings {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #6a34ff;
+  color: white;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 30px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: 0.3s;
+  text-decoration: none;
+}
+#setupAlertBanner .banner-content .banner-text .btn-go-settings:hover {
+  background: #5428d9;
+  transform: scale(1.02);
+  box-shadow: 0 4px 15px rgba(106, 52, 255, 0.3);
+}
+#setupAlertBanner .banner-content .banner-text .btn-go-settings i {
+  font-size: 0.8rem;
+}
+#setupAlertBanner .banner-content .banner-text .banner-time {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: #8a7b6a;
+  background: rgba(255, 255, 255, 0.6);
+  padding: 4px 14px;
+  border-radius: 30px;
+  border: 1px solid #ede7df;
+}
+#setupAlertBanner .banner-content .banner-text .banner-time i {
+  color: #2d7d46;
+}
+.setup-check-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  padding: 2px 0;
+}
+.setup-check-item i {
+  width: 18px;
+}
+.setup-check-item .check-done {
+  color: #2d7d46;
+}
+.setup-check-item .check-missing {
+  color: #b76e4b;
+}
+
+/* ===== PAYOUT WARNING BANNER ===== */
+#payoutWarningBanner {
+  display: none;
+  background: linear-gradient(135deg, #fef3e2 0%, #fcf7f0 100%);
+  border-left: 4px solid #e67e22;
+  padding: 18px 22px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(230, 126, 34, 0.08);
+}
+#payoutWarningBanner.show {
+  display: block;
+}
+#payoutWarningBanner .banner-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+#payoutWarningBanner .banner-content .banner-icon {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #fff3e0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  color: #e67e22;
+  margin-top: 2px;
+}
+#payoutWarningBanner .banner-content .banner-text {
+  flex: 1;
+}
+#payoutWarningBanner .banner-content .banner-text h4 {
+  margin: 0 0 4px 0;
+  color: #a8640b;
+  font-size: 1rem;
+  font-weight: 700;
+}
+#payoutWarningBanner .banner-content .banner-text p {
+  margin: 0 0 6px 0;
+  color: #7a4a2a;
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+#payoutWarningBanner .banner-content .banner-text .banner-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 6px;
+}
+#payoutWarningBanner .banner-content .banner-text .btn-setup-payout {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #6a34ff;
+  color: white;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 30px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: 0.3s;
+  text-decoration: none;
+}
+#payoutWarningBanner .banner-content .banner-text .btn-setup-payout:hover {
+  background: #5428d9;
+  transform: scale(1.02);
+  box-shadow: 0 4px 15px rgba(106, 52, 255, 0.3);
+}
+#payoutWarningBanner .banner-content .banner-text .btn-setup-payout i {
+  font-size: 0.8rem;
+}
+#payoutWarningBanner .banner-content .banner-text .banner-time {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: #8a7b6a;
+  background: rgba(255, 255, 255, 0.6);
+  padding: 4px 14px;
+  border-radius: 30px;
+  border: 1px solid #ede7df;
+}
+#payoutWarningBanner .banner-content .banner-text .banner-time i {
+  color: #2d7d46;
+}
+
+/* ===== MODAL STYLES ===== */
+.modal-overlay {
+  display:none;
+  position:fixed;
+  top:0; left:0; width:100%; height:100%;
+  background:rgba(0,0,0,0.5);
+  z-index:1000;
+  backdrop-filter:blur(4px);
+  align-items:center;
+  justify-content:center;
+}
+.modal-overlay.show {
+  display:flex;
+}
+.modal {
+  background:white;
+  width:95%;
+  max-width:850px;
+  max-height:92vh;
+  border-radius:28px;
+  padding:32px 36px;
+  overflow-y:auto;
+  box-shadow:0 20px 60px rgba(0,0,0,0.3);
+  position:relative;
+  animation:modalIn 0.3s ease;
+}
+@keyframes modalIn {
+  from { opacity:0; transform:scale(0.95) translateY(20px); }
+  to { opacity:1; transform:scale(1) translateY(0); }
+}
+.modal::-webkit-scrollbar { width:6px; }
+.modal::-webkit-scrollbar-track { background:#f0f0f0; border-radius:10px; }
+.modal::-webkit-scrollbar-thumb { background:#c5c5d0; border-radius:10px; }
+.modal::-webkit-scrollbar-thumb:hover { background:#6a34ff; }
+
+.modal-close {
+  position:sticky;
+  top:0;
+  float:right;
+  background:none;
+  border:none;
+  font-size:1.8rem;
+  color:#999;
+  cursor:pointer;
+  padding:0 8px;
+  transition:0.2s;
+  z-index:10;
+}
+.modal-close:hover { color:#b33; transform:rotate(90deg); }
+.modal h2 {
+  font-size:1.8rem;
+  font-weight:700;
+  margin-bottom:4px;
+}
+.modal .modal-sub {
+  color:#888;
+  margin-bottom:24px;
+}
+.modal .form-row {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px;
+}
+.modal .form-group {
+  margin-bottom:14px;
+}
+.modal .form-group label {
+  display:block;
+  font-weight:500;
+  margin-bottom:4px;
+  font-size:0.85rem;
+  color:#333;
+}
+.modal .form-group label .required {
+  color:#b33;
+}
+.modal .form-group input,
+.modal .form-group textarea,
+.modal .form-group select {
+  width:100%;
+  padding:10px 14px;
+  border:1px solid #ddd;
+  border-radius:10px;
+  font-size:0.9rem;
+  transition:0.3s;
+  font-family:inherit;
+}
+.modal .form-group input:focus,
+.modal .form-group textarea:focus,
+.modal .form-group select:focus {
+  outline:none;
+  border-color:#6a34ff;
+  box-shadow:0 0 0 3px rgba(106,52,255,0.1);
+}
+.modal .form-group textarea {
+  resize:vertical;
+  min-height:60px;
+}
+.modal .form-group .file-input-wrapper {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  flex-wrap:wrap;
+}
+.modal .form-group .file-input-wrapper input[type="file"] {
+  flex:1;
+  min-width:120px;
+  padding:8px;
+  border:1px solid #ddd;
+  border-radius:8px;
+  font-size:0.85rem;
+}
+.modal .form-group .file-input-wrapper .current-file {
+  font-size:0.75rem;
+  color:#15723d;
+  background:#dff7e5;
+  padding:4px 12px;
+  border-radius:20px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  max-width:200px;
+}
+.modal .form-group .file-input-wrapper .current-file.no-file {
+  color:#888;
+  background:#f0f0f0;
+}
+.modal .form-group .file-hint {
+  font-size:0.7rem;
+  color:#888;
+  margin-top:4px;
+}
+.modal .form-actions {
+  display:flex;
+  gap:12px;
+  margin-top:24px;
+  padding-top:20px;
+  border-top:1px solid #eee;
+  flex-wrap:wrap;
+}
+.modal .form-actions .btn-save {
+  background:#6a34ff;
+  color:white;
+  border:none;
+  padding:12px 36px;
+  border-radius:40px;
+  font-weight:600;
+  font-size:0.95rem;
+  cursor:pointer;
+  transition:0.2s;
+  flex:1;
+  min-width:140px;
+}
+.modal .form-actions .btn-save:hover { background:#5428d9; transform:translateY(-2px); }
+.modal .form-actions .btn-save:disabled { opacity:0.6; cursor:not-allowed; transform:none; }
+.modal .form-actions .btn-cancel {
+  background:#f0f0f0;
+  color:#444;
+  border:none;
+  padding:12px 28px;
+  border-radius:40px;
+  font-weight:500;
+  font-size:0.95rem;
+  cursor:pointer;
+  transition:0.2s;
+}
+.modal .form-actions .btn-cancel:hover { background:#e0e0e0; }
+.modal .form-actions .btn-delete {
+  background:#fee;
+  color:#b33;
+  border:1px solid #fcc;
+  padding:12px 28px;
+  border-radius:40px;
+  font-weight:500;
+  font-size:0.95rem;
+  cursor:pointer;
+  transition:0.2s;
+  margin-left:auto;
+}
+.modal .form-actions .btn-delete:hover { background:#fdd; border-color:#b33; }
+
+.modal .downloads-group {
+  background:#f8f5f0;
+  border-radius:16px;
+  padding:0.8rem 1rem;
+  border:1px solid #ede7df;
+  margin-bottom:14px;
+}
+.modal .downloads-group .downloads-title {
+  font-weight:600;
+  color:#1d1833;
+  margin-bottom:0.6rem;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  font-size:0.85rem;
+}
+.modal .downloads-group .downloads-title i {
+  color:#6a34ff;
+}
+.modal .downloads-group .downloads-row {
+  display:flex;
+  flex-wrap:wrap;
+  gap:0.6rem;
+  align-items:center;
+}
+.modal .downloads-group .downloads-row .form-group {
+  flex:1 1 120px;
+  margin-bottom:0;
+}
+.modal .downloads-group .downloads-row .form-group select,
+.modal .downloads-group .downloads-row .form-group input {
+  padding:0.5rem 0.8rem;
+}
+.modal .downloads-group .downloads-hint {
+  font-size:0.65rem;
+  color:#8a7b6a;
+  padding-left:4px;
+  margin-top:4px;
+}
+.modal .downloads-group .downloads-hint .min-downloads {
+  color:#6a34ff;
+  font-weight:600;
+}
+.modal .custom-download-input {
+  display:none;
+}
+.modal .custom-download-input.visible {
+  display:block;
+  margin-top:0.4rem;
+}
+.modal .custom-download-input input {
+  width:100%;
+  max-width:150px;
+  padding:0.5rem 0.8rem;
+  border:1px solid #ddd;
+  border-radius:10px;
+  font-size:0.88rem;
+  background:#fcf9f6;
+  transition:0.2s;
+}
+.modal .custom-download-input input:focus {
+  outline:2px solid #6a34ff;
+  border-color:transparent;
+  background:#ffffff;
+}
+
+/* ===== HEADER STYLES ===== */
+header {
+  background: #ffffff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  height: 70px;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #ede7df;
+}
+nav {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 8rem;
+  width: 100%;
+  height: 100%;
+  gap: 1.5rem;
+}
+.logo-header {
+  display: flex;
+  align-items: center;
+  font-family: 'Playfair Display', serif;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #4b2aad;
+  text-decoration: none;
+  gap: 0.6rem;
+  flex-shrink: 0;
+  padding-left: 3rem;
+  margin-right: auto;
+}
+.nav-logo-img {
+  display: inline-block !important;
+  width: 40px;
+  height: 40px;
+  border-radius: 0 !important;
+  object-fit: contain;
+}
+.logo-text {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  font-size: 1.6rem;
+  color: #4b2aad;
+}
+.logo-highlight {
+  color: #fff;
+  text-shadow: 0 0 2px #4b2aad, 0 0 4px #4b2aad, 0 0 6px #4b2aad;
+}
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  flex-shrink: 0;
+  padding-right: 3rem;
+  margin-left: auto;
+}
+.btn-store {
+  padding: 0.4rem 1.2rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.85rem;
+  transition: 0.3s;
+  white-space: nowrap;
+  background: #4b2aad;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.btn-store:hover { background:#3a1f8a; transform:translateY(-2px); }
+.btn-logout {
+  padding: 0.4rem 1.2rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.85rem;
+  transition: 0.3s;
+  white-space: nowrap;
+  background: transparent;
+  color: #6f6252;
+  border: 1px solid #ede7df;
+  cursor: pointer;
+}
+.btn-logout:hover { background:#fef0f0; color:#b33; border-color:#b33; }
+.menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 1.4rem;
+  color: #2d2a24;
+  cursor: pointer;
+  padding: 0.3rem 0.6rem;
+  border-radius: 8px;
+}
+.menu-toggle:hover { background:#f5f1eb; }
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  top: 70px;
+  left: 0;
+  width: 100%;
+  height: calc(100vh - 70px);
+  background: rgba(0,0,0,0.3);
+  z-index: 99;
+  backdrop-filter: blur(2px);
+}
+.sidebar-overlay.show { display: block; }
+.sidebar.mobile-open { left: 0; }
+
+.profile-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #6a45d1;
+  background: #e0d6cc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  color: #6f6252;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.profile-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.wishlist-badge {
+  background: #e74c3c;
+  color: white;
+  border-radius: 50%;
+  padding: 1px 7px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  margin-left: auto;
+}
+.message-badge {
+  background: #e74c3c;
+  color: white;
+  border-radius: 50%;
+  padding: 1px 7px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  margin-left: auto;
+}
+
+.message-item {
+  display: flex;
+  flex-direction: column;
+  padding: 16px 18px;
+  border-bottom: 1px solid #f0f0f0;
+  transition: 0.2s;
+  cursor: default;
+}
+.message-item:hover { background:#faf9ff; }
+.message-item:last-child { border-bottom:none; }
+.message-item .message-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+.message-item .message-sender {
+  font-weight: 600;
+  color: #2d2a24;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.message-item .message-sender i { color:#6a34ff; font-size:0.85rem; }
+.message-item .message-sender .sender-email { font-weight:400; font-size:0.8rem; color:#888; }
+.message-item .message-subject { font-weight:500; color:#1d1833; margin-bottom:2px; }
+.message-item .message-body { color:#5f5b70; font-size:0.9rem; line-height:1.5; margin-top:2px; }
+.message-item .message-meta { display:flex; gap:16px; margin-top:6px; font-size:0.75rem; color:#999; }
+.message-item .message-meta i { margin-right:3px; }
+.message-item .badge-unread { background:#e74c3c; color:white; padding:1px 10px; border-radius:999px; font-size:0.6rem; font-weight:600; }
+.message-item .badge-read { background:#dff7e5; color:#15723d; padding:1px 10px; border-radius:999px; font-size:0.6rem; font-weight:600; }
+.message-item .btn-mark-read { background:none; border:none; color:#6a34ff; font-size:0.7rem; cursor:pointer; padding:2px 8px; border-radius:4px; transition:0.2s; }
+.message-item .btn-mark-read:hover { background:#f0eaff; text-decoration:underline; }
+
+.toast {
+  position:fixed;
+  bottom:30px;
+  right:30px;
+  padding:16px 28px;
+  border-radius:16px;
+  background:#1d1833;
+  color:white;
+  font-weight:500;
+  box-shadow:0 8px 30px rgba(0,0,0,0.2);
+  transform:translateY(100px);
+  opacity:0;
+  transition:all 0.4s ease;
+  z-index:2000;
+  max-width:400px;
+}
+.toast.show {
+  transform:translateY(0);
+  opacity:1;
+}
+.toast.success { background:#15723d; }
+.toast.error { background:#b33; }
+.toast.info { background:#6a34ff; }
+
+/* ===== RESPONSIVE STYLES ===== */
+@media (max-width:1100px) {
+  .dashboard { grid-template-columns:1fr; }
+  .grid { grid-template-columns:1fr; }
+  .content { padding:24px 20px; }
+  nav { padding: 0 4rem !important; }
+  .logo-header { padding-left: 1rem !important; }
+  .nav-right { padding-right: 1rem !important; }
+  .page-grid { grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); }
+  .modal .form-row { grid-template-columns:1fr; }
+}
+@media (max-width:700px) {
+  .stats { grid-template-columns:1fr 1fr; }
+  .topbar h1 { font-size:1.6rem; }
+  .action-btn { padding:0 18px; height:44px; font-size:0.85rem; }
+  .stat .value { font-size:1.6rem; }
+  nav { padding: 0 1.5rem !important; gap: 0.8rem !important; }
+  .logo-header { font-size: 1.1rem !important; padding-left: 0 !important; }
+  .logo-text { font-size: 1.1rem !important; }
+  .nav-logo-img { width: 28px !important; height: 28px !important; }
+  .btn-store, .btn-logout { font-size: 0.7rem !important; padding: 0.25rem 0.7rem !important; }
+  .nav-right { padding-right: 0 !important; gap: 0.4rem !important; }
+  .profile-avatar { width: 28px !important; height: 28px !important; font-size: 1rem !important; }
+  .page-grid { grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); }
+  .modal { padding:24px 20px; }
+  .modal .form-actions { flex-direction:column; }
+  .modal .form-actions .btn-delete { margin-left:0; }
+}
+@media (max-width:480px) {
+  .stats { grid-template-columns:1fr; }
+  .topbar { flex-direction:column; align-items:flex-start; }
+  .user { width:100%; justify-content:space-between; }
+  .page-grid { grid-template-columns:1fr 1fr; }
+  header { height: 50px !important; }
+  nav { padding: 0 0.8rem !important; gap: 0.5rem !important; }
+  .logo-header { font-size: 0.9rem !important; gap: 0.3rem !important; padding-left: 0 !important; }
+  .logo-text { font-size: 0.9rem !important; }
+  .nav-logo-img { width: 22px !important; height: 22px !important; }
+  .btn-store, .btn-logout { font-size: 0.6rem !important; padding: 0.2rem 0.5rem !important; border-radius: 4px !important; }
+  .nav-right { padding-right: 0 !important; gap: 0.3rem !important; }
+  .profile-avatar { width: 22px !important; height: 22px !important; font-size: 0.8rem !important; }
+  .page-card .book-title { font-size:0.8rem !important; }
+  .page-card .book-price { font-size:0.7rem !important; }
+  .modal { padding:18px 14px; }
+}
+@media (max-width: 920px) {
+  .menu-toggle { display: flex !important; align-items: center; justify-content: center; }
+  .sidebar {
+    position: fixed;
+    top: 70px;
+    left: -320px;
+    width: 300px;
+    height: calc(100vh - 70px);
+    border-radius: 0;
+    z-index: 100;
+    overflow-y: auto;
+    box-shadow: 4px 0 30px rgba(0,0,0,0.15);
+    transition: left 0.3s ease;
+    padding: 1.5rem 1.2rem;
+    display: block !important;
+  }
+  .sidebar.mobile-open {
+    left: 0;
+  }
+  .sidebar-overlay.show { display: block; }
+}
+@media (max-width: 380px) {
+  .page-grid { grid-template-columns:1fr 1fr; gap:12px; }
+  .page-card .book-title { font-size:0.9rem !important; }
+  .page-card .book-price { font-size:0.9rem !important; }
+  .topbar-left h1 {font-size: 21px;}
+}
+.logo {display:none;}
+
+/* Hide only the Sales Overview panel (the first panel in the right column) */
+#page-dashboard .grid > div:last-child .panel:first-child {
+    display: none !important;
+}
+/* Hide the Total Views card */
+#page-analytics .page-card:first-child {
+    display: none !important;
+}
+/* Hide the Total Views stat card on dashboard */
+#statsContainer .stat:last-child {
+    display: none !important;
+}
+
+.platform-badge.reads { 
+    background: linear-gradient(135deg, #d4a574, #c9944d); 
+}
+
+/* ===== HIDE PLATFORM COMMISSION (10%) IN EARNINGS ===== */
+#earningsStats .stat:nth-child(4),
+#totalCommission {
+    display: none !important;
+}
+
+/* ===== HIDE TOTAL VIEWS & CONVERSION RATE IN SALES ===== */
+#salesStats .stat:nth-child(3),
+#salesStats .stat:nth-child(4) {
+    display: none !important;
+}
+
+/* Adjust grid for remaining 2 cards */
+#salesStats {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 18px !important;
+}
+
+/* Mobile: stack them */
+@media (max-width: 480px) {
+    #salesStats {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* ===== HIDE CONVERSION RATE IN ANALYTICS PAGE ===== */
+
+/* Hide the Conversion Rate card (4th card) in Analytics grid */
+#analyticsGrid .page-card:nth-child(4) {
+    display: none !important;
+}
+
+/* Alternative: Hide by the percentage symbol or specific text */
+#analyticsGrid .page-card:has(.fa-percent) {
+    display: none !important;
+}
+    
+    
+    .settings-group .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    
+    .settings-group .input-wrapper input {
+      padding-right: 40px;
+    }
+    
+    .settings-group .validation-icon {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1.1rem;
+      transition: 0.2s;
+      pointer-events: none;
+    }
+    
+    .settings-group .validation-icon.valid {
+      color: #15723d;
+    }
+    
+    .settings-group .validation-icon.invalid {
+      color: #b33;
+    }
+    
+    .settings-group .validation-icon.loading {
+      color: #6a34ff;
+      animation: spin 1s linear infinite;
+    }
+    
+    .settings-group .validation-message {
+      font-size: 0.8rem;
+      margin-top: 4px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      display: none;
+    }
+    
+    .settings-group .validation-message.show {
+      display: block;
+    }
+    
+    .settings-group .validation-message.success {
+      color: #15723d;
+      background: #dff7e5;
+    }
+    
+    .settings-group .validation-message.error {
+      color: #b33;
+      background: #fde8e8;
+    }
+    
+    .settings-group .validation-message.info {
+      color: #6a34ff;
+      background: #f0eaff;
+    }
+    
+    .settings-group .validation-message.warning {
+      color: #a8640b;
+      background: #fff2d6;
+    }
+    
+    @keyframes spin {
+      0% { transform: translateY(-50%) rotate(0deg); }
+      100% { transform: translateY(-50%) rotate(360deg); }
+    }
+
+
+.settings-group:has(#settingsBio) {
+    display: none !important;
+}
+
+/* ===== FORCE LOGO FONT STYLING ===== */
+header .logo-header,
+header .logo-header *,
+.logo-header,
+.logo-header .logo-text,
+.logo-text,
+a.logo-header,
+a.logo-header .logo-text {
+    font-family: 'Playfair Display', serif !important;
+    font-weight: 700 !important;
+    color: #4b2aad !important;
+    text-decoration: none !important;
+}
+
+header .logo-header .logo-highlight,
+.logo-header .logo-highlight,
+.logo-highlight {
+    color: #ffffff !important;
+    text-shadow: 0 0 2px #4b2aad, 0 0 4px #4b2aad, 0 0 6px #4b2aad !important;
+    font-family: 'Playfair Display', serif !important;
+    font-weight: 700 !important;
+}
+
+header .logo-header .nav-logo-img,
+.logo-header .nav-logo-img,
+.nav-logo-img {
+    display: inline-block !important;
+    width: 40px !important;
+    height: 40px !important;
+    object-fit: contain !important;
+}
+
+header .logo-header {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.6rem !important;
+    cursor: pointer !important;
+}
+
+/* ===== FORCE LOGO FONT STYLING ===== */
+header .logo-header,
+header .logo-header *,
+.logo-header,
+.logo-header .logo-text,
+.logo-text,
+a.logo-header,
+a.logo-header .logo-text {
+    font-family: 'Playfair Display', serif !important;
+    font-weight: 700 !important;
+    color: #4b2aad !important;
+    text-decoration: none !important;
+}
+
+header .logo-header .logo-highlight,
+.logo-header .logo-highlight,
+.logo-highlight {
+    color: #ffffff !important;
+    text-shadow: 0 0 2px #4b2aad, 0 0 4px #4b2aad, 0 0 6px #4b2aad !important;
+    font-family: 'Playfair Display', serif !important;
+    font-weight: 700 !important;
+}
+
+header .logo-header .nav-logo-img,
+.logo-header .nav-logo-img,
+.nav-logo-img {
+    display: inline-block !important;
+    width: 40px !important;
+    height: 40px !important;
+    object-fit: contain !important;
+}
+
+header .logo-header {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.6rem !important;
+    cursor: pointer !important;
+}
+
+/* ===== SMALLER LOGO IMAGE ON MOBILE ===== */
+@media (max-width: 700px) {
+    header .logo-header .nav-logo-img,
+    .logo-header .nav-logo-img,
+    .nav-logo-img {
+        width: 28px !important;
+        height: 28px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    header .logo-header .nav-logo-img,
+    .logo-header .nav-logo-img,
+    .nav-logo-img {
+        width: 22px !important;
+        height: 22px !important;
+    }
+}
+
+/* ===== FORCE LOGO FONT STYLING ===== */
+header .logo-header,
+header .logo-header *,
+.logo-header,
+.logo-header .logo-text,
+.logo-text,
+a.logo-header,
+a.logo-header .logo-text {
+    font-family: 'Playfair Display', serif !important;
+    font-weight: 700 !important;
+    color: #4b2aad !important;
+    text-decoration: none !important;
+}
+
+header .logo-header .logo-highlight,
+.logo-header .logo-highlight,
+.logo-highlight {
+    color: #ffffff !important;
+    text-shadow: 0 0 2px #4b2aad, 0 0 4px #4b2aad, 0 0 6px #4b2aad !important;
+    font-family: 'Playfair Display', serif !important;
+    font-weight: 700 !important;
+}
+
+header .logo-header .nav-logo-img,
+.logo-header .nav-logo-img,
+.nav-logo-img {
+    display: inline-block !important;
+    width: 40px !important;
+    height: 40px !important;
+    object-fit: contain !important;
+}
+
+header .logo-header {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.6rem !important;
+    cursor: pointer !important;
+}
+
+/* ===== MOBILE STYLES - BIGGER TEXT, SMALLER LOGO ===== */
+@media (max-width: 700px) {
+    header .logo-header .nav-logo-img,
+    .logo-header .nav-logo-img,
+    .nav-logo-img {
+        width: 28px !important;
+        height: 28px !important;
+    }
+    
+    header .logo-header .logo-text,
+    .logo-header .logo-text,
+    .logo-text {
+        font-size: 1.3rem !important;
+    }
+}
+
+@media (max-width: 480px) {
+    header .logo-header .nav-logo-img,
+    .logo-header .nav-logo-img,
+    .nav-logo-img {
+        width: 22px !important;
+        height: 22px !important;
+    }
+    
+    header .logo-header .logo-text,
+    .logo-header .logo-text,
+    .logo-text {
+        font-size: 1.2rem !important;
+    }
+}
+
+/* ===== GDPR/DATA MANAGEMENT SECTION IN SETTINGS ===== */
+.gdpr-section {
+  margin-top: 30px;
+  border-top: 2px solid #eee;
+  padding-top: 20px;
+}
+.gdpr-section h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.3rem;
+  margin-bottom: 4px;
+}
+.gdpr-section .gdpr-sub {
+  color: #888;
+  font-size: 0.9rem;
+  margin-bottom: 16px;
+}
+.gdpr-btn-group {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.gdpr-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 24px;
+  border-radius: 30px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+  font-family: 'Inter', sans-serif;
+}
+.gdpr-btn.export {
+  background: #6a34ff;
+  color: white;
+}
+.gdpr-btn.export:hover {
+  background: #5428d9;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(106, 52, 255, 0.3);
+}
+.gdpr-btn.delete {
+  background: #fee;
+  color: #b33;
+  border: 2px solid #fcc;
+}
+.gdpr-btn.delete:hover {
+  background: #fdd;
+  border-color: #b33;
+  transform: translateY(-2px);
+}
+.gdpr-btn i {
+  font-size: 1rem;
+}
+
+/* ===== DELETE CONFIRMATION MODAL ===== */
+.delete-modal-content {
+  max-width: 520px !important;
+  padding: 28px 24px !important;
+}
+.delete-modal-content .send-message-header {
+  border-bottom-color: #ff4d4d;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+}
+.delete-modal-content .send-message-header-left h3 {
+  color: #dc3545;
+  font-size: 1.1rem;
+  margin: 0;
+}
+.delete-modal-content .send-message-header-left p {
+  color: #dc3545;
+  font-size: 0.8rem;
+  margin: 0;
+}
+.delete-modal-content .send-message-close {
+  width: 28px;
+  height: 28px;
+  font-size: 0.9rem;
+}
+.delete-modal-content .send-message-body {
+  gap: 10px;
+}
+.delete-modal-content .account-info-card {
+  background: #f8f6ff;
+  border-radius: 12px;
+  padding: 12px 14px;
+  border: 2px solid #4b2aad;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.delete-modal-content .account-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #4b2aad;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+.delete-modal-content .account-info-text {
+  flex: 1;
+  min-width: 120px;
+}
+.delete-modal-content .account-info-text .name {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #4b2aad;
+}
+.delete-modal-content .account-info-text .email {
+  font-size: 0.75rem;
+  color: #888;
+  word-break: break-all;
+}
+.delete-modal-content .warning-box {
+  background: #fff3cd;
+  border-radius: 8px;
+  padding: 10px 12px;
+  border: 1px solid #ffeaa7;
+}
+.delete-modal-content .warning-box p {
+  color: #856404;
+  font-size: 0.85rem;
+  margin: 0;
+  text-align: center;
+}
+.delete-modal-content .info-box {
+  background: #e8f0fe;
+  border-radius: 8px;
+  padding: 10px 12px;
+  border: 1px solid #d2e3fc;
+}
+.delete-modal-content .info-box p {
+  color: #1a56db;
+  font-size: 0.8rem;
+  margin: 0;
+  text-align: center;
+  line-height: 1.5;
+}
+.delete-modal-content .confirm-check {
+  background: #f8f6ff;
+  border-radius: 8px;
+  padding: 10px 12px;
+  border: 1px solid #ede8ff;
+}
+.delete-modal-content .confirm-check label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 0.82rem;
+  cursor: pointer;
+  line-height: 1.4;
+}
+.delete-modal-content .confirm-check input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  flex-shrink: 0;
+  accent-color: #dc3545;
+}
+.delete-modal-content .username-confirm label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 4px;
+}
+.delete-modal-content .username-confirm label .highlight {
+  color: #dc3545;
+  font-weight: 700;
+}
+.delete-modal-content .username-confirm input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 2px solid #ede8ff;
+  border-radius: 10px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+.delete-modal-content .username-confirm input:focus {
+  border-color: #4b2aad;
+}
+.delete-modal-content .gdpr-check {
+  background: #e8f0fe;
+  border-radius: 8px;
+  padding: 10px 12px;
+  border: 1px solid #d2e3fc;
+}
+.delete-modal-content .gdpr-check label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 0.78rem;
+  color: #1a56db;
+  cursor: pointer;
+  line-height: 1.4;
+}
+.delete-modal-content .gdpr-check input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  flex-shrink: 0;
+  accent-color: #4b2aad;
+}
+.delete-modal-content .modal-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+.delete-modal-content .modal-actions .btn-cancel {
+  flex: 1;
+  min-width: 80px;
+  padding: 8px 16px;
+  background: #f0f0f0;
+  border: none;
+  border-radius: 30px;
+  cursor: pointer;
+  font-weight: 500;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.8rem;
+  color: #666;
+  transition: all 0.2s;
+}
+.delete-modal-content .modal-actions .btn-cancel:hover {
+  background: #e0e0e0;
+  color: #333;
+}
+.delete-modal-content .modal-actions .btn-delete-submit {
+  flex: 2;
+  min-width: 120px;
+  padding: 8px 16px;
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 30px;
+  cursor: pointer;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.8rem;
+  transition: all 0.3s;
+  box-shadow: 0 4px 14px rgba(220, 53, 69, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.delete-modal-content .modal-actions .btn-delete-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+.delete-modal-content .modal-actions .btn-delete-submit:hover:not(:disabled) {
+  background: #c82333;
+  transform: translateY(-2px);
+}
+
+/* ===== SETTINGS NAVIGATION ===== */
+.settings-nav-wrapper {
+  margin-bottom: 24px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.settings-nav {
+  display: flex;
+  gap: 8px;
+  flex-wrap: nowrap;
+  background: white;
+  padding: 8px 10px;
+  border-radius: 16px;
+  border: 1px solid #eee;
+  min-width: min-content;
+}
+.settings-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 12px;
+  border: none;
+  background: transparent;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  white-space: nowrap;
+  font-family: 'Inter', sans-serif;
+}
+.settings-nav-item:hover {
+  background: #f5f0ff;
+  color: #4b2aad;
+}
+.settings-nav-item.active {
+  background: #4b2aad;
+  color: white;
+  box-shadow: 0 4px 12px rgba(75, 42, 173, 0.25);
+}
+.settings-nav-item i {
+  font-size: 1rem;
+}
+.settings-panel {
+  background: white;
+  padding: 28px 30px;
+  border-radius: 20px;
+  border: 1px solid #eee;
+}
+.settings-tab-content {
+  display: none;
+  animation: fadeIn 0.3s ease;
+}
+.settings-tab-content.active {
+  display: block;
+}
+@media (max-width: 600px) {
+  .settings-nav {
+    padding: 6px 8px;
+    gap: 4px;
+  }
+  .settings-nav-item {
+    padding: 8px 14px;
+    font-size: 0.8rem;
+  }
+  .settings-nav-item i {
+    font-size: 0.85rem;
+  }
+  .settings-panel {
+    padding: 20px 16px;
+  }
+}
+@media (max-width: 480px) {
+  .settings-nav-item {
+    padding: 6px 12px;
+    font-size: 0.75rem;
+  }
+  .settings-nav-item i {
+    font-size: 0.75rem;
+  }
+}/* ===== SETTINGS NAVIGATION - SCROLLABLE ON MOBILE ===== */
+.settings-nav-wrapper {
+  margin-bottom: 24px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-bottom: 4px;
+  -ms-overflow-style: none;
+}
+
+.settings-nav-wrapper::-webkit-scrollbar {
+  display: none;
+  height: 0;
+}
+
+.settings-nav {
+  display: flex;
+  gap: 6px;
+  flex-wrap: nowrap;
+  background: white;
+  padding: 6px 10px;
+  border-radius: 14px;
+  border: 1px solid #eee;
+  min-width: max-content;
+}
+
+.settings-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: none;
+  background: transparent;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  white-space: nowrap;
+  font-family: 'Inter', sans-serif;
+  flex-shrink: 0;
+}
+
+.settings-nav-item i {
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.settings-nav-item:hover {
+  background: #f5f0ff;
+  color: #4b2aad;
+}
+
+.settings-nav-item.active {
+  background: #4b2aad;
+  color: white;
+  box-shadow: 0 4px 12px rgba(75, 42, 173, 0.25);
+}
+
+/* ===== MOBILE - 600PX AND BELOW ===== */
+@media (max-width: 600px) {
+  .settings-nav-wrapper {
+    margin: 0 -16px 16px -16px;
+    padding: 0 16px 4px 16px;
+  }
+  
+  .settings-nav {
+    padding: 5px 8px;
+    gap: 4px;
+    border-radius: 12px;
+  }
+  
+  .settings-nav-item {
+    padding: 6px 10px;
+    font-size: 0.75rem;
+    gap: 4px;
+  }
+  
+  .settings-nav-item i {
+    font-size: 0.75rem;
+  }
+}
+
+/* ===== SMALL PHONES - 400PX AND BELOW ===== */
+@media (max-width: 400px) {
+  .settings-nav-wrapper {
+    margin: 0 -12px 14px -12px;
+    padding: 0 12px 4px 12px;
+  }
+  
+  .settings-nav-item {
+    padding: 5px 8px;
+    font-size: 0.7rem;
+  }
+  
+  .settings-nav-item i {
+    font-size: 0.7rem;
+  }
+  
+  .settings-nav {
+    gap: 3px;
+    padding: 4px 6px;
+  }
+}
+
+/* ===== PREVENT SETTINGS OVERFLOW ===== */
+#page-settings {
+  overflow: hidden;
+  max-width: 100%;
+}
+
+#page-settings .panel {
+  overflow: hidden;
+  max-width: 100%;
+  padding: 28px 26px;
+}
+
+.settings-tab-content {
+  overflow: hidden;
+  max-width: 100%;
+}
+
+@media (max-width: 600px) {
+  #page-settings .panel {
+    padding: 18px 14px;
+  }
+}
+
+@media (max-width: 400px) {
+  #page-settings .panel {
+    padding: 14px 10px;
+  }
+}
+
+/* ===== FIX SETTINGS CONTENT OVERFLOW ===== */
+#page-settings {
+  overflow: hidden !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+#page-settings .panel {
+  overflow: hidden !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  padding: 28px 26px !important;
+}
+
+.settings-tab-content {
+  overflow: hidden !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.settings-group {
+  overflow: hidden !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.settings-group input,
+.settings-group select,
+.settings-group textarea {
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.settings-group .input-wrapper {
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.settings-group .input-wrapper input {
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* ===== MOBILE FIXES ===== */
+@media (max-width: 768px) {
+  #page-settings .panel {
+    padding: 20px 16px !important;
+  }
+  
+  .settings-group input,
+  .settings-group select,
+  .settings-group textarea {
+    font-size: 0.9rem !important;
+    padding: 10px 12px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  #page-settings .panel {
+    padding: 16px 12px !important;
+  }
+  
+  .settings-group input,
+  .settings-group select,
+  .settings-group textarea {
+    font-size: 0.85rem !important;
+    padding: 8px 10px !important;
+  }
+  
+  .settings-group .validation-message {
+    font-size: 0.7rem !important;
+  }
+  
+  .settings-group .hint {
+    font-size: 0.7rem !important;
+  }
+}
+
+/* ===== FIX CONTAINER OVERFLOW ===== */
+.page-section {
+  overflow: hidden !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.content {
+  overflow: hidden !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  padding: 34px 40px !important;
+}
+
+@media (max-width: 768px) {
+  .content {
+    padding: 20px 16px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .content {
+    padding: 16px 12px !important;
+  }
+}
+
+/* ===== SHOW TOPBAR ONLY ON DASHBOARD ===== */
+#page-dashboard .topbar {
+  display: flex !important;
+}
+
+.page-section:not(#page-dashboard) .topbar {
+  display: none !important;
+}
+
+/* ===== HIDE UPDATE BUTTON IN WISHLIST ===== */
+#page-wishlist .update-book-btn {
+  display: none !important;
+}
+
+/* ===== INCREASE SETTINGS NAVIGATION SIZE ON MOBILE ===== */
+@media (max-width: 768px) {
+  .settings-nav-item {
+    padding: 12px 18px !important;
+    font-size: 0.95rem !important;
+    font-weight: 600 !important;
+  }
+  
+  .settings-nav-item i {
+    font-size: 1.1rem !important;
+    min-width: 22px !important;
+  }
+  
+  .settings-nav {
+    padding: 10px 14px !important;
+    gap: 10px !important;
+    border-radius: 14px !important;
+  }
+  
+  .settings-nav-wrapper {
+    padding-bottom: 8px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .settings-nav-item {
+    padding: 14px 20px !important;
+    font-size: 0.9rem !important;
+    font-weight: 600 !important;
+  }
+  
+  .settings-nav-item i {
+    font-size: 1.1rem !important;
+    min-width: 24px !important;
+  }
+  
+  .settings-nav {
+    padding: 12px 16px !important;
+    gap: 12px !important;
+    border-radius: 16px !important;
+  }
+}
+
+/* ===== MAKE TABS SCROLL EASIER ===== */
+.settings-nav-wrapper {
+  -webkit-overflow-scrolling: touch !important;
+  scroll-behavior: smooth !important;
+}
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <nav>
+    <a href="index.html" class="logo-header">
+      <img src="../images/logokk.png" alt="Volant Reads Logo" class="nav-logo-img" onerror="this.style.display='none'">
+      <span class="logo-text"><span class="logo-highlight">Volant</span> Reads</span>
+    </a>
+    <div class="nav-right" id="navRight">
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle Menu">
+        <i class="fas fa-bars"></i>
+      </button>
+      <button class="btn-logout" id="signOutBtn" title="Sign out"><i class="fas fa-sign-out-alt"></i> Sign Out</button>
+      <a href="index.html" class="btn-store"><i class="fas fa-store"></i> Store</a>
+    </div>
+  </nav>
+</header>
+
+<!-- SIDEBAR OVERLAY -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- DASHBOARD -->
+<div class="dashboard">
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="logo">
+      <div class="logo-circle">V</div>
+      <h2>VOLANT</h2>
+    </div>
+    <nav class="nav">
+      <a class="active" data-page="dashboard"><i class="fas fa-th-large"></i> Dashboard</a>
+      <a data-page="mybooks"><i class="fas fa-book-open"></i> My Books</a>
+      <a data-page="sales"><i class="fas fa-chart-simple"></i> Sales</a>
+      <a data-page="analytics"><i class="fas fa-chart-line"></i> Analytics</a>
+      <a data-page="wishlist"><i class="fas fa-heart"></i> Wishlist <span class="wishlist-badge" id="wishlistNavBadge">0</span></a>
+      <a data-page="messages"><i class="fas fa-comment-dots"></i> Messages <span class="message-badge" id="messageNavBadge">0</span></a>
+      <a data-page="settings"><i class="fas fa-gear"></i> Settings</a>
+    </nav>
+    <div class="card-side">
+      <h3>Create. Publish. Sell.</h3>
+      <p>Your marketplace dashboard. Track sales, manage books, and grow your author business.</p>
+    </div>
+  </aside>
+
+<!-- MAIN CONTENT -->
+<main class="content">
+  <!-- ===== SETUP ALERT BANNER ===== -->
+  <div id="setupAlertBanner" class="">
+    <div class="banner-content">
+      <div class="banner-icon">
+        <i class="fas fa-clipboard-list"></i>
+      </div>
+      <div class="banner-text">
+        <h4>📋 Complete Your Profile & Payout Setup</h4>
+        <p>
+          To publish books and receive payments, please complete your author profile and payout settings.
+          This only takes a few minutes!
+        </p>
+        <div style="margin: 8px 0;">
+          <div class="setup-check-item">
+            <i class="fas fa-check-circle check-done" id="checkAuthorName"></i>
+            <span id="checkAuthorNameText">Author Name</span>
+          </div>
+          <div class="setup-check-item">
+            <i class="fas fa-check-circle check-done" id="checkAuthorBio"></i>
+            <span id="checkAuthorBioText">Author Bio</span>
+          </div>
+          <div class="setup-check-item">
+            <i class="fas fa-check-circle check-done" id="checkGmail"></i>
+            <span id="checkGmailText">Gmail for Publishing</span>
+          </div>
+          <div class="setup-check-item">
+            <i class="fas fa-check-circle check-done" id="checkPhone"></i>
+            <span id="checkPhoneText">Phone Number</span>
+          </div>
+          <div class="setup-check-item">
+            <i class="fas fa-check-circle check-done" id="checkCountry"></i>
+            <span id="checkCountryText">Country</span>
+          </div>
+          <div class="setup-check-item">
+            <i class="fas fa-check-circle check-done" id="checkPayout"></i>
+            <span id="checkPayoutText">Payout Account</span>
+          </div>
+        </div>
+        <div class="banner-actions">
+          <a href="#" class="btn-go-settings" onclick="event.preventDefault(); showPage('settings');">
+            <i class="fas fa-cog"></i> Go to Settings
+          </a>
+          <span class="banner-time">
+            <i class="fas fa-clock"></i> Complete setup to start publishing
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== PAGE SECTIONS ===== -->
+
+  <!-- DASHBOARD PAGE -->
+  <div class="page-section active" id="page-dashboard">
+    <!-- TOPBAR inside dashboard only -->
+    <div class="topbar">
+      <div class="topbar-left">
+        <h1 id="greeting">Welcome back 👋</h1>
+        <p id="subGreeting">Manage your books, track sales, and grow your audience.</p>
+      </div>
+      <div class="user">
+        <div class="avatar" id="userAvatar"></div>
+        <a href="submit.html" class="action-btn" id="mainActionBtn"><i class="fas fa-upload"></i> Upload Book</a>
+      </div>
+    </div>
+
+    <div class="stats" id="statsContainer"></div>
+    <div class="grid">
+      <div>
+        <div class="panel">
+          <div class="section-title">
+            <h2>📚 My Books</h2>
+            <a id="manageBooksLink">Manage →</a>
+          </div>
+          <div class="table" id="myBooksTable"></div>
+        </div>
+      </div>
+      <div>
+        <div class="panel">
+          <div class="section-title">
+            <h2>📊 Sales Overview</h2>
+            <span style="color:#777; font-size:0.85rem;" id="salesPeriod">Last 7 days</span>
+          </div>
+          <div class="chart-wrapper">
+            <div class="chart" id="salesChart"></div>
+            <div class="chart-days" id="chartDays">
+              <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+            </div>
+          </div>
+        </div>
+      
+        <div class="panel" style="margin-top:24px;">
+          <div class="section-title">
+            <h2>⬇️ Recent Sales</h2>
+            <a id="salesLink">See all →</a>
+          </div>
+          <div class="sales-list" id="recentSales"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MY BOOKS PAGE -->
+  <div class="page-section" id="page-mybooks">
+    <div class="page-header">
+      <h2>📚 My Books</h2>
+      <p>Manage all your published and draft books. Click <strong>"Update"</strong> to edit details or <strong>"Share"</strong> to copy the book link.</p>
+    </div>
+    <div class="page-grid" id="myBooksGrid">
+      <!-- populated by JS -->
+    </div>
+  </div>
+
+  <!-- SALES PAGE -->
+  <div class="page-section" id="page-sales">
+    <div class="page-header">
+      <h2>📊 Sales</h2>
+      <p>Track your book sales and revenue.</p>
+    </div>
+    <div class="stats" id="salesStats"></div>
+    <div class="panel" style="margin-top:20px;">
+      <h3 style="margin-bottom:16px;">Sales History</h3>
+      <div id="salesHistory"></div>
+    </div>
+  </div>
+
+  <!-- ANALYTICS PAGE -->
+  <div class="page-section" id="page-analytics">
+    <div class="page-header">
+      <h2>📈 Analytics</h2>
+      <p>Deep insights into your books' performance.</p>
+    </div>
+    <div class="page-grid" id="analyticsGrid">
+      <!-- populated by JS -->
+    </div>
+    <div class="panel" style="margin-top:20px;">
+      <h3 style="margin-bottom:16px;">Sales Performance</h3>
+      <div class="chart" id="analyticsChart" style="height:180px;"></div>
+    </div>
+  </div>
+
+  <!-- WISHLIST PAGE -->
+  <div class="page-section" id="page-wishlist">
+    <div class="page-header">
+      <h2>❤️ Wishlist</h2>
+      <p>Books readers have saved for later.</p>
+    </div>
+    <div class="page-grid" id="wishlistGrid">
+      <!-- populated by JS -->
+    </div>
+  </div>
+
+  <!-- MESSAGES PAGE -->
+  <div class="page-section" id="page-messages">
+    <div class="page-header">
+      <h2>💬 Messages</h2>
+      <p>Communicate with readers and other authors.</p>
+    </div>
+    <div class="panel">
+      <div id="messagesList">
+        <!-- populated by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- SETTINGS PAGE -->
+  <div class="page-section" id="page-settings">
+    <div class="page-header">
+      <h2>⚙️ Settings</h2>
+      <p>Manage your account, author profile, and payment preferences.</p>
+    </div>
+
+    <!-- Settings Navigation -->
+    <div class="settings-nav-wrapper">
+      <div class="settings-nav">
+        <button class="settings-nav-item active" data-settings-tab="profile">
+          <i class="fas fa-user-circle"></i> Profile Settings
+        </button>
+        <button class="settings-nav-item" data-settings-tab="author">
+          <i class="fas fa-feather-alt"></i> Author & Publishing
+        </button>
+        <button class="settings-nav-item" data-settings-tab="payout">
+          <i class="fas fa-wallet"></i> Payout Settings
+        </button>
+        <button class="settings-nav-item" data-settings-tab="earnings">
+          <i class="fas fa-coins"></i> Your Earnings
+        </button>
+        <button class="settings-nav-item" data-settings-tab="data">
+          <i class="fas fa-shield-alt"></i> Data Management
+        </button>
+      </div>
+    </div>
+
+    <!-- Settings Content -->
+    <div class="panel settings-panel">
+
+    <!-- ===== PROFILE SETTINGS ===== -->
+    <div class="settings-tab-content active" id="settings-tab-profile">
+      <h3 style="margin-bottom:20px;">👤 Profile Settings</h3>
+      
+      <div class="settings-group">
+        <label>Username <span style="color:#b33;">*</span></label>
+        <div class="input-wrapper">
+          <input type="text" id="settingsName" placeholder="3-11 characters, any characters allowed" maxlength="11" />
+          <span class="validation-icon" id="usernameIcon"></span>
+        </div>
+        <div class="validation-message" id="usernameValidation"></div>
+        <div class="hint">3-11 characters, spaces and special characters allowed</div>
+      </div>
+      
+      <div class="settings-group">
+        <label>Email Address <span style="color:#b33;">*</span></label>
+        <div class="input-wrapper">
+          <input type="email" id="settingsEmail" placeholder="your@email.com" />
+          <span class="validation-icon" id="emailIcon"></span>
+        </div>
+        <div class="validation-message" id="emailValidation"></div>
+        <div class="hint">We'll send notifications to this email</div>
+      </div>
+      
+      <div class="settings-group">
+        <label>Bio</label>
+        <input type="text" id="settingsBio" placeholder="Tell us about yourself..." />
+      </div>
+
+      <button class="action-btn" id="saveSettingsBtn" style="width:100%;justify-content:center;margin-top:10px;" disabled>
+        <i class="fas fa-save"></i> Save Profile Settings
+      </button>
+    </div>
+
+    <!-- ===== AUTHOR & PUBLISHING SETTINGS ===== -->
+    <div class="settings-tab-content" id="settings-tab-author">
+      <h3 style="margin-bottom:20px;">📝 Author & Publishing Settings</h3>
+
+      <div class="settings-group">
+        <label>Author Name <span style="color:#b33;">*</span></label>
+        <input type="text" id="settingsAuthorName" placeholder="Enter your author name (pen name or full name)" />
+        <div class="hint">This is the name that will appear as the author on your books.</div>
+      </div>
+
+      <div class="settings-group">
+        <label>Author Bio <span style="color:#b33;">*</span></label>
+        <textarea id="settingsAuthorBio" rows="4" placeholder="Tell readers about yourself as an author..." style="resize:vertical; min-height:80px;"></textarea>
+        <div class="hint">This bio will appear on your author profile and book pages.</div>
+      </div>
+
+      <div class="settings-group">
+        <label>Gmail for Publishing <span style="color:#b33;">*</span></label>
+        <input type="email" id="settingsGmail" placeholder="your-publishing-email@gmail.com" />
+        <div class="hint">This email will be used for buyer communications.</div>
+      </div>
+
+      <div class="settings-group">
+        <label>Phone Number <span style="color:#b33;">*</span></label>
+        <input type="tel" id="settingsPhoneNumber" placeholder="+233 24 444 4444" />
+        <div class="hint">Include country code (e.g., +233 for Ghana).</div>
+      </div>
+
+      <div class="settings-group">
+        <label>Publisher Name <span style="font-weight:400;font-size:0.7rem;color:#888;">optional</span></label>
+        <input type="text" id="settingsPublisherName" placeholder="Publisher name (leave empty to use author name)" />
+        <div class="hint">If different from your author name.</div>
+      </div>
+
+      <div class="settings-group">
+        <label>Country <span style="color:#b33;">*</span></label>
+        <select id="settingsCountry">
+          <option value="">Select your country</option>
+          <option value="Ghana">Ghana</option>
+          <option value="Nigeria">Nigeria</option>
+          <option value="South Africa">South Africa</option>
+          <option value="Kenya">Kenya</option>
+          <option value="United States">United States</option>
+          <option value="United Kingdom">United Kingdom</option>
+          <option value="Canada">Canada</option>
+          <option value="Australia">Australia</option>
+          <option value="Germany">Germany</option>
+          <option value="France">France</option>
+          <option value="Spain">Spain</option>
+          <option value="Italy">Italy</option>
+          <option value="Portugal">Portugal</option>
+          <option value="Brazil">Brazil</option>
+          <option value="Mexico">Mexico</option>
+          <option value="India">India</option>
+          <option value="Other">Other</option>
+        </select>
+        <div class="hint">Your country of residence for tax and payment purposes.</div>
+      </div>
+
+      <button class="action-btn" id="saveAuthorSettingsBtn" style="width:100%;justify-content:center;margin-top:10px;background:#6a34ff;">
+        <i class="fas fa-save"></i> Save Author & Publishing Settings
+      </button>
+    </div>
+
+    <!-- ===== PAYOUT SETTINGS ===== -->
+    <div class="settings-tab-content" id="settings-tab-payout">
+      <h3 style="margin-bottom:20px;">💳 Payout Settings</h3>
+      <p style="color:#888; margin-bottom:16px;">Enter your payment details to receive earnings from book sales. You'll get <strong>90%</strong> of each sale (10% platform commission).</p>
+
+      <!-- Payout Warning Banner -->
+      <div id="payoutWarningBanner" class="" style="display:none; background:linear-gradient(135deg,#fef3e2 0%,#fcf7f0 100%); border-left:4px solid #e67e22; padding:14px 18px; border-radius:12px; margin-bottom:16px;">
+        <div style="display:flex; align-items:flex-start; gap:12px;">
+          <span style="font-size:1.2rem;">💳</span>
+          <div>
+            <h4 style="margin:0 0 4px 0; color:#a8640b; font-size:0.95rem;">Set Up Your Payout Account</h4>
+            <p style="margin:0; color:#7a4a2a; font-size:0.85rem;">To receive payments, add your bank or mobile money details below.</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="settings-group">
+        <label>Payout Type</label>
+        <select id="payoutType">
+          <option value="bank">Bank Account</option>
+          <option value="momo">Mobile Money</option>
+        </select>
+      </div>
+
+      <!-- Bank Fields -->
+      <div id="bankFields">
+        <div class="settings-group">
+          <label>Bank Name</label>
+          <select id="bankName">
+            <option value="">Select your bank</option>
+            <option value="gcb">GCB Bank</option>
+            <option value="ecobank">Ecobank Ghana</option>
+            <option value="standard chartered">Standard Chartered</option>
+            <option value="absa">ABSA Bank</option>
+            <option value="republic">Republic Bank</option>
+            <option value="fidelity">Fidelity Bank</option>
+            <option value="first atlantic">First Atlantic Bank</option>
+            <option value="access">Access Bank</option>
+            <option value="zenith">Zenith Bank</option>
+            <option value="uba">UBA Ghana</option>
+            <option value="gtbank">GTBank</option>
+            <option value="stanbic">Stanbic Bank</option>
+            <option value="prudential">Prudential Bank</option>
+            <option value="fbn">FBN Bank</option>
+            <option value="bank of africa">Bank of Africa</option>
+          </select>
+        </div>
+        <div class="settings-group">
+          <label>Account Number</label>
+          <input type="text" id="accountNumber" placeholder="0123456789" />
+        </div>
+        <div class="settings-group">
+          <label>Account Holder Name</label>
+          <input type="text" id="accountHolderName" placeholder="Full name on account" />
+        </div>
+      </div>
+
+      <!-- MoMo Fields -->
+      <div id="momoFields" style="display:none;">
+        <div class="settings-group">
+          <label>Mobile Money Network</label>
+          <select id="momoNetwork">
+            <option value="mtn">MTN MoMo</option>
+            <option value="vodafone">Vodafone Cash</option>
+            <option value="tigo">AirtelTigo Money</option>
+          </select>
+        </div>
+        <div class="settings-group">
+          <label>Phone Number</label>
+          <input type="tel" id="momoNumber" placeholder="024XXXXXXX" maxlength="10" />
+          <div class="hint">Enter without spaces, e.g., 024XXXXXXX</div>
+        </div>
+        <div class="settings-group">
+          <label>Account Holder Name</label>
+          <input type="text" id="momoHolderName" placeholder="Full name on MoMo account" />
+          <div class="hint">Must match the name on the MoMo account</div>
+        </div>
+      </div>
+
+      <button class="action-btn" id="savePayoutBtn" style="width:100%;justify-content:center;margin-top:10px;background:#2d7d46;">
+        <i class="fas fa-check-circle"></i> Activate Payout Account
+      </button>
+      <div id="payoutStatus"></div>
+    </div>
+
+    <!-- ===== YOUR EARNINGS ===== -->
+    <div class="settings-tab-content" id="settings-tab-earnings">
+      <h3 style="margin-bottom:20px;">💰 Your Earnings</h3>
+      <p style="color:#888; margin-bottom:16px;">Track your book sales and revenue all in one place.</p>
+
+      <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; margin-bottom:20px;">
+        <div style="background:#f8f6ff; padding:16px; border-radius:12px; text-align:center; border:1px solid #ede8ff;">
+          <div style="font-size:0.75rem; color:#888; text-transform:uppercase; letter-spacing:0.5px;">Total Sales</div>
+          <div style="font-size:1.6rem; font-weight:700; color:#4b2aad;" id="totalSales">0</div>
+        </div>
+        <div style="background:#dff7e5; padding:16px; border-radius:12px; text-align:center; border:1px solid #a8d5b5;">
+          <div style="font-size:0.75rem; color:#888; text-transform:uppercase; letter-spacing:0.5px;">Total Earnings</div>
+          <div style="font-size:1.6rem; font-weight:700; color:#15723d;" id="totalEarnings">GHS 0.00</div>
+        </div>
+        <div style="background:#fff8e6; padding:16px; border-radius:12px; text-align:center; border:1px solid #f0e0b5;">
+          <div style="font-size:0.75rem; color:#888; text-transform:uppercase; letter-spacing:0.5px;">Pending Payout</div>
+          <div style="font-size:1.6rem; font-weight:700; color:#a8640b;" id="pendingPayout">GHS 0.00</div>
+        </div>
+        <div style="background:#f0f0f0; padding:16px; border-radius:12px; text-align:center; border:1px solid #ddd; display:none;" id="commissionCard">
+          <div style="font-size:0.75rem; color:#888; text-transform:uppercase; letter-spacing:0.5px;">Platform Commission</div>
+          <div style="font-size:1.6rem; font-weight:700; color:#888;" id="totalCommission">GHS 0.00</div>
+        </div>
+      </div>
+
+      <h4 style="margin-bottom:12px;">Recent Transactions</h4>
+      <div id="transactionHistory" style="background:#faf9fd; border-radius:12px; padding:8px 0;">
+        <p style="color:#888; padding:20px; text-align:center; margin:0;">No transactions yet.</p>
+      </div>
+    </div>
+
+    <!-- ===== DATA MANAGEMENT ===== -->
+    <div class="settings-tab-content" id="settings-tab-data">
+      <h3 style="margin-bottom:20px;">🔒 Data Management</h3>
+      <p style="color:#888; margin-bottom:16px;">Export your data or request account deletion (GDPR compliant).</p>
+
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <div style="background:#f8f6ff; border-radius:12px; padding:18px 20px; border:1px solid #ede8ff; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+          <div>
+            <div style="font-weight:600; color:#1d1833;"><i class="fas fa-download" style="color:#6a34ff; margin-right:8px;"></i> Export Data</div>
+            <div style="font-size:0.85rem; color:#888;">Download all your data as a JSON file</div>
+          </div>
+          <button class="gdpr-btn export" id="exportDataBtn" style="background:#6a34ff; color:white; border:none; padding:10px 24px; border-radius:30px; font-weight:600; cursor:pointer; transition:0.2s; font-size:0.85rem;">
+            <i class="fas fa-download"></i> Export
+          </button>
+        </div>
+
+        <div style="background:#fdf2f2; border-radius:12px; padding:18px 20px; border:1px solid #fcc; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+          <div>
+            <div style="font-weight:600; color:#b33;"><i class="fas fa-trash" style="color:#b33; margin-right:8px;"></i> Request Account Deletion</div>
+            <div style="font-size:0.85rem; color:#b33;">Permanently delete your account and all associated data</div>
+          </div>
+          <button class="gdpr-btn delete" id="requestDeletionBtn" style="background:#fee; color:#b33; border:2px solid #fcc; padding:10px 24px; border-radius:30px; font-weight:600; cursor:pointer; transition:0.2s; font-size:0.85rem;">
+            <i class="fas fa-trash"></i> Request Deletion
+          </button>
+        </div>
+
+        <div style="background:#f0f4ff; border-radius:12px; padding:14px 16px; border:1px solid #d2e3fc; margin-top:4px;">
+          <p style="font-size:0.75rem; color:#1a56db; margin:0; text-align:center;">
+            🔒 GDPR compliant. You have the right to access, modify, and delete your data.
+            <br>Questions? Contact us at <a href="mailto:reach.volant@gmail.com" style="color:#4b2aad;">reach.volant@gmail.com</a>
+          </p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+  </main>
+</div>
+
+<!-- UPDATE BOOK MODAL -->
+<div class="modal-overlay" id="updateModal">
+  <div class="modal">
+    <button class="modal-close" id="modalCloseBtn">&times;</button>
+    <h2 id="modalTitle">📝 Update Book</h2>
+    <p class="modal-sub" id="modalSub">Edit your book details below. Fields marked <span style="color:#b33;">*</span> are required.</p>
+    
+    <form id="updateBookForm">
+      <input type="hidden" id="updateBookId" />
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label>Author Name <span class="required">*</span></label>
+          <input type="text" id="updateAuthorName" placeholder="Author name" required />
+        </div>
+        <div class="form-group">
+          <label>Book Title <span class="required">*</span></label>
+          <input type="text" id="updateBookTitle" placeholder="Book title" required />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Subtitle</label>
+        <input type="text" id="updateBookSubtitle" placeholder="Subtitle (optional)" />
+      </div>
+
+      <div class="form-group">
+        <label>Author Bio <span class="required">*</span></label>
+        <textarea id="updateAuthorBio" rows="2" placeholder="Brief author bio" required></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Synopsis / Description <span class="required">*</span></label>
+        <textarea id="updateBookSynopsis" rows="3" placeholder="Book description" required></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>ISBN</label>
+          <input type="text" id="updateIsbn" placeholder="978-3-16-148410-0" />
+        </div>
+        <div class="form-group">
+          <label>Publishing Date <span class="required">*</span></label>
+          <input type="date" id="updatePublishDate" required />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Genre <span class="required">*</span></label>
+          <select id="updateGenre" required>
+            <option value="">Select genre</option>
+            <option value="Poetry">Poetry</option>
+            <option value="Fiction">Fiction</option>
+            <option value="Non-fiction">Non-fiction</option>
+            <option value="Science Fiction">Science Fiction</option>
+            <option value="Fantasy">Fantasy</option>
+            <option value="Mystery">Mystery</option>
+            <option value="Thriller">Thriller</option>
+            <option value="Romance">Romance</option>
+            <option value="Historical">Historical</option>
+            <option value="Biography">Biography</option>
+            <option value="Self-Help">Self-Help</option>
+            <option value="Young Adult">Young Adult</option>
+            <option value="Children's">Children's</option>
+            <option value="Horror">Horror</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Language <span class="required">*</span></label>
+          <select id="updateLanguage" required>
+            <option value="">Select language</option>
+            <option value="English">English</option>
+            <option value="Spanish">Spanish</option>
+            <option value="French">French</option>
+            <option value="German">German</option>
+            <option value="Portuguese">Portuguese</option>
+            <option value="Chinese">Chinese</option>
+            <option value="Japanese">Japanese</option>
+            <option value="Arabic">Arabic</option>
+            <option value="Hindi">Hindi</option>
+            <option value="Russian">Russian</option>
+            <option value="Italian">Italian</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Number of Pages <span class="required">*</span></label>
+          <input type="number" id="updatePageCount" placeholder="e.g. 320" min="1" required />
+        </div>
+        <div class="form-group">
+          <label>Email <span class="required">*</span></label>
+          <input type="email" id="updateEmail" placeholder="your-email@gmail.com" required />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Currency</label>
+          <select id="updateCurrency">
+            <option value="GHS">₵ GHS</option>
+            <option value="USD">$ USD</option>
+            <option value="EUR">€ EUR</option>
+            <option value="GBP">£ GBP</option>
+            <option value="CAD">C$ CAD</option>
+            <option value="AUD">A$ AUD</option>
+            <option value="NGN">₦ NGN</option>
+            <option value="KES">KSh KES</option>
+            <option value="ZAR">R ZAR</option>
+            <option value="INR">₹ INR</option>
+            <option value="JPY">¥ JPY</option>
+            <option value="CNY">¥ CNY</option>
+            <option value="BRL">R$ BRL</option>
+            <option value="MXN">$ MXN</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Price <span class="required">*</span></label>
+          <input type="number" id="updatePrice" placeholder="0.00" step="0.01" min="0" required />
+        </div>
+      </div>
+
+      <!-- ===== DOWNLOADS SECTION IN MODAL ===== -->
+      <div class="downloads-group">
+        <div class="downloads-title">
+          <i class="fas fa-download"></i> Download Limit Per Buyer <span class="required">*</span>
+        </div>
+        <div class="downloads-row">
+          <div class="form-group">
+            <label for="updateDownloadsSelect"><i class="fas fa-list"></i> Select option</label>
+            <select id="updateDownloadsSelect">
+              <option value="5">5 downloads (Default)</option>
+              <option value="3">3 downloads</option>
+              <option value="10">10 downloads</option>
+              <option value="unlimited">Unlimited</option>
+              <option value="custom">Custom (enter below)</option>
+            </select>
+          </div>
+          <div class="form-group custom-download-input" id="updateCustomDownloadContainer">
+            <label for="updateCustomDownloads"><i class="fas fa-pencil-alt"></i> Custom number</label>
+            <input type="number" id="updateCustomDownloads" placeholder="Enter number" min="3" />
+          </div>
+        </div>
+        <div class="downloads-hint">
+          <i class="fas fa-info-circle"></i> 
+          <span class="min-downloads">Minimum is 3 downloads</span> — you can set any number or choose Unlimited.
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Keywords <span class="required">*</span> (comma separated, min 3)</label>
+        <input type="text" id="updateKeywords" placeholder="e.g. poetry, love, nature" required />
+        <div class="hint">Enter at least 3 keywords separated by commas.</div>
+      </div>
+
+      <div class="form-group">
+        <label>Cover Image</label>
+        <div class="file-input-wrapper">
+          <input type="file" id="updateCoverImage" accept="image/*" />
+          <span class="current-file" id="updateCoverCurrent">Current cover saved</span>
+        </div>
+        <div class="file-hint">Upload a new cover image to replace the current one. Max 5MB.</div>
+      </div>
+
+      <div class="form-group">
+        <label>PDF File</label>
+        <div class="file-input-wrapper">
+          <input type="file" id="updatePdfFile" accept=".pdf" />
+          <span class="current-file" id="updatePdfCurrent">Current PDF saved</span>
+        </div>
+        <div class="file-hint">Upload a new PDF to replace the current one. Max 15MB.</div>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn-save" id="updateBookBtn"><i class="fas fa-save"></i> Update Book</button>
+        <button type="button" class="btn-cancel" id="cancelUpdateBtn">Cancel</button>
+        <button type="button" class="btn-delete" id="deleteBookBtn"><i class="fas fa-trash"></i> Delete</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ===== DELETE CONFIRMATION MODAL ===== -->
+<div id="deleteConfirmModal" class="modal-overlay" style="display:none;">
+  <div class="modal delete-modal-content">
+    <div class="send-message-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; padding-bottom:12px; border-bottom:2px solid #ff4d4d;">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span style="background:#ffebee; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1rem;">⚠️</span>
+        <div>
+          <h3 style="color:#dc3545; font-size:1.1rem; margin:0;">Request Account Deletion</h3>
+          <p style="color:#dc3545; font-size:0.8rem; margin:0;">Send a deletion request to the Volant Team</p>
+        </div>
+      </div>
+      <button class="send-message-close" id="closeDeleteConfirmModal" style="width:28px; height:28px; border-radius:50%; background:#f5f5f5; border:none; font-size:0.9rem; color:#666; cursor:pointer;">✕</button>
+    </div>
+    
+    <div class="send-message-body" style="display:flex; flex-direction:column; gap:10px;">
+      
+      <!-- Account Info Card -->
+      <div class="account-info-card">
+        <div class="account-avatar" id="deleteModalInitials">JD</div>
+        <div class="account-info-text">
+          <div class="name" id="deleteModalUsername">username</div>
+          <div class="email" id="deleteModalEmail">email@example.com</div>
+        </div>
+      </div>
+      
+      <!-- Warning -->
+      <div class="warning-box">
+        <p>⚠️ <strong>You are requesting to delete:</strong> <span style="color:#dc3545; font-weight:700;" id="deleteModalUsernameBold">username</span></p>
+      </div>
+      
+      <!-- Info about request process -->
+      <div class="info-box">
+        <p>📋 <strong>How it works:</strong><br>
+          Your deletion request will be sent to the Volant Team.<br>
+          They will review and process your request within <strong>7 days</strong>.<br>
+          You will receive a confirmation email once your account is deleted.
+        </p>
+      </div>
+      
+      <!-- Confirmation Checkboxes -->
+      <div class="confirm-check">
+        <label>
+          <input type="checkbox" id="deleteConfirmCheckbox">
+          <span>I understand this is <strong>permanent and irreversible</strong></span>
+        </label>
+      </div>
+      
+      <div class="confirm-check">
+        <label>
+          <input type="checkbox" id="deleteTypeCheckbox">
+          <span>I want to <strong>permanently delete</strong> my account from ALL Volant platforms</span>
+        </label>
+      </div>
+      
+      <!-- Username Confirmation -->
+      <div class="username-confirm">
+        <label>Type your username to confirm: <span class="highlight" id="deleteConfirmUsernameLabel">username</span></label>
+        <input type="text" id="deleteConfirmUsername" placeholder="Enter your username">
+      </div>
+      
+      <!-- GDPR Rights -->
+      <div class="gdpr-check">
+        <label>
+          <input type="checkbox" id="gdprRightCheckbox">
+          <span>I understand my GDPR rights and confirm I want to exercise my <strong>right to erasure</strong> (Article 17 GDPR)</span>
+        </label>
+      </div>
+      
+      <!-- Actions -->
+      <div class="modal-actions">
+        <button id="cancelDeleteConfirm" class="btn-cancel">Cancel</button>
+        <button id="submitDeleteAccount" class="btn-delete-submit" disabled>
+          <span class="send-icon">✉️</span> Send Deletion Request
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script type="importmap">
+  {
+    "imports": {
+      "firebase/app": "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js",
+      "firebase/firestore": "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js",
+      "firebase/auth": "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"
+    }
+  }
+</script>
+
+<script type="module">
+  import { initializeApp } from "firebase/app";
+  import { 
+    getFirestore, 
+    collection, 
+    query, 
+    where, 
+    getDocs, 
+    getDoc, 
+    doc, 
+    updateDoc,
+    deleteDoc,
+    serverTimestamp,
+    addDoc,
+    increment
+  } from "firebase/firestore";
+  import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyC4DHI8aBVY4JjTvJ-r-TGIDPsewtEWxzU",
+    authDomain: "silent-depth.firebaseapp.com",
+    projectId: "silent-depth",
+    storageBucket: "silent-depth.appspot.com",
+    messagingSenderId: "78008755450",
+    appId: "1:78008755450:web:3fd0f0f298a08820935543"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const auth = getAuth(app);
+
+  // Cloudinary config
+  const CLOUDINARY_CONFIG = {
+    cloudName: 'dzoq4pgjn',
+    uploadPreset: 'volant_books',
+    fallbackPreset: 'profile_pics',
+    folder: 'volant-reads'
+  };
+
+  // DOM refs
+  const greeting = document.getElementById('greeting');
+  const subGreeting = document.getElementById('subGreeting');
+  const userAvatar = document.getElementById('userAvatar');
+  const statsContainer = document.getElementById('statsContainer');
+  const myBooksTable = document.getElementById('myBooksTable');
+  const salesChart = document.getElementById('salesChart');
+  const recentSales = document.getElementById('recentSales');
+  const sidebar = document.getElementById('sidebar');
+  const sidebarOverlay = document.getElementById('sidebarOverlay');
+  const messagesList = document.getElementById('messagesList');
+  const settingsName = document.getElementById('settingsName');
+  const settingsEmail = document.getElementById('settingsEmail');
+  const settingsBio = document.getElementById('settingsBio');
+  const settingsCountry = document.getElementById('settingsCountry');
+  const settingsAuthorName = document.getElementById('settingsAuthorName');
+  const settingsAuthorBio = document.getElementById('settingsAuthorBio');
+  const settingsGmail = document.getElementById('settingsGmail');
+  const settingsPhoneNumber = document.getElementById('settingsPhoneNumber');
+  const settingsPublisherName = document.getElementById('settingsPublisherName');
+  const wishlistNavBadge = document.getElementById('wishlistNavBadge');
+  const messageNavBadge = document.getElementById('messageNavBadge');
+  const myBooksGrid = document.getElementById('myBooksGrid');
+  const chartDays = document.getElementById('chartDays');
+
+  // Setup Alert Banner DOM refs
+  const setupAlertBanner = document.getElementById('setupAlertBanner');
+  const checkAuthorName = document.getElementById('checkAuthorName');
+  const checkAuthorNameText = document.getElementById('checkAuthorNameText');
+  const checkAuthorBio = document.getElementById('checkAuthorBio');
+  const checkAuthorBioText = document.getElementById('checkAuthorBioText');
+  const checkGmail = document.getElementById('checkGmail');
+  const checkGmailText = document.getElementById('checkGmailText');
+  const checkPhone = document.getElementById('checkPhone');
+  const checkPhoneText = document.getElementById('checkPhoneText');
+  const checkCountry = document.getElementById('checkCountry');
+  const checkCountryText = document.getElementById('checkCountryText');
+  const checkPayout = document.getElementById('checkPayout');
+  const checkPayoutText = document.getElementById('checkPayoutText');
+
+  // Validation DOM refs
+  const usernameIcon = document.getElementById('usernameIcon');
+  const usernameValidation = document.getElementById('usernameValidation');
+  const emailIcon = document.getElementById('emailIcon');
+  const emailValidation = document.getElementById('emailValidation');
+  const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+  const saveAuthorSettingsBtn = document.getElementById('saveAuthorSettingsBtn');
+
+  // Payout warning banner
+  const payoutWarningBanner = document.getElementById('payoutWarningBanner');
+
+  // Modal refs
+  const updateModal = document.getElementById('updateModal');
+  const updateForm = document.getElementById('updateBookForm');
+  const updateBookId = document.getElementById('updateBookId');
+  const modalCloseBtn = document.getElementById('modalCloseBtn');
+  const cancelUpdateBtn = document.getElementById('cancelUpdateBtn');
+  const deleteBookBtn = document.getElementById('deleteBookBtn');
+  const updateBookBtn = document.getElementById('updateBookBtn');
+
+  // Update form fields
+  const updateAuthorName = document.getElementById('updateAuthorName');
+  const updateBookTitle = document.getElementById('updateBookTitle');
+  const updateBookSubtitle = document.getElementById('updateBookSubtitle');
+  const updateAuthorBio = document.getElementById('updateAuthorBio');
+  const updateBookSynopsis = document.getElementById('updateBookSynopsis');
+  const updateIsbn = document.getElementById('updateIsbn');
+  const updatePublishDate = document.getElementById('updatePublishDate');
+  const updateGenre = document.getElementById('updateGenre');
+  const updateLanguage = document.getElementById('updateLanguage');
+  const updatePageCount = document.getElementById('updatePageCount');
+  const updateEmail = document.getElementById('updateEmail');
+  const updateCurrency = document.getElementById('updateCurrency');
+  const updatePrice = document.getElementById('updatePrice');
+  const updateKeywords = document.getElementById('updateKeywords');
+  const updateCoverImage = document.getElementById('updateCoverImage');
+  const updatePdfFile = document.getElementById('updatePdfFile');
+  const updateCoverCurrent = document.getElementById('updateCoverCurrent');
+  const updatePdfCurrent = document.getElementById('updatePdfCurrent');
+
+  // Downloads update fields
+  const updateDownloadsSelect = document.getElementById('updateDownloadsSelect');
+  const updateCustomDownloadsInput = document.getElementById('updateCustomDownloads');
+  const updateCustomDownloadContainer = document.getElementById('updateCustomDownloadContainer');
+
+  // ===== PAYOUT DOM REFS =====
+  const payoutType = document.getElementById('payoutType');
+  const bankFields = document.getElementById('bankFields');
+  const momoFields = document.getElementById('momoFields');
+  const savePayoutBtn = document.getElementById('savePayoutBtn');
+  const payoutStatus = document.getElementById('payoutStatus');
+
+  // ===== GDPR / DELETE DOM REFS =====
+  const exportDataBtn = document.getElementById('exportDataBtn');
+  const requestDeletionBtn = document.getElementById('requestDeletionBtn');
+  const deleteConfirmModal = document.getElementById('deleteConfirmModal');
+  const closeDeleteConfirmModalBtn = document.getElementById('closeDeleteConfirmModal');
+  const cancelDeleteConfirm = document.getElementById('cancelDeleteConfirm');
+  const submitDeleteAccount = document.getElementById('submitDeleteAccount');
+  const deleteConfirmCheckbox = document.getElementById('deleteConfirmCheckbox');
+  const deleteTypeCheckbox = document.getElementById('deleteTypeCheckbox');
+  const gdprRightCheckbox = document.getElementById('gdprRightCheckbox');
+  const deleteConfirmUsername = document.getElementById('deleteConfirmUsername');
+
+  let currentUser = null;
+  let authorBooks = [];
+  let userDisplayName = '';
+  let wishlistItems = [];
+  let userMessages = [];
+  let unreadCount = 0;
+  let updatingBookId = null;
+  
+  // Validation state
+  let usernameValid = false;
+  let emailValid = false;
+  let originalUsername = '';
+  let originalEmail = '';
+
+  // ===== OPTIMIZED BATCH USER FETCHING (50 AT A TIME) =====
+  const userBatchCache = {};
+  let userBatchCacheTime = 0;
+  const CACHE_DURATION = 300000; // 5 minutes
+
+  async function getUsernamesBatched(userIds) {
+    const uniqueIds = [...new Set(userIds.filter(id => id && id !== currentUser?.uid))];
+    const results = {};
+    const uncachedIds = [];
+    
+    for (const id of uniqueIds) {
+      if (userBatchCache[id]) {
+        results[id] = userBatchCache[id];
+      } else {
+        uncachedIds.push(id);
+      }
+    }
+    
+    if (uncachedIds.length > 0) {
+      try {
+        const chunkSize = 50;
+        for (let i = 0; i < uncachedIds.length; i += chunkSize) {
+          const chunk = uncachedIds.slice(i, i + chunkSize);
+          const promises = chunk.map(id => getDoc(doc(db, "users", id)));
+          const snapshots = await Promise.all(promises);
+          snapshots.forEach((snap, index) => {
+            const id = chunk[index];
+            if (snap.exists()) {
+              const data = snap.data();
+              userBatchCache[id] = {
+                uid: id,
+                username: data.username || data.displayName || 'Anonymous Poet',
+                photoURL: data.photoURL || null,
+                email: data.email || '',
+                authorName: data.authorName || '',
+                authorBio: data.authorBio || '',
+                gmail: data.gmail || '',
+                phoneNumber: data.phoneNumber || '',
+                country: data.country || '',
+                publisherName: data.publisherName || '',
+                bio: data.bio || '',
+                hasPayoutAccount: data.hasPayoutAccount || false,
+                subaccountCode: data.subaccountCode || null,
+                payoutDetails: data.payoutDetails || null
+              };
+              results[id] = userBatchCache[id];
+            } else {
+              userBatchCache[id] = { uid: id, username: 'Poet', photoURL: null };
+              results[id] = userBatchCache[id];
+            }
+          });
+        }
+        userBatchCacheTime = Date.now();
+      } catch (err) {
+        console.warn('Error fetching users:', err);
+        uncachedIds.forEach(id => {
+          userBatchCache[id] = { uid: id, username: 'Poet', photoURL: null };
+          results[id] = userBatchCache[id];
+        });
+      }
+    }
+    
+    return results;
+  }
+
+  // Toast
+  function showToast(message, type = 'info') {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.className = `toast ${type}`;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 4000);
+  }
+
+  // ============================================================
+  // ====== UPDATE SETUP ALERT BANNER ======
+  // ============================================================
+
+  function updateSetupAlert(userData) {
+    if (!userData) {
+      setupAlertBanner.classList.remove('show');
+      return;
+    }
+
+    const checks = {
+      authorName: !!userData.authorName?.trim(),
+      authorBio: !!userData.authorBio?.trim(),
+      gmail: !!userData.gmail?.trim() && userData.gmail.includes('@'),
+      phone: !!userData.phoneNumber?.trim(),
+      country: !!userData.country?.trim(),
+      payout: !!userData.subaccountCode && userData.hasPayoutAccount === true
+    };
+
+    const iconMap = {
+      authorName: checkAuthorName,
+      authorBio: checkAuthorBio,
+      gmail: checkGmail,
+      phone: checkPhone,
+      country: checkCountry,
+      payout: checkPayout
+    };
+
+    const textMap = {
+      authorName: checkAuthorNameText,
+      authorBio: checkAuthorBioText,
+      gmail: checkGmailText,
+      phone: checkPhoneText,
+      country: checkCountryText,
+      payout: checkPayoutText
+    };
+
+    const allComplete = Object.values(checks).every(v => v === true);
+    let missingCount = 0;
+
+    for (const [key, value] of Object.entries(checks)) {
+      const icon = iconMap[key];
+      const text = textMap[key];
+      if (value) {
+        icon.className = 'fas fa-check-circle check-done';
+        text.style.color = '#2d7d46';
+        text.style.textDecoration = 'line-through';
+        text.style.opacity = '0.7';
+      } else {
+        icon.className = 'fas fa-times-circle check-missing';
+        text.style.color = '#b76e4b';
+        text.style.textDecoration = 'none';
+        text.style.opacity = '1';
+        missingCount++;
+      }
+    }
+
+    if (!allComplete) {
+      setupAlertBanner.classList.add('show');
+      const bannerText = setupAlertBanner.querySelector('.banner-text p');
+      if (bannerText) {
+        bannerText.textContent = `You have ${missingCount} item${missingCount > 1 ? 's' : ''} to complete. Please set up your author profile and payout details to start publishing and receiving payments.`;
+      }
+    } else {
+      setupAlertBanner.classList.remove('show');
+    }
+  }
+
+  // ============================================================
+  // ====== LIVE VALIDATION FUNCTIONS ======
+  // ============================================================
+
+  function validateUsernameFormat(username) {
+    if (!username || username.length < 3) {
+      return { valid: false, message: 'Username must be at least 3 characters' };
+    }
+    if (username.length > 11) {
+      const truncated = username.substring(0, 11);
+      settingsName.value = truncated;
+      return { 
+        valid: true, 
+        message: 'Username truncated to 11 characters',
+        truncated: true
+      };
+    }
+    return { valid: true, message: 'Username is available!' };
+  }
+
+  function validateEmailFormat(email) {
+    if (!email || !email.includes('@') || !email.includes('.')) {
+      return { valid: false, message: 'Please enter a valid email address' };
+    }
+    return { valid: true, message: 'Email format is valid' };
+  }
+
+  async function checkUsernameAvailability(username) {
+    if (!username || username.length < 3) return { available: false, error: 'Username too short' };
+    
+    if (username === originalUsername) {
+      return { available: true, isOriginal: true };
+    }
+    
+    try {
+      const q = query(collection(db, 'users'), where('username', '==', username));
+      const snapshot = await getDocs(q);
+      const taken = !snapshot.empty;
+      return { available: !taken, taken: taken };
+    } catch (err) {
+      console.warn('Error checking username:', err);
+      return { available: false, error: 'Error checking availability' };
+    }
+  }
+
+  async function checkEmailAvailability(email) {
+    if (!email || !email.includes('@')) return { available: false, error: 'Invalid email' };
+    
+    if (email === originalEmail) {
+      return { available: true, isOriginal: true };
+    }
+    
+    try {
+      const q = query(collection(db, 'users'), where('email', '==', email));
+      const snapshot = await getDocs(q);
+      const taken = !snapshot.empty;
+      return { available: !taken, taken: taken };
+    } catch (err) {
+      console.warn('Error checking email:', err);
+      return { available: false, error: 'Error checking availability' };
+    }
+  }
+
+  function updateUsernameValidation(result) {
+    const icon = usernameIcon;
+    const message = usernameValidation;
+    
+    if (result.valid && result.available) {
+      icon.className = 'validation-icon valid';
+      icon.innerHTML = '<i class="fas fa-check-circle"></i>';
+      message.className = 'validation-message show success';
+      message.textContent = result.isOriginal ? '✓ Current username' : '✓ Username is available!';
+      usernameValid = true;
+    } else if (result.valid && !result.available) {
+      icon.className = 'validation-icon invalid';
+      icon.innerHTML = '<i class="fas fa-times-circle"></i>';
+      message.className = 'validation-message show error';
+      message.textContent = '✗ This username is already taken';
+      usernameValid = false;
+    } else if (!result.valid) {
+      icon.className = 'validation-icon invalid';
+      icon.innerHTML = '<i class="fas fa-exclamation-circle"></i>';
+      message.className = 'validation-message show warning';
+      message.textContent = result.message || 'Invalid username';
+      usernameValid = false;
+    }
+    
+    updateSaveButton();
+  }
+
+  function updateEmailValidation(result) {
+    const icon = emailIcon;
+    const message = emailValidation;
+    
+    if (result.valid && result.available) {
+      icon.className = 'validation-icon valid';
+      icon.innerHTML = '<i class="fas fa-check-circle"></i>';
+      message.className = 'validation-message show success';
+      message.textContent = result.isOriginal ? '✓ Current email' : '✓ Email is available!';
+      emailValid = true;
+    } else if (result.valid && !result.available) {
+      icon.className = 'validation-icon invalid';
+      icon.innerHTML = '<i class="fas fa-times-circle"></i>';
+      message.className = 'validation-message show error';
+      message.textContent = '✗ This email is already registered';
+      emailValid = false;
+    } else if (!result.valid) {
+      icon.className = 'validation-icon invalid';
+      icon.innerHTML = '<i class="fas fa-exclamation-circle"></i>';
+      message.className = 'validation-message show warning';
+      message.textContent = result.message || 'Invalid email';
+      emailValid = false;
+    }
+    
+    updateSaveButton();
+  }
+
+  function updateSaveButton() {
+    const changed = settingsName.value !== originalUsername || settingsEmail.value !== originalEmail;
+    const canSave = usernameValid && emailValid && changed;
+    saveSettingsBtn.disabled = !canSave;
+    
+    if (!changed) {
+      saveSettingsBtn.disabled = true;
+    }
+  }
+
+  let usernameTimeout = null;
+  let emailTimeout = null;
+
+  function setupValidation() {
+    settingsName.addEventListener('input', function() {
+      const value = this.value.trim();
+      
+      usernameIcon.className = 'validation-icon loading';
+      usernameIcon.innerHTML = '<i class="fas fa-spinner"></i>';
+      usernameValidation.className = 'validation-message show info';
+      usernameValidation.textContent = 'Checking availability...';
+      
+      clearTimeout(usernameTimeout);
+      usernameTimeout = setTimeout(async () => {
+        const formatResult = validateUsernameFormat(value);
+        if (!formatResult.valid) {
+          updateUsernameValidation(formatResult);
+          return;
+        }
+        
+        const availability = await checkUsernameAvailability(value);
+        updateUsernameValidation({
+          valid: formatResult.valid,
+          available: availability.available,
+          isOriginal: availability.isOriginal || false,
+          message: formatResult.message
+        });
+      }, 500);
+    });
+
+    settingsEmail.addEventListener('input', function() {
+      const value = this.value.trim();
+      
+      emailIcon.className = 'validation-icon loading';
+      emailIcon.innerHTML = '<i class="fas fa-spinner"></i>';
+      emailValidation.className = 'validation-message show info';
+      emailValidation.textContent = 'Checking availability...';
+      
+      clearTimeout(emailTimeout);
+      emailTimeout = setTimeout(async () => {
+        const formatResult = validateEmailFormat(value);
+        if (!formatResult.valid) {
+          updateEmailValidation(formatResult);
+          return;
+        }
+        
+        const availability = await checkEmailAvailability(value);
+        updateEmailValidation({
+          valid: formatResult.valid,
+          available: availability.available,
+          isOriginal: availability.isOriginal || false,
+          message: formatResult.message
+        });
+      }, 500);
+    });
+
+    settingsName.addEventListener('blur', function() {
+      const value = this.value.trim();
+      if (value && value.length >= 3) {
+        const formatResult = validateUsernameFormat(value);
+        if (formatResult.valid) {
+          this.dispatchEvent(new Event('input'));
+        }
+      }
+    });
+
+    settingsEmail.addEventListener('blur', function() {
+      const value = this.value.trim();
+      if (value && value.includes('@')) {
+        const formatResult = validateEmailFormat(value);
+        if (formatResult.valid) {
+          this.dispatchEvent(new Event('input'));
+        }
+      }
+    });
+  }
+
+  // Cloudinary Upload
+  function uploadToCloudinary(file, resourceType = 'auto', onProgress) {
+    return new Promise((resolve, reject) => {
+      const formData = new FormData();
+      formData.append('file', file);
+      const preset = CLOUDINARY_CONFIG.uploadPreset || CLOUDINARY_CONFIG.fallbackPreset;
+      formData.append('upload_preset', preset);
+      if (CLOUDINARY_CONFIG.folder) formData.append('folder', CLOUDINARY_CONFIG.folder);
+      const url = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CONFIG.cloudName}/${resourceType === 'raw' ? 'raw' : 'image'}/upload`;
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', url);
+      xhr.upload.addEventListener('progress', function(e) {
+        if (e.lengthComputable && onProgress) {
+          const pct = Math.round((e.loaded / e.total) * 100);
+          onProgress(pct);
+        }
+      });
+      xhr.onload = function() {
+        if (xhr.status === 200) {
+          try { const data = JSON.parse(xhr.responseText); resolve(data.secure_url); }
+          catch (_) { reject(new Error('Invalid response')); }
+        } else {
+          try { const err = JSON.parse(xhr.responseText); reject(new Error(err.error?.message || `Upload failed: ${xhr.status}`)); }
+          catch (_) { reject(new Error(`Upload failed: ${xhr.status}`)); }
+        }
+      };
+      xhr.onerror = function() { reject(new Error('Network error')); };
+      xhr.send(formData);
+    });
+  }
+
+  async function uploadFile(file, resourceType) {
+    if (!file) return null;
+    const url = await uploadToCloudinary(file, resourceType, (pct) => {
+      if (pct % 20 === 0 || pct === 100) {
+        showToast(`Uploading ${resourceType === 'raw' ? 'PDF' : 'cover'}... ${pct}%`, 'info');
+      }
+    });
+    return url;
+  }
+
+  function toggleUpdateCustomDownloadInput() {
+    const selected = updateDownloadsSelect.value;
+    if (selected === 'custom') {
+      updateCustomDownloadContainer.classList.add('visible');
+      updateCustomDownloadsInput.setAttribute('required', 'required');
+      updateCustomDownloadsInput.min = 3;
+    } else {
+      updateCustomDownloadContainer.classList.remove('visible');
+      updateCustomDownloadsInput.removeAttribute('required');
+      updateCustomDownloadsInput.value = '';
+    }
+  }
+
+  function getUpdateDownloadsValue() {
+    const selected = updateDownloadsSelect.value;
+    if (selected === 'custom') {
+      const val = parseInt(updateCustomDownloadsInput.value);
+      if (isNaN(val) || val < 3) {
+        return null;
+      }
+      return val;
+    } else if (selected === 'unlimited') {
+      return 'unlimited';
+    } else {
+      return parseInt(selected);
+    }
+  }
+
+  function setUpdateDownloadsValue(value) {
+    if (value === 'unlimited') {
+      updateDownloadsSelect.value = 'unlimited';
+      toggleUpdateCustomDownloadInput();
+      return;
+    }
+    const numValue = parseInt(value);
+    if (isNaN(numValue)) {
+      updateDownloadsSelect.value = '5';
+      toggleUpdateCustomDownloadInput();
+      return;
+    }
+    const presets = ['3', '5', '10'];
+    if (presets.includes(String(numValue))) {
+      updateDownloadsSelect.value = String(numValue);
+      toggleUpdateCustomDownloadInput();
+    } else {
+      updateDownloadsSelect.value = 'custom';
+      toggleUpdateCustomDownloadInput();
+      updateCustomDownloadsInput.value = numValue;
+    }
+  }
+
+  // ===== PAYOUT SETTINGS FUNCTIONS =====
+  function togglePayoutFields() {
+    if (payoutType.value === 'bank') {
+      bankFields.style.display = 'block';
+      momoFields.style.display = 'none';
+    } else {
+      bankFields.style.display = 'none';
+      momoFields.style.display = 'block';
+    }
+  }
+
+  async function loadPayoutSettings(userId) {
+    try {
+      const userDoc = await getDoc(doc(db, "users", userId));
+      if (userDoc.exists()) {
+        const data = userDoc.data();
+        if (data.payoutDetails) {
+          const details = data.payoutDetails;
+          payoutType.value = details.type || 'bank';
+          togglePayoutFields();
+          
+          if (details.type === 'bank') {
+            document.getElementById('bankName').value = details.bankName || '';
+            document.getElementById('accountNumber').value = details.accountNumber || '';
+            document.getElementById('accountHolderName').value = details.accountHolderName || '';
+          } else {
+            document.getElementById('momoNetwork').value = details.network || 'mtn';
+            document.getElementById('momoNumber').value = details.phoneNumber || '';
+            document.getElementById('momoHolderName').value = details.accountHolderName || '';
+          }
+          
+          if (data.subaccountCode) {
+            payoutStatus.textContent = '✅ Payout account activated! Subaccount: ' + data.subaccountCode;
+            payoutStatus.className = 'success';
+            if (payoutWarningBanner) {
+              payoutWarningBanner.classList.remove('show');
+            }
+            if (currentUser) {
+              updateSetupAlert(data);
+            }
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('Error loading payout settings:', err);
+    }
+  }
+
+  async function checkPayoutAccount(userId) {
+    try {
+      const userDoc = await getDoc(doc(db, "users", userId));
+      if (!userDoc.exists()) {
+        return { hasAccount: false };
+      }
+      const data = userDoc.data();
+      const hasAccount = data.subaccountCode && data.hasPayoutAccount === true;
+      return { hasAccount: hasAccount, data: data };
+    } catch (err) {
+      console.warn('Error checking payout account:', err);
+      return { hasAccount: false };
+    }
+  }
+
+  async function updatePayoutWarning(userId) {
+    if (!payoutWarningBanner) return;
+    const result = await checkPayoutAccount(userId);
+    if (!result.hasAccount) {
+      payoutWarningBanner.classList.add('show');
+    } else {
+      payoutWarningBanner.classList.remove('show');
+    }
+    return result.hasAccount;
+  }
+
+  function getBankCode(bankName) {
+    const bankCodes = {
+      'gcb': '058',
+      'ecobank': '050',
+      'standard chartered': '052',
+      'absa': '070',
+      'republic': '061',
+      'fidelity': '059',
+      'first atlantic': '054',
+      'access': '064',
+      'zenith': '057',
+      'uba': '075',
+      'gtbank': '056',
+      'stanbic': '076',
+      'prudential': '060',
+      'fbn': '071',
+      'bank of africa': '066'
+    };
+    const normalized = bankName.toLowerCase().trim();
+    return bankCodes[normalized] || null;
+  }
+
+  async function savePayoutSettings() {
+    if (!currentUser) {
+      showToast('❌ Please sign in first.', 'error');
+      return;
+    }
+    
+    const type = payoutType.value;
+    let payoutData = { type: type };
+    
+    if (type === 'bank') {
+      const bankName = document.getElementById('bankName').value;
+      const accountNumber = document.getElementById('accountNumber').value.trim();
+      const accountHolderName = document.getElementById('accountHolderName').value.trim();
+      
+      if (!bankName || !accountNumber || !accountHolderName) {
+        showToast('❌ Please fill in all bank details.', 'error');
+        return;
+      }
+      
+      const bankCode = getBankCode(bankName);
+      if (!bankCode) {
+        showToast('❌ Please select a valid bank.', 'error');
+        return;
+      }
+      
+      payoutData.bankName = bankName;
+      payoutData.accountNumber = accountNumber;
+      payoutData.accountHolderName = accountHolderName;
+      payoutData.bankCode = bankCode;
+    
+    } else if (type === 'momo') {
+      const network = document.getElementById('momoNetwork').value;
+      const phoneNumber = document.getElementById('momoNumber').value.trim();
+      const accountHolderName = document.getElementById('momoHolderName').value.trim();
+      
+      if (!phoneNumber || !accountHolderName) {
+        showToast('❌ Please fill in all MoMo details.', 'error');
+        return;
+      }
+      
+      const cleanPhone = phoneNumber.replace(/\s/g, '');
+      if (!/^(0[0-9]{9}|[0-9]{10})$/.test(cleanPhone) && !cleanPhone.startsWith('233')) {
+        showToast('❌ Please enter a valid phone number (e.g., 024XXXXXXX)', 'error');
+        return;
+      }
+      
+      payoutData.network = network;
+      payoutData.phoneNumber = cleanPhone;
+      payoutData.accountHolderName = accountHolderName;
+    } else {
+      showToast('❌ Invalid payout type selected.', 'error');
+      return;
+    }
+    
+    savePayoutBtn.disabled = true;
+    savePayoutBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Activating...';
+    payoutStatus.textContent = '⏳ Creating payout account...';
+    payoutStatus.className = 'loading';
+    
+    try {
+      const response = await fetch('/api/create-subaccount', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          userId: currentUser.uid,
+          email: currentUser.email,
+          payoutData: payoutData,
+          username: userDisplayName || currentUser.displayName || 'Volant Author'
+        })
+      });
+
+      let result;
+      try {
+        result = await response.json();
+      } catch (e) {
+        const text = await response.text();
+        console.error('Non-JSON response:', text);
+        throw new Error('Server returned invalid response');
+      }
+
+      if (!response.ok) {
+        throw new Error(result.message || `Server error: ${response.status}`);
+      }
+
+      if (result.success) {
+        await updateDoc(doc(db, "users", currentUser.uid), {
+          payoutDetails: {
+            ...payoutData,
+            createdAt: new Date().toISOString()
+          },
+          subaccountCode: result.subaccountCode,
+          hasPayoutAccount: true,
+          commissionRate: 10,
+          feeBearer: 'account'
+        });
+        
+        payoutStatus.innerHTML = '✅ Payout account activated successfully! You\'ll receive 90% of each sale automatically.';
+        payoutStatus.className = 'success';
+        showToast('✅ Payout account activated!', 'success');
+        
+        if (payoutWarningBanner) {
+          payoutWarningBanner.classList.remove('show');
+        }
+        
+        // ✅ Invalidate cache and force refresh
+        delete userBatchCache[currentUser.uid];
+        userBatchCacheTime = 0;
+        
+        const userDoc = await getDoc(doc(db, "users", currentUser.uid));
+        if (userDoc.exists()) {
+          updateSetupAlert(userDoc.data());
+        }
+        
+        await loadEarnings(currentUser.uid);
+        await refreshSettings();
+        
+      } else {
+        payoutStatus.innerHTML = '❌ ' + (result.message || 'Failed to activate payout account.');
+        payoutStatus.className = 'error';
+        showToast('❌ ' + (result.message || 'Failed to activate payout account.'), 'error');
+      }
+    } catch (err) {
+      console.error('❌ Error:', err);
+      payoutStatus.innerHTML = '❌ Error: ' + (err.message || 'Please try again later.');
+      payoutStatus.className = 'error';
+      showToast('❌ Error: ' + err.message, 'error');
+    } finally {
+      savePayoutBtn.disabled = false;
+      savePayoutBtn.innerHTML = '<i class="fas fa-check-circle"></i> Activate Payout Account';
+    }
+  }
+
+  // ===== EARNINGS FUNCTIONS =====
+  async function loadEarnings(userId) {
+    try {
+      console.log('🔍 Loading earnings for user:', userId);
+      
+      const userDoc = await getDoc(doc(db, "users", userId));
+      const userData = userDoc.data();
+      const commissionRate = userData?.commissionRate || 10;
+      
+      const q = query(
+        collection(db, "purchases"),
+        where("authorId", "==", userId)
+      );
+      const snapshot = await getDocs(q);
+      
+      console.log('📊 Found purchases:', snapshot.size);
+      
+      let totalSales = 0;
+      let totalEarnings = 0;
+      let totalCommission = 0;
+      let pendingPayout = 0;
+      const transactions = [];
+      
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        const amount = data.amount || 0;
+        const fee = data.fee || 0;
+        const netAmount = amount - fee;
+        const commission = netAmount * (commissionRate / 100);
+        const earnings = netAmount - commission;
+        
+        totalSales++;
+        totalEarnings += earnings;
+        totalCommission += commission;
+        pendingPayout += earnings;
+        
+        transactions.push({
+          bookTitle: data.bookTitle || 'Unknown Book',
+          amount: amount,
+          fee: fee,
+          commission: commission,
+          earnings: earnings,
+          date: data.purchasedAt?.toDate?.() || new Date(data.purchasedAt) || new Date(),
+          status: data.status || 'completed'
+        });
+      });
+      
+      document.getElementById('totalSales').textContent = totalSales;
+      document.getElementById('totalEarnings').textContent = `GHS ${totalEarnings.toFixed(2)}`;
+      document.getElementById('totalCommission').textContent = `GHS ${totalCommission.toFixed(2)}`;
+      document.getElementById('pendingPayout').textContent = `GHS ${pendingPayout.toFixed(2)}`;
+      
+      const historyDiv = document.getElementById('transactionHistory');
+      if (transactions.length === 0) {
+        historyDiv.innerHTML = `<p style="color: #888; padding: 10px 0;">No transactions yet.</p>`;
+      } else {
+        historyDiv.innerHTML = transactions.sort((a, b) => b.date - a.date).slice(0, 10).map(t => `
+          <div class="row">
+            <span>
+              <strong>${t.bookTitle}</strong>
+              <span style="font-size:0.75rem;color:#888;margin-left:8px;">${t.date.toLocaleDateString()}</span>
+            </span>
+            <span style="color:#15723d;">+GHS ${t.earnings.toFixed(2)}</span>
+          </div>
+        `).join('');
+      }
+    } catch (err) {
+      console.warn('Error loading earnings:', err);
+    }
+  }
+
+  // ===== GET DAILY SALES DATA =====
+  async function getDailySalesData(books) {
+    const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const today = new Date();
+    const days = [];
+    
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(d.getDate() - i);
+      days.push(d);
+    }
+
+    const dailySales = [];
+    
+    for (const day of days) {
+      const dateStr = day.toISOString().split('T')[0];
+      let totalSales = 0;
+      
+      try {
+        const q = query(collection(db, "dailyDownloads"), where("date", "==", dateStr));
+        const snapshot = await getDocs(q);
+        const authorBookIds = new Set(books.map(b => b.id));
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          if (authorBookIds.has(data.bookId)) {
+            totalSales += data.downloads || 0;
+          }
+        });
+      } catch (err) {
+        console.warn('Error fetching daily sales:', err);
+      }
+      
+      dailySales.push({
+        date: dateStr,
+        dayName: dayNames[days.indexOf(day)],
+        sales: totalSales
+      });
+    }
+    
+    return dailySales;
+  }
+
+  // ===== RENDER CHART WITH REAL DAILY SALES =====
+  async function renderChart(books) {
+    const dailySales = await getDailySalesData(books);
+    const maxSales = Math.max(...dailySales.map(d => d.sales), 1);
+    
+    salesChart.innerHTML = '';
+    dailySales.forEach((dayData) => {
+      const barItem = document.createElement('div');
+      barItem.className = 'bar-item';
+      
+      const bar = document.createElement('div');
+      bar.className = 'bar';
+      const height = Math.max(8, (dayData.sales / maxSales) * 100);
+      bar.style.height = height + '%';
+      bar.title = `${dayData.dayName} (${dayData.date}): ${dayData.sales} sales`;
+      
+      const value = document.createElement('div');
+      value.className = 'bar-value';
+      value.textContent = dayData.sales > 0 ? dayData.sales : '';
+      
+      const label = document.createElement('div');
+      label.className = 'bar-label';
+      label.textContent = dayData.dayName;
+      
+      barItem.appendChild(bar);
+      barItem.appendChild(value);
+      barItem.appendChild(label);
+      salesChart.appendChild(barItem);
+    });
+  }
+
+  function formatCurrency(amount) {
+    return 'GHS ' + Number(amount).toFixed(2);
+  }
+
+  // ============================================================
+  // ===== REFRESH SETTINGS FUNCTION - OPTIMIZED =====
+  // ============================================================
+  async function refreshSettings() {
+    if (!currentUser) return;
+    try {
+      // Force fresh fetch - don't use cache for settings
+      const userDoc = await getDoc(doc(db, "users", currentUser.uid));
+      if (userDoc.exists()) {
+        const data = userDoc.data();
+        
+        // Update cache with fresh data
+        userBatchCache[currentUser.uid] = {
+          uid: currentUser.uid,
+          username: data.username || currentUser.displayName || '',
+          email: data.email || currentUser.email || '',
+          bio: data.bio || '',
+          authorName: data.authorName || '',
+          authorBio: data.authorBio || '',
+          gmail: data.gmail || '',
+          phoneNumber: data.phoneNumber || '',
+          country: data.country || '',
+          publisherName: data.publisherName || '',
+          hasPayoutAccount: data.hasPayoutAccount || false,
+          subaccountCode: data.subaccountCode || null,
+          payoutDetails: data.payoutDetails || null
+        };
+        userBatchCacheTime = Date.now();
+        
+        settingsName.value = data.username || currentUser.displayName || '';
+        settingsEmail.value = data.email || currentUser.email || '';
+        settingsBio.value = data.bio || '';
+        settingsAuthorName.value = data.authorName || '';
+        settingsAuthorBio.value = data.authorBio || '';
+        settingsGmail.value = data.gmail || '';
+        settingsPhoneNumber.value = data.phoneNumber || '';
+        settingsPublisherName.value = data.publisherName || '';
+        
+        if (data.country) {
+          const savedCountry = data.country.trim();
+          let found = false;
+          for (let i = 0; i < settingsCountry.options.length; i++) {
+            if (settingsCountry.options[i].value === savedCountry) {
+              settingsCountry.selectedIndex = i;
+              found = true;
+              break;
+            }
+          }
+          if (!found) {
+            const countryLower = savedCountry.toLowerCase();
+            for (let i = 0; i < settingsCountry.options.length; i++) {
+              if (settingsCountry.options[i].value.toLowerCase() === countryLower) {
+                settingsCountry.selectedIndex = i;
+                found = true;
+                break;
+              }
+            }
+          }
+          if (!found) {
+            const newOption = document.createElement('option');
+            newOption.value = savedCountry;
+            newOption.textContent = savedCountry;
+            settingsCountry.appendChild(newOption);
+            settingsCountry.value = savedCountry;
+          }
+        }
+        
+        updateSetupAlert(data);
+        await updatePayoutWarning(currentUser.uid);
+        
+        // Update original values to match new data
+        originalUsername = data.username || currentUser.displayName || '';
+        originalEmail = data.email || currentUser.email || '';
+        
+        // Re-validate
+        usernameValid = true;
+        emailValid = true;
+        updateSaveButton();
+        
+        usernameIcon.className = 'validation-icon valid';
+        usernameIcon.innerHTML = '<i class="fas fa-check-circle"></i>';
+        usernameValidation.className = 'validation-message show success';
+        usernameValidation.textContent = '✓ Current username';
+        
+        emailIcon.className = 'validation-icon valid';
+        emailIcon.innerHTML = '<i class="fas fa-check-circle"></i>';
+        emailValidation.className = 'validation-message show success';
+        emailValidation.textContent = '✓ Current email';
+      }
+    } catch (err) {
+      console.warn('Error refreshing settings:', err);
+    }
+  }
+
+  // ============================================================
+  // ===== SHOW PAGE FUNCTION - WITH TAB PERSISTENCE =====
+  // ============================================================
+  function showPage(pageId, updateHistory = true) {
+    document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active'));
+    const target = document.getElementById('page-' + pageId);
+    if (target) target.classList.add('active');
+    document.querySelectorAll('.nav a').forEach(a => a.classList.remove('active'));
+    const navLink = document.querySelector(`.nav a[data-page="${pageId}"]`);
+    if (navLink) navLink.classList.add('active');
+    
+    if (updateHistory) {
+      sessionStorage.setItem('volant_reads_current_page', pageId);
+    }
+    
+    if (pageId === 'settings') {
+      refreshSettings();
+    }
+    
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function getInitials(name) {
+    if (!name || name === 'Anonymous') return '?';
+    const parts = name.trim().split(' ');
+    if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+
+  function colorFromName(name) {
+    if (!name) return 'hsl(0, 60%, 45%)';
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+      hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const hue = Math.abs(hash) % 360;
+    return `hsl(${hue}, 65%, 50%)`;
+  }
+
+  // ===== SHARE BOOK FUNCTION =====
+  function shareBook(bookId, bookTitle) {
+    const bookUrl = `${window.location.origin}${window.location.pathname.replace('dashboard.html', 'details.html')}?id=${bookId}`;
+    
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(bookUrl).then(() => {
+        showToast(`✅ Link copied! Share "${bookTitle}" with others.`, 'success');
+      }).catch(() => {
+        promptCopy(bookUrl, bookTitle);
+      });
+    } else {
+      promptCopy(bookUrl, bookTitle);
+    }
+  }
+
+  function promptCopy(bookUrl, bookTitle) {
+    const tempInput = document.createElement('input');
+    tempInput.style.position = 'fixed';
+    tempInput.style.opacity = '0';
+    tempInput.style.left = '-9999px';
+    tempInput.value = bookUrl;
+    document.body.appendChild(tempInput);
+    tempInput.select();
+    try {
+      document.execCommand('copy');
+      showToast(`✅ Link copied! Share "${bookTitle}" with others.`, 'success');
+    } catch (err) {
+      const userCopy = prompt(`📋 Copy this link to share "${bookTitle}":`, bookUrl);
+      if (userCopy !== null) {
+        showToast(`📋 Link ready to share!`, 'info');
+      }
+    }
+    document.body.removeChild(tempInput);
+  }
+
+  // ===== CREATE BOOK CARD =====
+  function createBookCard(book, showStatus = false, showSales = false) {
+    const card = document.createElement('div');
+    card.className = 'page-card';
+
+    const coverWrapper = document.createElement('div');
+    coverWrapper.className = 'cover-wrapper';
+    coverWrapper.onclick = () => {
+      window.location.href = `details.html?id=${book.id}`;
+    };
+    
+    if (book.imageUrl) {
+      const img = document.createElement('img');
+      img.src = book.imageUrl;
+      img.alt = book.title || 'Book cover';
+      img.loading = 'lazy';
+      img.onerror = function() {
+        this.style.display = 'none';
+        this.parentElement.innerHTML = `<div class="no-image"><i class="fas fa-book-open"></i></div>`;
+      };
+      coverWrapper.appendChild(img);
+    } else {
+      coverWrapper.innerHTML = `<div class="no-image"><i class="fas fa-book-open"></i></div>`;
+    }
+    card.appendChild(coverWrapper);
+
+    const body = document.createElement('div');
+    body.className = 'book-body';
+
+    const title = document.createElement('div');
+    title.className = 'book-title';
+    title.textContent = book.title || 'Untitled';
+    body.appendChild(title);
+
+    if (book.subtitle && book.subtitle.trim() !== '') {
+      const subtitle = document.createElement('div');
+      subtitle.className = 'book-subtitle';
+      subtitle.textContent = book.subtitle;
+      body.appendChild(subtitle);
+    }
+
+    const author = document.createElement('div');
+    author.className = 'book-author';
+    author.textContent = book.authorName || 'Anonymous';
+    body.appendChild(author);
+
+    const price = document.createElement('div');
+    price.className = 'book-price';
+    const currency = book.currency || 'GHS';
+    const amount = book.price || 0;
+    price.textContent = `${currency} ${amount.toFixed(2)}`;
+    body.appendChild(price);
+
+    if (book.downloadLimit !== undefined) {
+      const limitDisplay = book.downloadLimit === 'unlimited' ? '♾️ Unlimited' : `${book.downloadLimit}`;
+      const salesBadge = document.createElement('span');
+      salesBadge.className = 'sales-badge';
+      salesBadge.innerHTML = `<i class="fas fa-download"></i> Limit: ${limitDisplay}`;
+      body.appendChild(salesBadge);
+    }
+
+    if (showStatus && book.status) {
+      const statusBadge = document.createElement('span');
+      const statusLabels = {
+        'pending': '⏳ Pending Review',
+        'approved': '✅ Published',
+        'rejected': '❌ Not Accepted',
+        'draft': '📄 Draft'
+      };
+      const statusText = statusLabels[book.status] || book.status.charAt(0).toUpperCase() + book.status.slice(1);
+      statusBadge.className = `badge-status ${book.status}`;
+      statusBadge.textContent = statusText;
+      body.appendChild(statusBadge);
+    }
+
+    if (showSales && (book.sales > 0 || book.downloads > 0)) {
+      const salesInfo = document.createElement('span');
+      salesInfo.className = 'revenue-badge';
+      const sales = book.sales || 0;
+      const downloads = book.downloads || 0;
+      salesInfo.innerHTML = `
+        <i class="fas fa-shopping-cart"></i> ${sales} sales · 
+        <i class="fas fa-download"></i> ${downloads} downloads · 
+        💰 ${formatCurrency(sales * (book.price || 0))}
+      `;
+      body.appendChild(salesInfo);
+    }
+
+    const btnGroup = document.createElement('div');
+    btnGroup.className = 'btn-group';
+
+    const updateBtn = document.createElement('button');
+    updateBtn.className = 'update-book-btn';
+    updateBtn.innerHTML = '<i class="fas fa-edit"></i> Update';
+    updateBtn.title = 'Edit this book';
+    updateBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      openUpdateModal(book.id);
+    });
+    btnGroup.appendChild(updateBtn);
+
+    const shareBtn = document.createElement('button');
+    shareBtn.className = 'share-book-btn';
+    shareBtn.innerHTML = '<i class="fas fa-link"></i> Share';
+    shareBtn.title = 'Copy book link to share';
+    shareBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      shareBook(book.id, book.title || 'Untitled');
+    });
+    btnGroup.appendChild(shareBtn);
+
+    body.appendChild(btnGroup);
+    card.appendChild(body);
+    return card;
+  }
+
+  // ===== OPEN UPDATE MODAL =====
+  function openUpdateModal(bookId) {
+    const book = authorBooks.find(b => b.id === bookId);
+    if (!book) {
+      showToast('❌ Book not found', 'error');
+      return;
+    }
+
+    getDoc(doc(db, "books", bookId)).then(docSnap => {
+      if (!docSnap.exists()) {
+        showToast('❌ Book not found', 'error');
+        return;
+      }
+      
+      const data = docSnap.data();
+      updatingBookId = bookId;
+      updateBookId.value = bookId;
+      document.getElementById('modalTitle').textContent = `📝 Update: ${data.title || 'Untitled'}`;
+      
+      updateAuthorName.value = data.authorName || '';
+      updateBookTitle.value = data.title || '';
+      updateBookSubtitle.value = data.subtitle || '';
+      updateAuthorBio.value = data.authorBio || '';
+      updateBookSynopsis.value = data.synopsis || '';
+      updateIsbn.value = data.isbn || '';
+      updatePublishDate.value = data.publishDate || '';
+      updateGenre.value = data.genre || '';
+      updateLanguage.value = data.language || '';
+      updatePageCount.value = data.pageCount || '';
+      updateEmail.value = data.email || '';
+      updateCurrency.value = data.pricing?.currency || 'GHS';
+      updatePrice.value = data.pricing?.amount || '';
+      updateKeywords.value = (data.keywords || []).join(', ');
+      
+      const downloadLimit = data.downloadLimit || data.downloads || 5;
+      setUpdateDownloadsValue(downloadLimit);
+      
+      updateCoverCurrent.textContent = data.imageUrl ? '✅ Current cover uploaded' : 'No cover';
+      updateCoverCurrent.className = data.imageUrl ? 'current-file' : 'current-file no-file';
+      updatePdfCurrent.textContent = data.pdfUrl ? '✅ Current PDF uploaded' : 'No PDF';
+      updatePdfCurrent.className = data.pdfUrl ? 'current-file' : 'current-file no-file';
+      
+      updateCoverImage.value = '';
+      updatePdfFile.value = '';
+
+      updateModal.classList.add('show');
+      document.body.style.overflow = 'hidden';
+    }).catch(err => {
+      showToast('❌ Error loading book: ' + err.message, 'error');
+    });
+  }
+
+  // ===== CLOSE MODAL =====
+  function closeModal() {
+    updateModal.classList.remove('show');
+    document.body.style.overflow = '';
+    updatingBookId = null;
+  }
+
+ // ===== UPDATE BOOK =====
+async function updateBook() {
+  const bookId = updateBookId.value;
+  if (!bookId) {
+    showToast('❌ No book selected', 'error');
+    return;
+  }
+
+  const authorName = updateAuthorName.value.trim();
+  const title = updateBookTitle.value.trim();
+  const authorBio = updateAuthorBio.value.trim();
+  const synopsis = updateBookSynopsis.value.trim();
+  const publishDate = updatePublishDate.value;
+  const genre = updateGenre.value;
+  const language = updateLanguage.value;
+  const pageCount = parseInt(updatePageCount.value);
+  const email = updateEmail.value.trim();
+  const price = parseFloat(updatePrice.value);
+  const currency = updateCurrency.value;
+  const keywordsStr = updateKeywords.value.trim();
+
+  if (!authorName) { showToast('❌ Author name is required', 'error'); return; }
+  if (!title) { showToast('❌ Book title is required', 'error'); return; }
+  if (!authorBio) { showToast('❌ Author bio is required', 'error'); return; }
+  if (!synopsis) { showToast('❌ Synopsis is required', 'error'); return; }
+  if (!publishDate) { showToast('❌ Publishing date is required', 'error'); return; }
+  if (!genre) { showToast('❌ Genre is required', 'error'); return; }
+  if (!language) { showToast('❌ Language is required', 'error'); return; }
+  if (!pageCount || pageCount < 1) { showToast('❌ Valid page count is required', 'error'); return; }
+  if (!email || !email.includes('@')) { showToast('❌ Valid email is required', 'error'); return; }
+  if (isNaN(price) || price < 0) { showToast('❌ Valid price is required', 'error'); return; }
+
+  const downloadLimitValue = getUpdateDownloadsValue();
+  if (downloadLimitValue === null) {
+    showToast('❌ Please enter a valid number of downloads (minimum 3).', 'error');
+    updateCustomDownloadsInput.focus();
+    return;
+  }
+
+  const keywords = keywordsStr.split(',').map(k => k.trim()).filter(k => k.length > 0);
+  if (keywords.length < 3) {
+    showToast('❌ Please enter at least 3 keywords separated by commas', 'error');
+    return;
+  }
+
+  updateBookBtn.disabled = true;
+  updateBookBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
+
+  try {
+    let imageUrl = null;
+    let pdfUrl = null;
+
+    if (updateCoverImage.files.length > 0) {
+      const file = updateCoverImage.files[0];
+      if (file.size > 5 * 1024 * 1024) {
+        showToast('❌ Cover image must be less than 5MB', 'error');
+        updateBookBtn.disabled = false;
+        updateBookBtn.innerHTML = '<i class="fas fa-save"></i> Update Book';
+        return;
+      }
+      imageUrl = await uploadFile(file, 'image');
+    }
+
+    if (updatePdfFile.files.length > 0) {
+      const file = updatePdfFile.files[0];
+      if (file.size > 15 * 1024 * 1024) {
+        showToast('❌ PDF must be less than 15MB', 'error');
+        updateBookBtn.disabled = false;
+        updateBookBtn.innerHTML = '<i class="fas fa-save"></i> Update Book';
+        return;
+      }
+      pdfUrl = await uploadFile(file, 'raw');
+    }
+
+    const updateData = {
+      authorName,
+      title,
+      subtitle: updateBookSubtitle.value.trim() || '',
+      authorBio,
+      synopsis,
+      isbn: updateIsbn.value.trim() || '',
+      publishDate,
+      genre,
+      language,
+      pageCount,
+      email,
+      pricing: { currency, amount: price },
+      keywords,
+      downloadLimit: downloadLimitValue,
+      updatedAt: serverTimestamp()
+    };
+
+    if (imageUrl) updateData.imageUrl = imageUrl;
+    if (pdfUrl) updateData.pdfUrl = pdfUrl;
+
+    await updateDoc(doc(db, "books", bookId), updateData);
+
+    // ✅ FIX: Update local array with ALL data including price
+    const bookIndex = authorBooks.findIndex(b => b.id === bookId);
+    if (bookIndex !== -1) {
+      authorBooks[bookIndex] = {
+        ...authorBooks[bookIndex],
+        ...updateData,
+        price: price,                         // ✅ Explicitly set price
+        currency: currency,                   // ✅ Explicitly set currency
+        pricing: { currency, amount: price }, // ✅ Explicitly set pricing
+        title: title,
+        authorName: authorName,
+        subtitle: updateBookSubtitle.value.trim() || '',
+        imageUrl: imageUrl || authorBooks[bookIndex].imageUrl,
+        pdfUrl: pdfUrl || authorBooks[bookIndex].pdfUrl,
+      };
+    }
+
+    closeModal();
+    renderAll(); // ✅ This will now show updated stats
+    showToast('✅ Book updated successfully!', 'success');
+
+  } catch (err) {
+    showToast('❌ Error updating book: ' + err.message, 'error');
+  } finally {
+    updateBookBtn.disabled = false;
+    updateBookBtn.innerHTML = '<i class="fas fa-save"></i> Update Book';
+  }
+}
+
+  // ===== DELETE BOOK =====
+  async function deleteBook() {
+    const bookId = updateBookId.value;
+    if (!bookId) return;
+
+    if (!confirm('⚠️ Are you sure you want to delete this book? This action cannot be undone.')) return;
+
+    try {
+      await deleteDoc(doc(db, "books", bookId));
+      authorBooks = authorBooks.filter(b => b.id !== bookId);
+      closeModal();
+      renderAll();
+      showToast('🗑️ Book deleted successfully', 'info');
+    } catch (err) {
+      showToast('❌ Error deleting book: ' + err.message, 'error');
+    }
+  }
+
+  // ===== MESSAGES FUNCTIONS =====
+  async function getUserMessages(userId) {
+    try {
+      const q1 = query(collection(db, "messages"), where("toUserId", "==", userId));
+      const q2 = query(collection(db, "messages"), where("authorId", "==", userId));
+      
+      const [snapshot1, snapshot2] = await Promise.all([getDocs(q1), getDocs(q2)]);
+      
+      const messages = [];
+      const existingIds = new Set();
+      
+      snapshot1.forEach(doc => {
+        const data = doc.data();
+        existingIds.add(doc.id);
+        messages.push({ id: doc.id, ...data, createdAt: data.createdAt?.toDate?.() || new Date(data.createdAt) || new Date() });
+      });
+      
+      snapshot2.forEach(doc => {
+        if (!existingIds.has(doc.id)) {
+          const data = doc.data();
+          messages.push({ id: doc.id, ...data, createdAt: data.createdAt?.toDate?.() || new Date(data.createdAt) || new Date() });
+        }
+      });
+      
+      messages.sort((a, b) => b.createdAt - a.createdAt);
+      return messages;
+    } catch (err) {
+      console.warn('Error getting messages:', err);
+      return [];
+    }
+  }
+
+  async function markMessageAsRead(messageId) {
+    try {
+      await updateDoc(doc(db, "messages", messageId), { read: true, status: 'read' });
+      return true;
+    } catch (err) {
+      console.error('Error marking message as read:', err);
+      return false;
+    }
+  }
+
+  async function loadMessages(userId) {
+    userMessages = await getUserMessages(userId);
+    unreadCount = userMessages.filter(m => m.read === false || m.status === 'unread').length;
+    messageNavBadge.textContent = unreadCount;
+    renderMessages();
+  }
+
+  function renderMessages() {
+    if (userMessages.length === 0) {
+      messagesList.innerHTML = `<div class="row" style="padding:30px 0; justify-content:center;"><span style="color:#888; font-size:1rem;">📭 No messages yet</span></div>`;
+      return;
+    }
+
+    let html = '';
+    userMessages.forEach(msg => {
+      const isUnread = msg.read === false || msg.status === 'unread';
+      const senderName = msg.fromUserName || msg.senderName || msg.fromUserId || 'Anonymous';
+      const senderEmail = msg.fromUserEmail || msg.senderEmail || '';
+      const subject = msg.subject || 'No subject';
+      const message = msg.message || msg.content || '';
+      const bookTitle = msg.bookTitle || '';
+      const createdAt = msg.createdAt ? new Date(msg.createdAt).toLocaleString() : 'Recently';
+      const mailtoLink = senderEmail ? `mailto:${senderEmail}?subject=Re: ${encodeURIComponent(subject)}` : '#';
+      
+      html += `
+        <div class="message-item ${isUnread ? 'unread' : ''}" data-message-id="${msg.id}">
+          <div class="message-header">
+            <div class="message-sender">
+              <i class="fas fa-user-circle"></i>
+              ${senderName}
+              ${senderEmail ? `<span class="sender-email"><a href="${mailtoLink}" style="color:#6a34ff;text-decoration:underline;font-weight:500;" target="_blank"><i class="fas fa-envelope"></i> ${senderEmail}</a></span>` : ''}
+              ${isUnread ? '<span class="badge-unread">Unread</span>' : '<span class="badge-read">Read</span>'}
+            </div>
+            <div>
+              <span style="font-size:0.75rem;color:#999;">${createdAt}</span>
+              ${isUnread ? `<button class="btn-mark-read" data-message-id="${msg.id}">Mark as read</button>` : ''}
+            </div>
+          </div>
+          ${bookTitle ? `<div class="message-subject">📚 Book: ${bookTitle}</div>` : ''}
+          ${subject ? `<div class="message-subject">📝 Subject: ${subject}</div>` : ''}
+          <div class="message-body">${message}</div>
+          <div class="message-meta">
+            <span><i class="fas fa-envelope"></i> ${senderEmail ? `<a href="${mailtoLink}" style="color:#6a34ff;text-decoration:underline;" target="_blank">${senderEmail}</a>` : 'No email provided'}</span>
+            ${msg.bookId ? `<span><i class="fas fa-book"></i> Book ID: ${msg.bookId}</span>` : ''}
+          </div>
+        </div>
+      `;
+    });
+
+    messagesList.innerHTML = html;
+
+    document.querySelectorAll('.btn-mark-read').forEach(btn => {
+      btn.addEventListener('click', async function(e) {
+        e.stopPropagation();
+        const messageId = this.dataset.messageId;
+        const success = await markMessageAsRead(messageId);
+        if (success) {
+          const msg = userMessages.find(m => m.id === messageId);
+          if (msg) { msg.read = true; msg.status = 'read'; }
+          await loadMessages(currentUser.uid);
+          showToast('✅ Message marked as read', 'success');
+        } else {
+          showToast('❌ Error marking message as read', 'error');
+        }
+      });
+    });
+  }
+
+  // ===== WISHLIST FUNCTIONS =====
+  async function getUserWishlist(userId) {
+    try {
+      const q = query(collection(db, "wishlists"), where("userId", "==", userId));
+      const snapshot = await getDocs(q);
+      const items = [];
+      snapshot.forEach(doc => { items.push({ id: doc.id, ...doc.data() }); });
+      return items;
+    } catch (err) {
+      console.warn('Error getting wishlist:', err);
+      return [];
+    }
+  }
+
+  async function loadWishlist(userId) {
+    wishlistItems = await getUserWishlist(userId);
+    wishlistNavBadge.textContent = wishlistItems.length;
+    renderWishlistPage();
+  }
+
+  // ============================================================
+  // ====== EXPORT DATA (GDPR) ======
+  // ============================================================
+  async function exportUserData() {
+    if (!currentUser) {
+      showToast('❌ You must be signed in to export your data.', 'error');
+      return;
+    }
+    
+    try {
+      showToast('⏳ Gathering your data... This may take a moment.', 'info');
+      
+      const userId = currentUser.uid;
+      const userRef = doc(db, "users", userId);
+      const userDoc = await getDoc(userRef);
+      const userData = userDoc.exists() ? userDoc.data() : null;
+      const username = userData?.username || 'unknown';
+      
+      const exportData = {
+        user: {
+          uid: userId,
+          username: username,
+          email: userData?.email || '',
+          realName: userData?.realName || '',
+          bio: userData?.bio || '',
+          joined: userData?.joined || userData?.createdAt || '',
+          photoURL: userData?.photoURL || '',
+          emailPrivacy: userData?.emailPrivacy || 'public',
+          followerCount: userData?.followerCount || 0,
+          followingCount: userData?.followingCount || 0,
+          isVerified: userData?.isVerified || false,
+          authProvider: userData?.authProvider || 'email'
+        },
+        books: authorBooks.map(book => ({
+          title: book.title || 'Untitled',
+          subtitle: book.subtitle || '',
+          authorName: book.authorName || 'Anonymous',
+          price: book.price || 0,
+          currency: book.currency || 'GHS',
+          status: book.status || 'draft',
+          sales: book.sales || 0,
+          downloads: book.downloads || 0,
+          views: book.views || 0,
+          rating: book.rating || 0,
+          downloadLimit: book.downloadLimit || '5'
+        })),
+        messages: userMessages,
+        wishlist: wishlistItems,
+        exportDate: new Date().toISOString(),
+        platform: 'reads'
+      };
+      
+      const jsonStr = JSON.stringify(exportData, null, 2);
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `volant_reads_export_${username}_${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      showToast('✅ Data exported successfully!', 'success');
+    } catch (error) {
+      console.error('Error exporting data:', error);
+      showToast('❌ Failed to export data: ' + error.message, 'error');
+    }
+  }
+
+  // ============================================================
+  // ====== REQUEST ACCOUNT DELETION ======
+  // ============================================================
+  function openDeleteConfirmationModal() {
+    if (!currentUser) {
+      showToast('❌ Please sign in first.', 'error');
+      return;
+    }
+    
+    const username = document.getElementById('username')?.textContent || userDisplayName || 'User';
+    const email = currentUser.email || 'email@example.com';
+    const initials = getInitials(username);
+    
+    document.getElementById('deleteModalUsername').textContent = username;
+    document.getElementById('deleteModalUsernameBold').textContent = username;
+    document.getElementById('deleteConfirmUsernameLabel').textContent = username;
+    document.getElementById('deleteModalEmail').textContent = email;
+    document.getElementById('deleteModalInitials').textContent = initials;
+    
+    deleteConfirmCheckbox.checked = false;
+    deleteTypeCheckbox.checked = false;
+    gdprRightCheckbox.checked = false;
+    deleteConfirmUsername.value = '';
+    submitDeleteAccount.disabled = true;
+    
+    deleteConfirmModal.style.display = 'flex';
+    deleteConfirmModal.classList.add('show');
+  }
+
+  function closeDeleteModal() {
+    deleteConfirmModal.style.display = 'none';
+    deleteConfirmModal.classList.remove('show');
+  }
+
+  function checkDeleteForm() {
+    const username = document.getElementById('deleteModalUsername')?.textContent || '';
+    const typedUsername = deleteConfirmUsername?.value || '';
+    const confirmCheck = deleteConfirmCheckbox?.checked || false;
+    const typeCheck = deleteTypeCheckbox?.checked || false;
+    const gdprCheck = gdprRightCheckbox?.checked || false;
+    
+    submitDeleteAccount.disabled = !(confirmCheck && typeCheck && gdprCheck && typedUsername === username);
+  }
+
+  async function submitDeletionRequest() {
+    const user = currentUser;
+    if (!user) {
+      alert('You must be signed in.');
+      return;
+    }
+    
+    const username = document.getElementById('deleteModalUsername')?.textContent || '';
+    const typedUsername = deleteConfirmUsername?.value || '';
+    if (typedUsername !== username) {
+      alert('Username does not match. Please try again.');
+      return;
+    }
+    
+    try {
+      const userId = user.uid;
+      const userRef = doc(db, "users", userId);
+      const userDoc = await getDoc(userRef);
+      
+      if (!userDoc.exists()) {
+        alert('User not found.');
+        return;
+      }
+      
+      const userData = userDoc.data();
+      const userEmail = userData?.email || user.email || 'unknown';
+      
+      if (userData.deletionRequested === true) {
+        alert('⚠️ You have already requested account deletion. The Volant Team will process your request within 7 days.');
+        closeDeleteModal();
+        return;
+      }
+      
+      // Create deletion request
+      await addDoc(collection(db, "deletion_requests"), {
+        userId: userId,
+        username: username,
+        email: userEmail,
+        platform: 'reads',
+        requestedAt: serverTimestamp(),
+        status: 'pending',
+        reason: 'User requested deletion (GDPR Article 17)'
+      });
+      
+      // Mark user
+      await updateDoc(userRef, {
+        deletionRequested: true,
+        deletionRequestedAt: serverTimestamp(),
+        deletionReason: 'User requested deletion (GDPR Article 17)'
+      });
+      
+      // Send notification
+      await addDoc(collection(db, "notifications"), {
+        forUser: userId,
+        type: 'deletion_request_submitted',
+        fromUser: userId,
+        fromUserName: username,
+        message: `✅ Your account deletion request has been submitted successfully!\n\nThe Volant Team will review and process your request within 7 days.\nYou will receive a confirmation email once your account has been deleted.\n\nIf you have any questions, please contact us at reach.volant@gmail.com`,
+        timestamp: serverTimestamp(),
+        read: false
+      });
+      
+      closeDeleteModal();
+      showToast('✅ Deletion request submitted! You will receive a confirmation email once processed.', 'success');
+      
+    } catch (error) {
+      console.error('Error requesting deletion:', error);
+      showToast('❌ Failed to request deletion: ' + error.message, 'error');
+    }
+  }
+
+  // ============================================================
+  // ====== LOAD AUTHOR DATA - OPTIMIZED ======
+  // ============================================================
+  async function loadAuthorData(user) {
+    try {
+      let allBooksData = [];
+      let userData = {};
+      
+      // Fetch user data and books in parallel
+      const [userDoc, booksSnapshot] = await Promise.all([
+        getDoc(doc(db, "users", user.uid)),
+        getDocs(query(collection(db, "books"), where("submittedBy", "==", user.uid)))
+      ]);
+      
+      if (userDoc.exists()) {
+        userData = userDoc.data();
+        if (userData.username) userDisplayName = userData.username;
+        if (userData.bio) settingsBio.value = userData.bio;
+        
+        if (userData.country) {
+          const savedCountry = userData.country.trim();
+          let found = false;
+          for (let i = 0; i < settingsCountry.options.length; i++) {
+            if (settingsCountry.options[i].value === savedCountry) {
+              settingsCountry.selectedIndex = i;
+              found = true;
+              break;
+            }
+          }
+          if (!found) {
+            const countryLower = savedCountry.toLowerCase();
+            for (let i = 0; i < settingsCountry.options.length; i++) {
+              if (settingsCountry.options[i].value.toLowerCase() === countryLower) {
+                settingsCountry.selectedIndex = i;
+                found = true;
+                break;
+              }
+            }
+          }
+          if (!found) {
+            const newOption = document.createElement('option');
+            newOption.value = savedCountry;
+            newOption.textContent = savedCountry;
+            settingsCountry.appendChild(newOption);
+            settingsCountry.value = savedCountry;
+          }
+        }
+        
+        updateSetupAlert(userData);
+      }
+
+      console.log('📊 Books found:', booksSnapshot.size);
+      booksSnapshot.forEach(doc => {
+        allBooksData.push({ id: doc.id, ...doc.data() });
+      });
+
+      authorBooks = [];
+allBooksData.forEach(data => {
+  // ✅ FIX: Get price from pricing.amount OR direct price
+  let bookPrice = 0;
+  let bookCurrency = 'GHS';
+  if (data.pricing) {
+    bookPrice = data.pricing.amount || 0;
+    bookCurrency = data.pricing.currency || 'GHS';
+  } else {
+    bookPrice = data.price || 0;
+    bookCurrency = data.currency || 'GHS';
+  }
+  
+  authorBooks.push({
+    id: data.id,
+    title: data.title || 'Untitled',
+    subtitle: data.subtitle || '',
+    authorName: data.authorName || 'Anonymous',
+    imageUrl: data.imageUrl || '',
+    pdfUrl: data.pdfUrl || '',
+    price: bookPrice,                       // ✅ Set price
+    currency: bookCurrency,                 // ✅ Set currency
+    pricing: data.pricing || { currency: bookCurrency, amount: bookPrice }, // ✅ Set pricing
+    status: data.status || 'draft',
+    sales: data.sales || 0,
+    downloads: data.downloads || 0,
+    downloadLimit: data.downloadLimit || data.downloads || 5,
+    views: data.views || 0,
+    rating: data.rating || 0,
+    approvedAt: data.approvedAt || data.createdAt || null,
+  });
+});
+
+      authorBooks.sort((a, b) => {
+        const da = a.approvedAt?.toDate?.() || new Date(a.approvedAt) || new Date(0);
+        const db2 = b.approvedAt?.toDate?.() || new Date(b.approvedAt) || new Date(0);
+        return db2 - da;
+      });
+
+      console.log('✅ Final author books count:', authorBooks.length);
+
+      await Promise.all([
+        loadPayoutSettings(user.uid),
+        loadEarnings(user.uid),
+        loadWishlist(user.uid),
+        loadMessages(user.uid)
+      ]);
+      
+      await renderAll();
+      
+    } catch (err) {
+      console.error("❌ Error loading data:", err);
+      showToast('Error loading your books: ' + err.message, 'error');
+    }
+  }
+
+ // ===== RENDER FUNCTIONS =====
+function renderStats(books) {
+  const published = books.filter(b => b.status === 'approved');
+  const totalBooks = books.length;
+  const totalSales = published.reduce((sum, b) => sum + (b.sales || 0), 0);
+  const totalDownloads = published.reduce((sum, b) => sum + (b.downloads || 0), 0);
+  
+  // ✅ Helper to get price from pricing.amount OR direct price
+  const getPrice = (book) => {
+    if (book.pricing && book.pricing.amount !== undefined) {
+      return book.pricing.amount;
+    }
+    return book.price || 0;
+  };
+  
+  const totalRevenue = published.reduce((sum, b) => {
+    const price = getPrice(b);
+    return sum + ((b.sales || 0) * price);
+  }, 0);
+  
+  const avgPrice = published.length > 0 
+    ? (published.reduce((sum, b) => sum + getPrice(b), 0) / published.length) 
+    : 0;
+  const totalViews = books.reduce((sum, b) => sum + (b.views || 0), 0);
+
+  statsContainer.innerHTML = `
+    <div class="stat"><h4>Total Books</h4><div class="value">${totalBooks}</div></div>
+    <div class="stat"><h4>Total Sales</h4><div class="value">${totalSales}</div></div>
+    <div class="stat"><h4>Total Downloads</h4><div class="value">${totalDownloads}</div></div>
+    <div class="stat"><h4>Total Revenue</h4><div class="value">${formatCurrency(totalRevenue)}</div></div>
+    <div class="stat"><h4>Avg. Price</h4><div class="value">${formatCurrency(avgPrice)}</div></div>
+    <div class="stat"><h4>Total Views</h4><div class="value">${totalViews}</div></div>
+  `;
+}
+
+  function renderMyBooks(books) {
+    if (books.length === 0) {
+      myBooksTable.innerHTML = `<p style="padding:20px 0; color:#888;">You haven't added any books yet.</p>`;
+      return;
+    }
+    myBooksTable.innerHTML = books.slice(0, 5).map(b => {
+      const limitDisplay = b.downloadLimit === 'unlimited' ? '♾️ Unlimited' : (b.downloadLimit || 5);
+      const sales = b.sales || 0;
+      const downloads = b.downloads || 0;
+      const revenue = sales * (b.price || 0);
+      const statusLabels = {
+        'pending': '⏳ Pending',
+        'approved': '✅ Published',
+        'rejected': '❌ Rejected',
+        'draft': '📄 Draft'
+      };
+      const statusLabel = statusLabels[b.status] || b.status || 'Draft';
+      const statusClass = b.status || 'draft';
+      return `
+        <div class="row" style="cursor:pointer;" data-id="${b.id}">
+          <span>${b.title || 'Untitled'} 
+            <span style="font-size:0.7rem;color:#888;margin-left:8px;">
+              📥 Limit: ${limitDisplay} · 
+              🛒 ${sales} sales · 
+              📄 ${downloads} downloads · 
+              💰 ${formatCurrency(revenue)}
+            </span>
+          </span>
+          <span class="badge ${statusClass}">${statusLabel}</span>
+        </div>
+      `;
+    }).join('');
+    myBooksTable.querySelectorAll('.row').forEach(el => {
+      el.addEventListener('click', () => {
+        const id = el.dataset.id;
+        window.location.href = `details.html?id=${id}`;
+      });
+    });
+  }
+
+  function renderRecentSales(books) {
+    const sold = books.filter(b => (b.sales || 0) > 0).sort((a,b) => (b.sales || 0) - (a.sales || 0));
+    if (sold.length === 0) {
+      recentSales.innerHTML = `<p style="color:#888; padding:10px 0;">No sales yet.</p>`;
+      return;
+    }
+    recentSales.innerHTML = sold.slice(0, 4).map(b => `
+      <div class="sale-item" data-id="${b.id}">
+        <i class="fas fa-shopping-cart"></i> ${b.title || 'Untitled'} 
+        <span style="font-size:0.7rem;color:#888;margin-left:auto;">
+          🛒 ${b.sales || 0} sales · 
+          📄 ${b.downloads || 0} downloads · 
+          💰 ${formatCurrency((b.sales || 0) * (b.price || 0))}
+        </span>
+      </div>
+    `).join('');
+    recentSales.querySelectorAll('.sale-item').forEach(el => {
+      el.addEventListener('click', () => {
+        const id = el.dataset.id;
+        window.location.href = `details.html?id=${id}`;
+      });
+    });
+  }
+
+  function renderMyBooksPage(books) {
+    if (books.length === 0) {
+      myBooksGrid.innerHTML = `<p style="color:#888; grid-column:1/-1; padding:20px 0;">You haven't published any books yet.</p>`;
+      return;
+    }
+    myBooksGrid.innerHTML = '';
+    books.forEach(book => {
+      const card = createBookCard(book, true, true);
+      myBooksGrid.appendChild(card);
+    });
+  }
+
+  function renderSalesPage(books) {
+    const published = books.filter(b => b.status === 'approved');
+    const totalSales = published.reduce((sum, b) => sum + (b.sales || 0), 0);
+    const totalDownloads = published.reduce((sum, b) => sum + (b.downloads || 0), 0);
+    const totalRevenue = published.reduce((sum, b) => sum + ((b.sales || 0) * (b.price || 0)), 0);
+    const totalViews = published.reduce((sum, b) => sum + (b.views || 0), 0);
+    const conversion = totalViews > 0 ? ((totalSales / totalViews) * 100).toFixed(1) : 0;
+    
+    document.getElementById('salesStats').innerHTML = `
+      <div class="stat"><h4>Total Sales</h4><div class="value">${totalSales}</div></div>
+      <div class="stat"><h4>Total Downloads</h4><div class="value">${totalDownloads}</div></div>
+      <div class="stat"><h4>Total Revenue</h4><div class="value">${formatCurrency(totalRevenue)}</div></div>
+      <div class="stat"><h4>Conversion Rate</h4><div class="value">${conversion}%</div></div>
+    `;
+
+    const history = document.getElementById('salesHistory');
+    if (published.length === 0) {
+      history.innerHTML = `<p style="color:#888; padding:20px 0;">No sales data available.</p>`;
+      return;
+    }
+    history.innerHTML = published.map(b => {
+      const limitDisplay = b.downloadLimit === 'unlimited' ? '♾️ Unlimited' : (b.downloadLimit || 5);
+      const sales = b.sales || 0;
+      const downloads = b.downloads || 0;
+      return `
+        <div class="row">
+          <span>
+            <strong>${b.title || 'Untitled'}</strong> 
+            <span style="font-size:0.7rem;color:#888;">
+              (📥 Limit: ${limitDisplay} · 
+              🛒 ${sales} sales · 
+              📄 ${downloads} downloads)
+            </span>
+          </span>
+          <span>${formatCurrency(sales * (b.price || 0))}</span>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function renderAnalyticsPage(books) {
+    const published = books.filter(b => b.status === 'approved');
+    const totalViews = books.reduce((sum, b) => sum + (b.views || 0), 0);
+    const totalSales = published.reduce((sum, b) => sum + (b.sales || 0), 0);
+    const totalDownloads = published.reduce((sum, b) => sum + (b.downloads || 0), 0);
+    const totalRevenue = published.reduce((sum, b) => sum + ((b.sales || 0) * (b.price || 0)), 0);
+    const avgPrice = published.length > 0 ? (published.reduce((sum, b) => sum + (b.price || 0), 0) / published.length).toFixed(0) : 0;
+    const conversion = totalViews > 0 ? ((totalSales / totalViews) * 100).toFixed(1) : 0;
+
+    document.getElementById('analyticsGrid').innerHTML = `
+      <div class="page-card" style="background:white;padding:24px;border-radius:20px;border:1px solid #eee;">
+        <div style="font-size:2rem;color:#6a34ff;margin-bottom:12px;"><i class="fas fa-eye"></i></div>
+        <h3>Total Views</h3>
+        <p style="font-size:1.8rem;font-weight:700;">${totalViews}</p>
+      </div>
+      <div class="page-card" style="background:white;padding:24px;border-radius:20px;border:1px solid #eee;">
+        <div style="font-size:2rem;color:#6a34ff;margin-bottom:12px;"><i class="fas fa-shopping-cart"></i></div>
+        <h3>Total Sales</h3>
+        <p style="font-size:1.8rem;font-weight:700;">${totalSales}</p>
+      </div>
+      <div class="page-card" style="background:white;padding:24px;border-radius:20px;border:1px solid #eee;">
+        <div style="font-size:2rem;color:#6a34ff;margin-bottom:12px;"><i class="fas fa-download"></i></div>
+        <h3>Total Downloads</h3>
+        <p style="font-size:1.8rem;font-weight:700;">${totalDownloads}</p>
+      </div>
+      <div class="page-card" style="background:white;padding:24px;border-radius:20px;border:1px solid #eee;">
+        <div style="font-size:2rem;color:#6a34ff;margin-bottom:12px;"><i class="fas fa-coins"></i></div>
+        <h3>Total Revenue</h3>
+        <p style="font-size:1.8rem;font-weight:700;">${formatCurrency(totalRevenue)}</p>
+      </div>
+      <div class="page-card" style="background:white;padding:24px;border-radius:20px;border:1px solid #eee;">
+        <div style="font-size:2rem;color:#6a34ff;margin-bottom:12px;"><i class="fas fa-percent"></i></div>
+        <h3>Conversion Rate</h3>
+        <p style="font-size:1.8rem;font-weight:700;">${conversion}%</p>
+      </div>
+    `;
+
+    const chart = document.getElementById('analyticsChart');
+    const salesData = published.map(b => b.sales || 0);
+    const maxSales = Math.max(...salesData, 1);
+    
+    chart.innerHTML = '';
+    salesData.slice(0, 7).forEach((sales, index) => {
+      const barItem = document.createElement('div');
+      barItem.className = 'bar-item';
+      
+      const bar = document.createElement('div');
+      bar.className = 'bar';
+      const height = Math.max(8, (sales / maxSales) * 100);
+      bar.style.height = height + '%';
+      bar.title = `${published[index]?.title || 'Book'}: ${sales} sales`;
+      
+      const value = document.createElement('div');
+      value.className = 'bar-value';
+      value.textContent = sales > 0 ? sales : '';
+      
+      const label = document.createElement('div');
+      label.className = 'bar-label';
+      label.textContent = published[index]?.title?.substring(0, 8) || 'Book';
+      
+      barItem.appendChild(bar);
+      barItem.appendChild(value);
+      barItem.appendChild(label);
+      chart.appendChild(barItem);
+    });
+  }
+
+  function renderWishlistPage() {
+    const grid = document.getElementById('wishlistGrid');
+    if (wishlistItems.length === 0) {
+      grid.innerHTML = `<p style="color:#888; grid-column:1/-1; padding:20px 0;">No one has saved your books to their wishlist yet.</p>`;
+      return;
+    }
+    grid.innerHTML = '';
+    wishlistItems.forEach(item => {
+      const card = createBookCard({
+        id: item.bookId,
+        title: item.title,
+        subtitle: item.subtitle || '',
+        authorName: item.author,
+        imageUrl: item.imageUrl,
+        price: item.price,
+        currency: item.currency,
+        status: 'wishlist'
+      });
+      grid.appendChild(card);
+    });
+  }
+
+  // ===== RENDER ALL (async) =====
+  async function renderAll() {
+    renderStats(authorBooks);
+    renderMyBooks(authorBooks);
+    await renderChart(authorBooks);
+    renderRecentSales(authorBooks);
+    renderMyBooksPage(authorBooks);
+    renderSalesPage(authorBooks);
+    renderAnalyticsPage(authorBooks);
+    renderWishlistPage();
+    renderMessages();
+  }
+
+
+// ===== STORAGE EVENT LISTENER FOR REAL-TIME UPDATES =====
+window.addEventListener('storage', function(e) {
+    if (e.key === 'volant_purchase_completed' && currentUser) {
+        console.log('🔄 Purchase detected! Refreshing earnings...');
+        loadEarnings(currentUser.uid);
+        loadAuthorData(currentUser);
+    }
+});
+
+  // ===== USER UI =====
+  async function updateUserUI(user) {
+    try {
+      const userDocRef = doc(db, "users", user.uid);
+      const userDoc = await getDoc(userDocRef);
+      
+      let username = '';
+      let bio = '';
+      let photoURL = '';
+      let email = user.email || '';
+      let country = '';
+      let authorName = '';
+      let authorBio = '';
+      let gmail = '';
+      let phoneNumber = '';
+      let publisherName = '';
+      let userData = {};
+      
+      if (userDoc.exists()) {
+        userData = userDoc.data();
+        username = userData.username || user.displayName || user.email?.split('@')[0] || 'Author';
+        bio = userData.bio || '';
+        photoURL = userData.photoURL || userData.cachedAvatarURL || '';
+        email = userData.email || user.email || '';
+        country = userData.country || '';
+        authorName = userData.authorName || userData.username || user.displayName || '';
+        authorBio = userData.authorBio || '';
+        gmail = userData.gmail || userData.email || user.email || '';
+        phoneNumber = userData.phoneNumber || '';
+        publisherName = userData.publisherName || '';
+      } else {
+        username = user.displayName || user.email?.split('@')[0] || 'Author';
+        authorName = username;
+        gmail = user.email || '';
+      }
+      
+      userDisplayName = username;
+      originalUsername = username;
+      originalEmail = email;
+      
+      greeting.textContent = `Welcome back, ${username} 👋`;
+      subGreeting.textContent = 'Manage your books, track sales, and grow your audience.';
+      
+      settingsName.value = username;
+      settingsEmail.value = email;
+      settingsBio.value = bio || '';
+      
+      if (country && typeof country === 'string') {
+        const savedCountry = country.trim();
+        let found = false;
+        for (let i = 0; i < settingsCountry.options.length; i++) {
+          if (settingsCountry.options[i].value === savedCountry) {
+            settingsCountry.selectedIndex = i;
+            found = true;
+            break;
+          }
+        }
+        if (!found) {
+          const countryLower = savedCountry.toLowerCase();
+          for (let i = 0; i < settingsCountry.options.length; i++) {
+            if (settingsCountry.options[i].value.toLowerCase() === countryLower) {
+              settingsCountry.selectedIndex = i;
+              found = true;
+              break;
+            }
+          }
+        }
+        if (!found) {
+          const newOption = document.createElement('option');
+          newOption.value = savedCountry;
+          newOption.textContent = savedCountry;
+          settingsCountry.appendChild(newOption);
+          settingsCountry.value = savedCountry;
+        }
+      } else {
+        settingsCountry.value = '';
+      }
+      
+      settingsAuthorName.value = authorName || '';
+      settingsAuthorBio.value = authorBio || '';
+      settingsGmail.value = gmail || '';
+      settingsPhoneNumber.value = phoneNumber || '';
+      settingsPublisherName.value = publisherName || '';
+      
+      updateSetupAlert(userData);
+      
+      usernameValid = true;
+      emailValid = true;
+      updateSaveButton();
+      
+      usernameIcon.className = 'validation-icon valid';
+      usernameIcon.innerHTML = '<i class="fas fa-check-circle"></i>';
+      usernameValidation.className = 'validation-message show success';
+      usernameValidation.textContent = '✓ Current username';
+      
+      emailIcon.className = 'validation-icon valid';
+      emailIcon.innerHTML = '<i class="fas fa-check-circle"></i>';
+      emailValidation.className = 'validation-message show success';
+      emailValidation.textContent = '✓ Current email';
+      
+      await updatePayoutWarning(user.uid);
+      
+      if (photoURL) {
+        userAvatar.style.backgroundImage = `url(${photoURL})`;
+        userAvatar.style.backgroundSize = 'cover';
+        userAvatar.style.backgroundPosition = 'center';
+        userAvatar.textContent = '';
+        return;
+      }
+      
+      const initials = getInitials(username);
+      const bgColor = colorFromName(username);
+      
+      const avatarUrl = await generateAndUploadAvatar(initials, bgColor, user.uid);
+      if (avatarUrl) {
+        userAvatar.style.backgroundImage = `url(${avatarUrl})`;
+        userAvatar.style.backgroundSize = 'cover';
+        userAvatar.style.backgroundPosition = 'center';
+        userAvatar.textContent = '';
+      } else {
+        userAvatar.style.backgroundImage = `linear-gradient(135deg, ${bgColor}, ${bgColor}dd)`;
+        userAvatar.style.display = 'flex';
+        userAvatar.style.alignItems = 'center';
+        userAvatar.style.justifyContent = 'center';
+        userAvatar.style.color = 'white';
+        userAvatar.style.fontSize = '20px';
+        userAvatar.style.fontWeight = 'bold';
+        userAvatar.textContent = initials;
+      }
+    } catch (err) {
+      console.warn('Error fetching user data:', err);
+      const fallbackName = user.displayName || user.email?.split('@')[0] || 'Author';
+      userDisplayName = fallbackName;
+      greeting.textContent = `Welcome back, ${fallbackName} 👋`;
+    }
+  }
+
+  async function generateAndUploadAvatar(initials, bgColor, userId) {
+    try {
+      const cloudName = 'dzoq4pgjn';
+      if (!cloudName) return null;
+      
+      const canvas = document.createElement('canvas');
+      canvas.width = 180;
+      canvas.height = 180;
+      const ctx = canvas.getContext('2d');
+      
+      ctx.fillStyle = bgColor;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 80px "Playfair Display", serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(initials, canvas.width / 2, canvas.height / 2);
+      
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+      const formData = new FormData();
+      formData.append('file', blob);
+      formData.append('upload_preset', 'profile_pics');
+      
+      const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+        method: 'POST',
+        body: formData
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        const imageUrl = data.secure_url;
+        await updateDoc(doc(db, 'users', userId), { cachedAvatarURL: imageUrl });
+        return imageUrl;
+      }
+    } catch (err) {
+      console.warn('Avatar generation failed:', err);
+    }
+    return null;
+  }
+
+  // ===== SIDEBAR TOGGLE =====
+  function toggleSidebar() {
+    sidebar.classList.toggle('mobile-open');
+    sidebarOverlay.classList.toggle('show');
+    document.body.style.overflow = sidebar.classList.contains('mobile-open') ? 'hidden' : '';
+  }
+
+  // ===== EVENT LISTENERS =====
+  document.getElementById('menuToggle').addEventListener('click', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleSidebar();
+  });
+
+  sidebarOverlay.addEventListener('click', function(e) {
+    if (e.target === this) {
+      toggleSidebar();
+    }
+  });
+
+  window.addEventListener('resize', function() {
+    if (window.innerWidth > 920) {
+      sidebar.classList.remove('mobile-open');
+      sidebarOverlay.classList.remove('show');
+      document.body.style.overflow = '';
+    }
+  });
+
+  document.querySelectorAll('.nav a').forEach(item => {
+    item.addEventListener('click', function(e) {
+      e.preventDefault();
+      const page = this.dataset.page;
+      if (page) {
+        showPage(page, true);
+        if (window.innerWidth <= 920) {
+          toggleSidebar();
+        }
+      }
+    });
+  });
+
+  // Restore last visited page on load
+  document.addEventListener('DOMContentLoaded', function() {
+    const lastPage = sessionStorage.getItem('volant_reads_current_page') || 'dashboard';
+    showPage(lastPage, false);
+  });
+
+  document.getElementById('manageBooksLink')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    showPage('mybooks');
+  });
+  document.getElementById('salesLink')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    showPage('sales');
+  });
+  document.getElementById('exploreBtn')?.addEventListener('click', () => {
+    window.location.href = 'dashboard.html';
+  });
+
+  // ===== SAVE PROFILE SETTINGS =====
+  document.getElementById('saveSettingsBtn')?.addEventListener('click', async () => {
+    if (!currentUser) {
+      showToast('❌ Please sign in first.', 'error');
+      return;
+    }
+    
+    const username = settingsName.value.trim();
+    const email = settingsEmail.value.trim();
+    const bio = settingsBio.value.trim();
+    
+    if (!username || username.length < 3) {
+      showToast('❌ Please enter a valid username (min 3 characters).', 'error');
+      return;
+    }
+    
+    if (!email || !email.includes('@')) {
+      showToast('❌ Please enter a valid email address.', 'error');
+      return;
+    }
+    
+    const usernameCheck = await checkUsernameAvailability(username);
+    if (!usernameCheck.available && username !== originalUsername) {
+      showToast('❌ Username "' + username + '" is already taken.', 'error');
+      return;
+    }
+    
+    const emailCheck = await checkEmailAvailability(email);
+    if (!emailCheck.available && email !== originalEmail) {
+      showToast('❌ Email "' + email + '" is already registered.', 'error');
+      return;
+    }
+    
+    try {
+      const updateData = {
+        username: username,
+        bio: bio,
+        email: email,
+        updatedAt: new Date().toISOString()
+      };
+      
+      await updateDoc(doc(db, "users", currentUser.uid), updateData);
+      
+      userDisplayName = username;
+      originalUsername = username;
+      originalEmail = email;
+      
+      greeting.textContent = `Welcome back, ${userDisplayName} 👋`;
+      showToast('✅ Profile settings saved successfully!', 'success');
+      
+      usernameValid = true;
+      emailValid = true;
+      updateSaveButton();
+      
+      // ✅ Invalidate cache and force refresh
+      delete userBatchCache[currentUser.uid];
+      userBatchCacheTime = 0;
+      
+      // ✅ Force fresh data load
+      await updateUserUI(currentUser);
+      await refreshSettings();
+      await loadAuthorData(currentUser);
+      
+    } catch (err) {
+      showToast('❌ Error saving settings: ' + err.message, 'error');
+    }
+  });
+
+  // ===== SAVE AUTHOR & PUBLISHING SETTINGS =====
+  document.getElementById('saveAuthorSettingsBtn')?.addEventListener('click', async () => {
+    if (!currentUser) {
+      showToast('❌ Please sign in first.', 'error');
+      return;
+    }
+    
+    const authorName = settingsAuthorName.value.trim();
+    const authorBio = settingsAuthorBio.value.trim();
+    const gmail = settingsGmail.value.trim();
+    const phoneNumber = settingsPhoneNumber.value.trim();
+    const publisherName = settingsPublisherName.value.trim();
+    let country = settingsCountry.value;
+    
+    if (!country || country === '') {
+      const selectedOption = settingsCountry.options[settingsCountry.selectedIndex];
+      if (selectedOption && selectedOption.value) {
+        country = selectedOption.value;
+      }
+    }
+    
+    if (!authorName) {
+      showToast('❌ Please enter your author name.', 'error');
+      settingsAuthorName.focus();
+      return;
+    }
+    
+    if (!authorBio) {
+      showToast('❌ Please enter your author bio.', 'error');
+      settingsAuthorBio.focus();
+      return;
+    }
+    
+    if (!gmail || !gmail.includes('@')) {
+      showToast('❌ Please enter a valid Gmail for publishing.', 'error');
+      settingsGmail.focus();
+      return;
+    }
+    
+    if (!phoneNumber) {
+      showToast('❌ Please enter your phone number.', 'error');
+      settingsPhoneNumber.focus();
+      return;
+    }
+    
+    if (!country) {
+      showToast('❌ Please select your country.', 'error');
+      settingsCountry.focus();
+      return;
+    }
+    
+    try {
+      const updateData = {
+        authorName: authorName,
+        authorBio: authorBio,
+        gmail: gmail,
+        phoneNumber: phoneNumber,
+        publisherName: publisherName,
+        country: country,
+        updatedAt: new Date().toISOString()
+      };
+      
+      await updateDoc(doc(db, "users", currentUser.uid), updateData);
+      
+      showToast('✅ Author & Publishing settings saved successfully!', 'success');
+      
+      // ✅ Invalidate cache and force refresh
+      delete userBatchCache[currentUser.uid];
+      userBatchCacheTime = 0;
+      
+      // ✅ Force fresh data load
+      const userDoc = await getDoc(doc(db, "users", currentUser.uid));
+      if (userDoc.exists()) {
+        updateSetupAlert(userDoc.data());
+      }
+      
+      await updateUserUI(currentUser);
+      await refreshSettings();
+      
+    } catch (err) {
+      showToast('❌ Error saving author settings: ' + err.message, 'error');
+    }
+  });
+
+  // ===== PAYOUT EVENT LISTENERS =====
+  payoutType.addEventListener('change', togglePayoutFields);
+  savePayoutBtn.addEventListener('click', savePayoutSettings);
+
+  // ===== GDPR EVENT LISTENERS =====
+  exportDataBtn?.addEventListener('click', exportUserData);
+  requestDeletionBtn?.addEventListener('click', openDeleteConfirmationModal);
+  
+  closeDeleteConfirmModalBtn?.addEventListener('click', closeDeleteModal);
+  cancelDeleteConfirm?.addEventListener('click', closeDeleteModal);
+  
+  deleteConfirmModal?.addEventListener('click', function(e) {
+    if (e.target === this) closeDeleteModal();
+  });
+  
+  deleteConfirmCheckbox?.addEventListener('change', checkDeleteForm);
+  deleteTypeCheckbox?.addEventListener('change', checkDeleteForm);
+  gdprRightCheckbox?.addEventListener('change', checkDeleteForm);
+  deleteConfirmUsername?.addEventListener('input', checkDeleteForm);
+  
+  submitDeleteAccount?.addEventListener('click', submitDeletionRequest);
+
+  document.getElementById('signOutBtn')?.addEventListener('click', async () => {
+    try {
+      await signOut(auth);
+      window.location.href = 'dashboard.html';
+    } catch (e) {
+      showToast('Error signing out.', 'error');
+    }
+  });
+
+  // Modal events
+  modalCloseBtn?.addEventListener('click', closeModal);
+  cancelUpdateBtn?.addEventListener('click', closeModal);
+  updateModal?.addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+  });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      closeModal();
+      if (deleteConfirmModal.classList.contains('show')) {
+        closeDeleteModal();
+      }
+    }
+  });
+
+  updateForm?.addEventListener('submit', function(e) {
+    e.preventDefault();
+    updateBook();
+  });
+
+  deleteBookBtn?.addEventListener('click', deleteBook);
+
+  updateDownloadsSelect?.addEventListener('change', toggleUpdateCustomDownloadInput);
+
+  // ===== SETUP VALIDATION =====
+  setupValidation();
+
+  // ===== AUTH =====
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      currentUser = user;
+      await updateUserUI(user);
+      await loadAuthorData(user);
+      
+      // ✅ Restore last visited page
+      const lastPage = sessionStorage.getItem('volant_reads_current_page') || 'dashboard';
+      showPage(lastPage, false);
+      
+      sessionStorage.removeItem('auth_redirect_attempted');
+    } else {
+      if (!window.location.pathname.includes('universal-login') && 
+          !window.location.pathname.includes('verify-email')) {
+        const currentPage = window.location.pathname + window.location.search;
+        window.location.href = '../shared/universal-login.html?platform=reads&redirect=' + 
+                              encodeURIComponent(currentPage);
+      }
+    }
+  });
+
+  // ===== SETTINGS TAB NAVIGATION =====
+document.querySelectorAll('.settings-nav-item').forEach(item => {
+  item.addEventListener('click', function() {
+    // Update active state
+    document.querySelectorAll('.settings-nav-item').forEach(i => i.classList.remove('active'));
+    this.classList.add('active');
+    
+    // Show corresponding tab content
+    const tabId = this.dataset.settingsTab;
+    document.querySelectorAll('.settings-tab-content').forEach(content => {
+      content.classList.remove('active');
+    });
+    const targetContent = document.getElementById('settings-tab-' + tabId);
+    if (targetContent) {
+      targetContent.classList.add('active');
+    }
+  });
+});
+
+// ===== STORAGE EVENT LISTENER FOR REAL-TIME EARNINGS UPDATES =====
+window.addEventListener('storage', function(e) {
+  if (e.key === 'volant_purchase_completed' && currentUser) {
+    loadEarnings(currentUser.uid);
+  }
+});
+</script>
+<script src="../shared/return-url-handler.js"></script>
+</body>
+</html>

@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Refund Policy | Volant Reads</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <link rel="icon" type="image/png" href="../images/volant-reads-favicon.png" />
+  <style>
+    :root {
+      --primary: #4b2aad;
+      --primary-dark: #3a1f8a;
+      --primary-light: #6c3ddd;
+      --accent: #b76e4b;
+      --accent-dark: #9f5e3f;
+      --gold: #b89b5e;
+      --gold-dark: #9b7e48;
+      --bg-main: #f5f3ff;
+      --bg-card: #ffffff;
+      --text-primary: #1a1a1a;
+      --text-secondary: #4a4a4a;
+      --text-muted: #6b6b6b;
+      --border-light: #e8e4f0;
+      --shadow: 0 2px 8px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.02);
+      --shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.08);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-main);
+      color: var(--text-primary);
+      line-height: 1.6;
+    }
+
+    .page-header {
+      background: var(--bg-card);
+      border-bottom: 2px solid var(--gold);
+      padding: 2.5rem 2rem 1.5rem;
+      text-align: center;
+    }
+
+    .page-header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.8rem;
+      font-weight: 700;
+      color: var(--primary);
+      letter-spacing: -0.5px;
+      margin-bottom: 0.5rem;
+    }
+
+    .page-header h1 i {
+      color: var(--accent);
+      font-size: 2.4rem;
+      margin-right: 0.5rem;
+    }
+
+    .page-header .subtitle {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .page-header .breadcrumb {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      letter-spacing: 0.3px;
+      margin-top: 0.5rem;
+    }
+
+    .page-header .breadcrumb a {
+      color: var(--primary);
+      text-decoration: none;
+    }
+
+    .page-header .breadcrumb a:hover {
+      text-decoration: underline;
+    }
+
+    .refund-container {
+      max-width: 920px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+    }
+
+    .refund-card {
+      background: var(--bg-card);
+      border-radius: 0;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border-light);
+      overflow: hidden;
+      margin-bottom: 2rem;
+    }
+
+    .refund-content {
+      padding: 2.5rem 3rem;
+    }
+
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--primary-dark);
+      margin-bottom: 0.75rem;
+    }
+
+    .section-subtitle {
+      color: var(--text-muted);
+      margin-bottom: 1.2rem;
+      font-size: 0.95rem;
+    }
+
+    .refund-content p {
+      color: var(--text-secondary);
+      margin-bottom: 0.75rem;
+      font-size: 0.95rem;
+    }
+
+    .refund-content ul {
+      margin: 0.75rem 0 0.5rem 0;
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .refund-content li {
+      margin-bottom: 0.6rem;
+      padding-left: 1.5rem;
+      position: relative;
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+    }
+
+    .refund-content li::before {
+      content: "●";
+      color: var(--gold);
+      font-size: 0.75rem;
+      position: absolute;
+      left: 0;
+      top: 0;
+    }
+
+    .refund-content li strong {
+      color: var(--primary-dark);
+    }
+
+    .note-box {
+      padding: 1rem 1.5rem;
+      margin: 1rem 0;
+      font-size: 0.95rem;
+      border-left: 4px solid var(--gold);
+    }
+
+    .note-box.warning {
+      background: #fff8f0;
+      border-left-color: var(--accent);
+    }
+
+    .note-box.info {
+      background: #f0ecf8;
+      border-left-color: var(--primary);
+    }
+
+    .note-box.success {
+      background: #e8f5e9;
+      border-left-color: #2d7d46;
+    }
+
+    .note-box i {
+      margin-right: 0.5rem;
+    }
+
+    .note-box strong {
+      color: var(--primary-dark);
+    }
+
+    .contact-card {
+      background: #faf9fe;
+      border: 1px solid var(--border-light);
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+    }
+
+    .contact-card h4 {
+      color: var(--primary);
+      font-size: 1rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .contact-card .contact-item {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      padding: 0.3rem 0;
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+    }
+
+    .contact-card .contact-item i {
+      color: var(--accent);
+      width: 1.2rem;
+      font-size: 1rem;
+    }
+
+    .contact-card .contact-item a {
+      color: var(--primary);
+      text-decoration: none;
+    }
+
+    .contact-card .contact-item a:hover {
+      text-decoration: underline;
+    }
+
+    .steps-list {
+      counter-reset: step;
+      list-style: none;
+      padding: 0;
+      margin: 1rem 0;
+    }
+
+    .steps-list li {
+      counter-increment: step;
+      padding: 0.6rem 1rem 0.6rem 3.2rem;
+      position: relative;
+      background: #faf9fe;
+      margin-bottom: 0.5rem;
+      border-left: 3px solid var(--primary-light);
+      transition: all 0.3s ease;
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+    }
+
+    .steps-list li:hover {
+      background: #f5f3ff;
+      transform: translateX(4px);
+    }
+
+    .steps-list li::before {
+      content: counter(step);
+      position: absolute;
+      left: 0.8rem;
+      top: 0.5rem;
+      width: 1.6rem;
+      height: 1.6rem;
+      background: var(--primary);
+      color: white;
+      font-weight: 700;
+      font-size: 0.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+    }
+
+    .steps-list li strong {
+      color: var(--primary-dark);
+    }
+
+    @media (max-width: 768px) {
+      .page-header {
+        padding: 1.8rem 1rem 1.2rem;
+      }
+
+      .page-header h1 {
+        font-size: 2rem;
+      }
+
+      .refund-content {
+        padding: 1.5rem;
+      }
+
+      .contact-card {
+        padding: 1.2rem;
+      }
+
+      .steps-list li {
+        font-size: 0.9rem;
+        padding: 0.6rem 1rem 0.6rem 2.8rem;
+      }
+
+      .steps-list li::before {
+        width: 1.4rem;
+        height: 1.4rem;
+        font-size: 0.7rem;
+        left: 0.7rem;
+        top: 0.6rem;
+      }
+    }
+
+    @media (max-width: 550px) {
+      .refund-container {
+        padding: 0 1rem;
+        margin: 1.5rem auto;
+      }
+
+      .refund-content {
+        padding: 1.25rem;
+      }
+
+      .page-header h1 {
+        font-size: 1.75rem;
+      }
+
+      .page-header h1 i {
+        font-size: 1.4rem;
+      }
+
+      .section-title {
+        font-size: 1.3rem;
+      }
+
+      .refund-content li {
+        font-size: 0.85rem;
+        padding-left: 1.25rem;
+      }
+
+      .contact-card .contact-item {
+        font-size: 0.85rem;
+      }
+
+      .note-box {
+        padding: 0.8rem 1rem;
+        font-size: 0.85rem;
+      }
+    }
+
+    @media print {
+      .page-header,
+      .page-footer {
+        background: none;
+        border: none;
+      }
+      .refund-card {
+        box-shadow: none;
+        border: 1px solid #ccc;
+      }
+      body {
+        background: white;
+      }
+    }
+  
+
+                    .platform-badge.reads { 
+                        background: linear-gradient(135deg, #d4a574, #c9944d); 
+                    }
+                    </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <h1><i class="fas fa-undo-alt"></i> Refund Policy</h1>
+    <p class="subtitle">Understanding our refund policy for digital book purchases on Volant Reads.</p>
+    <div class="breadcrumb">
+      <a href="index.html">📚 Bookstore</a> / <a href="../shared/about.html">About Us</a> / Refund Policy
+    </div>
+  </div>
+
+  <div class="refund-container">
+
+    <div class="refund-card">
+      <div class="refund-content">
+        <h2 class="section-title">Overview</h2>
+        <p>
+          At <strong>Volant Reads</strong>, we strive to provide a seamless and satisfying experience for all readers. 
+          Because our products are <strong>digital downloads</strong>, our refund policy is designed to balance 
+          customer satisfaction with the nature of digital content.
+        </p>
+        <p>
+          Please read this policy carefully before making a purchase. By completing a purchase on Volant Reads, 
+          you agree to the terms outlined below.
+        </p>
+      </div>
+    </div>
+
+    <div class="refund-card">
+      <div class="refund-content">
+        <h2 class="section-title">Digital Products Are Generally Non-Refundable</h2>
+        <p>
+          All books sold on Volant Reads are <strong>digital products</strong> (PDF ebooks). 
+          Due to the nature of digital content, <strong>all sales are final</strong> once the book has been downloaded.
+        </p>
+
+        <div class="note-box warning">
+          <i class="fas fa-exclamation-triangle" style="color: var(--accent);"></i>
+          <strong>Important:</strong> Refunds are generally not available for digital products after they have been downloaded. 
+          Please ensure you are purchasing the correct book before completing your order.
+        </div>
+
+        <p style="margin-top: 1rem;">
+          However, we understand that exceptional circumstances may arise. Refunds may be considered in the following cases:
+        </p>
+        <ul>
+          <li><strong>Duplicate Purchases</strong> — if you accidentally purchased the same book twice.</li>
+          <li><strong>Technical Issues</strong> — if you encountered a technical problem that prevented you from accessing or downloading your book.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="refund-card">
+      <div class="refund-content">
+        <h2 class="section-title">How to Request a Refund</h2>
+        <p>
+          If you believe you are eligible for a refund, please follow these steps:
+        </p>
+
+        <ol class="steps-list">
+          <li>
+            <strong>Contact Us</strong> — Send an email to <a href="mailto:reach.volant@gmail.com" style="color: var(--primary);">reach.volant@gmail.com</a> 
+            with the subject line <em>"Refund Request — [Your Order Reference]"</em>.
+          </li>
+          <li>
+            <strong>Provide Evidence</strong> — Include a clear <strong>reason</strong> for your refund request and attach any 
+            relevant <strong>evidence</strong> (screenshots, error messages, proof of duplicate purchase, etc.).
+          </li>
+          <li>
+            <strong>Include Your Details</strong> — Provide your <strong>full name</strong>, <strong>email address</strong> 
+            used for the purchase, and <strong>order reference</strong> or receipt.
+          </li>
+        </ol>
+
+        <div class="note-box info">
+          <i class="fas fa-info-circle" style="color: var(--primary);"></i>
+          <strong>Review Time:</strong> We aim to review all refund requests within <strong>3–5 business days</strong>. 
+          You will receive a response via email with our decision.
+        </div>
+      </div>
+    </div>
+
+    <div class="refund-card">
+      <div class="refund-content">
+        <h2 class="section-title">What We Need From You</h2>
+        <p>To process your refund request efficiently, please ensure your email includes:</p>
+        <ul>
+          <li><strong>Full Name</strong> — the name used for the purchase.</li>
+          <li><strong>Email Address</strong> — the email associated with your Volant Reads account.</li>
+          <li><strong>Order Reference / Receipt</strong> — proof of purchase.</li>
+          <li><strong>Reason for Refund</strong> — a clear explanation of why you are requesting a refund.</li>
+          <li><strong>Evidence</strong> — screenshots or documentation supporting your claim (if applicable).</li>
+        </ul>
+
+        <div class="contact-card">
+          <h4><i class="fas fa-envelope" style="color: var(--accent);"></i> Send Your Request To:</h4>
+          <div class="contact-item">
+            <i class="fas fa-envelope"></i>
+            <a href="mailto:reach.volant@gmail.com">reach.volant@gmail.com</a>
+          </div>
+          <div class="contact-item">
+            <i class="fas fa-phone"></i>
+            <a href="tel:+233245691423">+233 24 569 1423</a>
+          </div>
+          <div class="contact-item">
+            <i class="fas fa-map-marker-alt"></i>
+            Kumasi, Ghana
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="refund-card">
+      <div class="refund-content">
+        <h2 class="section-title">Refund Eligibility Summary</h2>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin: 1rem 0;">
+          <div style="background: #faf9fe; padding: 1.2rem; border-left: 3px solid #2d7d46;">
+            <h4 style="color: #2d7d46; font-size: 1rem; margin-bottom: 0.3rem;">
+              <i class="fas fa-check-circle" style="color: #2d7d46;"></i> Eligible for Refund
+            </h4>
+            <ul style="margin: 0; padding-left: 0; list-style: none;">
+              <li style="padding-left: 1.2rem; margin-bottom: 0.3rem; font-size: 0.9rem; color: var(--text-secondary); position: relative;">
+                <span style="position: absolute; left: 0; color: #2d7d46;">✓</span> Duplicate purchases
+              </li>
+              <li style="padding-left: 1.2rem; margin-bottom: 0.3rem; font-size: 0.9rem; color: var(--text-secondary); position: relative;">
+                <span style="position: absolute; left: 0; color: #2d7d46;">✓</span> Technical issues preventing download
+              </li>
+            </ul>
+          </div>
+          <div style="background: #faf9fe; padding: 1.2rem; border-left: 3px solid var(--accent);">
+            <h4 style="color: var(--accent); font-size: 1rem; margin-bottom: 0.3rem;">
+              <i class="fas fa-times-circle" style="color: var(--accent);"></i> Not Eligible for Refund
+            </h4>
+            <ul style="margin: 0; padding-left: 0; list-style: none;">
+              <li style="padding-left: 1.2rem; margin-bottom: 0.3rem; font-size: 0.9rem; color: var(--text-secondary); position: relative;">
+                <span style="position: absolute; left: 0; color: var(--accent);">✗</span> Change of mind after download
+              </li>
+              <li style="padding-left: 1.2rem; margin-bottom: 0.3rem; font-size: 0.9rem; color: var(--text-secondary); position: relative;">
+                <span style="position: absolute; left: 0; color: var(--accent);">✗</span> Not liking the content
+              </li>
+              <li style="padding-left: 1.2rem; margin-bottom: 0.3rem; font-size: 0.9rem; color: var(--text-secondary); position: relative;">
+                <span style="position: absolute; left: 0; color: var(--accent);">✗</span> Already downloaded the book
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="note-box success">
+          <i class="fas fa-check-circle" style="color: #2d7d46;"></i>
+          <strong>Approved Refunds:</strong> If your refund is approved, the amount will be returned to your original payment method 
+          within <strong>5–10 business days</strong>, depending on your payment provider.
+        </div>
+      </div>
+    </div>
+
+    <div class="refund-card">
+      <div class="refund-content">
+        <h2 class="section-title">Questions or Concerns?</h2>
+        <p>
+          If you have any questions about our refund policy, or if you need assistance with a purchase, 
+          please don't hesitate to reach out to us. We're here to help!
+        </p>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1rem;">
+          <div style="flex: 1; min-width: 200px; background: #faf9fe; padding: 1rem; border-left: 3px solid var(--gold);">
+            <h4 style="color: var(--primary); font-size: 0.9rem; margin-bottom: 0.2rem;"><i class="fas fa-envelope"></i> Email</h4>
+            <a href="mailto:reach.volant@gmail.com" style="color: var(--primary); text-decoration: none;">reach.volant@gmail.com</a>
+          </div>
+          <div style="flex: 1; min-width: 200px; background: #faf9fe; padding: 1rem; border-left: 3px solid var(--gold);">
+            <h4 style="color: var(--primary); font-size: 0.9rem; margin-bottom: 0.2rem;"><i class="fas fa-phone"></i> Phone</h4>
+            <a href="tel:+233245691423" style="color: var(--primary); text-decoration: none;">+233 24 569 1423</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="page-footer" style="background:#1a1714; color:#e8e0d8; padding:2rem 1.5rem; text-align:center; margin-top:2rem; border-top:1px solid rgba(255,255,255,0.06);">
+    <div style="max-width:920px; margin:0 auto;">
+      <!-- Footer Links Row -->
+      <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:8px 20px; margin-bottom:10px;">
+        <a href="../shared/terms.html" style="color:#c4b8aa; text-decoration:none; font-size:0.8rem;">Terms</a>
+        <a href="../shared/contact.html" style="color:#c4b8aa; text-decoration:none; font-size:0.8rem;">Contact</a>
+        <a href="index.html" style="color:#c4b8aa; text-decoration:none; font-size:0.8rem;">📚 Bookstore</a>
+      <a href="../volant_foundry/index.html" style="color:#b76e4b; text-decoration:none; font-size:0.8rem; font-weight:600;">🏛️ Volant Foundry</a>
+      </div>
+      
+      <!-- Platform Badge -->
+      <div style="margin:6px 0;">
+        <span style="background:rgba(183,110,75,0.12); padding:3px 16px; border-radius:20px; font-size:0.7rem; color:#b76e4b; font-weight:500; display:inline-block;">
+          Part of the Volant Reads Platform
+        </span>
+      </div>
+      
+      <!-- Copyright -->
+      <div style="font-size:0.75rem; color:#6a5f55; margin-top:6px;">
+        &copy; 2026 <strong style="color:#c4b8aa;">Volant Reads</strong>. All Rights Reserved.
+      </div>
+    </div>
+  </footer>
+
+  <!-- ===== MOBILE RESPONSIVE STYLES ===== -->
+  <style>
+    /* Mobile responsive for footer links */
+    @media (max-width: 480px) {
+      footer .footer-links-row {
+        gap: 4px 10px !important;
+      }
+      footer .footer-links-row a {
+        font-size: 0.65rem !important;
+        padding: 2px 8px;
+        background: rgba(255,255,255,0.04);
+        border-radius: 12px;
+      }
+      footer .footer-links-row a:last-child {
+        color: #b76e4b !important;
+        background: rgba(183,110,75,0.1);
+      }
+    }
+
+    @media (max-width: 380px) {
+      footer .footer-links-row a {
+        font-size: 0.55rem !important;
+        padding: 2px 6px;
+      }
+      footer .footer-links-row {
+        gap: 3px 6px !important;
+      }
+    }
+  </style>
+
+<script src="../shared/return-url-handler.js"></script>
+</body>
+</html>

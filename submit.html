@@ -1,0 +1,4065 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
+    <title>Volant Reads · Submit Your Book</title>
+<script>
+    // Simple console blocker - production only
+    (function() {
+        if (window.location.hostname.includes('localhost') || 
+            window.location.hostname.includes('127.0.0.1')) {
+            return; // Allow in development
+        }
+        
+        // Block all console methods
+        var methods = ['log', 'info', 'warn', 'error', 'debug', 'trace', 'table', 'group', 'groupEnd', 'dir'];
+        methods.forEach(function(m) {
+            console[m] = function() {};
+            try {
+                Object.defineProperty(console, m, { configurable: false, writable: false });
+            } catch(e) {}
+        });
+        
+        window.onerror = function() { return true; };
+        window.onunhandledrejection = function() { return true; };
+    })();
+</script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet" />
+    <link rel="icon" type="image/png" href="../images/volant-reads-favicon.png" />
+    <link rel="apple-touch-icon" href="../images/volant-reads-favicon.png" />
+
+   <style>
+        /* ---------- CSS VARIABLES ---------- */
+        :root {
+            --primary: #b76e4b;
+            --primary-dark: #9f5e3f;
+            --bg-light: #faf7f2;
+            --bg-white: #ffffff;
+            --text-dark: #2d2a24;
+            --text-muted: #6f6252;
+            --border-light: #ede7df;
+            --border-input: #d6ccc0;
+            --section-bg: #f8f5f0;
+        }
+
+        /* ---------- RESET & BASE ---------- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg-light);
+            color: var(--text-dark);
+            padding: 0.8rem 0.6rem;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        .container {
+            max-width: 920px;
+            width: 100%;
+            background: var(--bg-white);
+            border-radius: 28px;
+            padding: 1.2rem 1rem;
+            box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.08);
+            border: 1px solid var(--border-light);
+            margin: 0 auto;
+        }
+
+        /* ---------- PURPLE VOLANT READS LOGO (STANDALONE) ---------- */
+        .logo {
+            display: flex;
+            align-items: center;
+            font-family: 'Playfair Display', serif;
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #6a0dad;
+            text-decoration: none;
+            gap: 0.6rem;
+            cursor: default;
+        }
+
+        .nav-logo-img {
+            height: 40px;
+            width: auto;
+            object-fit: contain;
+        }
+
+        .logo-highlight {
+             color: #ffffff;
+            text-shadow: 0 0 2px #4b2aad, 0 0 4px #4b2aad, 0 0 6px #4b2aad;
+        }
+
+        @media (max-width: 768px) {
+            .logo {
+                font-size: 1.4rem;
+            }
+            .nav-logo-img {
+                height: 34px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .logo {
+                font-size: 1.4rem;
+            }
+            .nav-logo-img {
+                height: 30px;
+            }
+        }
+
+        /* ---------- AUTH OVERLAY ---------- */
+        .auth-overlay {
+            display: none;
+            text-align: center;
+            padding: 2rem 1.2rem;
+            background: #fcf9f6;
+            border-radius: 24px;
+            border: 2px dashed var(--border-input);
+        }
+
+        .auth-overlay.show {
+            display: block;
+        }
+
+        .auth-overlay i {
+            font-size: 3rem;
+            color: var(--primary);
+            margin-bottom: 0.8rem;
+        }
+
+        .auth-overlay h2 {
+            font-size: 1.5rem;
+            color: var(--text-dark);
+            margin-bottom: 0.4rem;
+        }
+
+        .auth-overlay p {
+            color: var(--text-muted);
+            margin-bottom: 1.2rem;
+            font-size: 0.95rem;
+        }
+
+        .auth-overlay .btn-auth {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.7rem 2rem;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: 0.2s;
+            text-decoration: none;
+            margin: 0.3rem;
+        }
+
+        .auth-overlay .btn-auth:hover {
+            background: var(--primary-dark);
+            transform: scale(1.02);
+        }
+
+        .auth-overlay .btn-auth-outline {
+            background: transparent;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+
+        .auth-overlay .btn-auth-outline:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* ================================================================ */
+        /* ===== PAYOUT ACCOUNT WARNING BANNER ===== */
+        /* ================================================================ */
+        #payoutWarningBanner {
+            display: none;
+            background: linear-gradient(135deg, #fef3e2 0%, #fcf7f0 100%);
+            border-left: 4px solid #e67e22;
+            padding: 18px 22px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(230, 126, 34, 0.08);
+        }
+
+        #payoutWarningBanner.show {
+            display: block;
+        }
+
+        #payoutWarningBanner .banner-content {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+        }
+
+        #payoutWarningBanner .banner-content .banner-icon {
+            flex-shrink: 0;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #fff3e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: #e67e22;
+            margin-top: 2px;
+        }
+
+        #payoutWarningBanner .banner-content .banner-text {
+            flex: 1;
+        }
+
+        #payoutWarningBanner .banner-content .banner-text h4 {
+            margin: 0 0 4px 0;
+            color: #a8640b;
+            font-size: 1rem;
+            font-weight: 700;
+        }
+
+        #payoutWarningBanner .banner-content .banner-text p {
+            margin: 0 0 6px 0;
+            color: #7a4a2a;
+            font-size: 0.92rem;
+            line-height: 1.6;
+        }
+
+        #payoutWarningBanner .banner-content .banner-text .banner-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 6px;
+        }
+
+        #payoutWarningBanner .banner-content .banner-text .btn-setup-payout {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #6a34ff;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: 0.3s;
+            text-decoration: none;
+        }
+
+        #payoutWarningBanner .banner-content .banner-text .btn-setup-payout:hover {
+            background: #5428d9;
+            transform: scale(1.02);
+            box-shadow: 0 4px 15px rgba(106, 52, 255, 0.3);
+        }
+
+        #payoutWarningBanner .banner-content .banner-text .btn-setup-payout i {
+            font-size: 0.8rem;
+        }
+
+        #payoutWarningBanner .banner-content .banner-text .banner-time {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.75rem;
+            color: #8a7b6a;
+            background: rgba(255, 255, 255, 0.6);
+            padding: 4px 14px;
+            border-radius: 30px;
+            border: 1px solid #ede7df;
+        }
+
+        #payoutWarningBanner .banner-content .banner-text .banner-time i {
+            color: #2d7d46;
+        }
+
+        /* ---------- SUBHEAD ---------- */
+        .subhead {
+            color: var(--text-muted);
+            margin-bottom: 1.2rem;
+            padding-left: 4px;
+            border-left: 4px solid #dccfc0;
+            padding-left: 12px;
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+
+        .subhead .tagline {
+            display: inline-block;
+            background: #f0ece6;
+            padding: 0.15rem 0.8rem;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            color: #5a4c3e;
+            margin-left: 6px;
+        }
+
+        .user-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #f0ece6;
+            padding: 0.2rem 0.8rem;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            color: var(--text-dark);
+            margin-bottom: 0.8rem;
+        }
+
+        .user-badge i {
+            color: var(--primary);
+        }
+
+        /* ================================================================ */
+        /* ===== SECTION DIVIDERS ===== */
+        /* ================================================================ */
+
+        .section-divider {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin: 1.5rem 0 1rem 0;
+            position: relative;
+        }
+
+        .section-divider .divider-line {
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(to right, var(--border-light), transparent);
+        }
+
+        .section-divider .divider-line:first-child {
+            background: linear-gradient(to left, var(--border-light), transparent);
+        }
+
+        .section-divider .divider-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            background: var(--bg-white);
+            padding: 0 12px;
+            white-space: nowrap;
+            border: 1px solid var(--border-light);
+            border-radius: 30px;
+            padding: 0.3rem 1.2rem;
+            background: var(--section-bg);
+        }
+
+        .section-divider .divider-label i {
+            color: var(--primary);
+            font-size: 0.7rem;
+        }
+
+        .section-divider .divider-label .label-icon {
+            color: var(--primary);
+            font-size: 0.7rem;
+        }
+
+        /* Alternative: Simple divider with title */
+        .section-title-block {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 1.2rem 0 0.8rem 0;
+            padding: 0.5rem 0;
+            border-bottom: 2px solid var(--border-light);
+        }
+
+        .section-title-block .title-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            flex-shrink: 0;
+        }
+
+        .section-title-block h3 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin: 0;
+            letter-spacing: 0.3px;
+        }
+
+        .section-title-block .section-badge {
+            margin-left: auto;
+            font-size: 0.6rem;
+            color: var(--text-muted);
+            background: var(--section-bg);
+            padding: 0.15rem 0.8rem;
+            border-radius: 30px;
+            border: 1px solid var(--border-light);
+        }
+
+        /* ---------- FORM ELEMENTS ---------- */
+        .form-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+        }
+
+        .form-row .form-group {
+            flex: 1 1 200px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .form-group label {
+            font-weight: 500;
+            font-size: 0.8rem;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .form-group label i {
+            color: var(--primary);
+            width: 16px;
+            font-size: 0.85rem;
+        }
+
+        .form-group label .optional-badge {
+            font-weight: 400;
+            font-size: 0.6rem;
+            background: #ede7df;
+            padding: 0.05rem 0.6rem;
+            border-radius: 30px;
+            color: var(--text-muted);
+            margin-left: auto;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 0.6rem 0.8rem;
+            border: 1px solid var(--border-input);
+            border-radius: 16px;
+            font-size: 0.88rem;
+            background: #fcf9f6;
+            transition: 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: 2px solid var(--primary);
+            border-color: transparent;
+            background: #ffffff;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 70px;
+        }
+
+        .form-group .hint {
+            font-size: 0.65rem;
+            color: #8a7b6a;
+            padding-left: 4px;
+            line-height: 1.3;
+        }
+
+        /* ---------- DOWNLOADS SECTION ---------- */
+        .downloads-group {
+            background: #f8f5f0;
+            border-radius: 16px;
+            padding: 0.8rem 1rem;
+            border: 1px solid var(--border-light);
+        }
+
+        .downloads-group .downloads-title {
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 0.6rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.9rem;
+        }
+
+        .downloads-group .downloads-title i {
+            color: var(--primary);
+        }
+
+        .downloads-group .downloads-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            align-items: center;
+        }
+
+        .downloads-group .downloads-row .form-group {
+            flex: 1 1 120px;
+        }
+
+        .downloads-group .downloads-row .form-group select,
+        .downloads-group .downloads-row .form-group input {
+            padding: 0.5rem 0.8rem;
+        }
+
+        .downloads-group .downloads-hint {
+            font-size: 0.65rem;
+            color: #8a7b6a;
+            padding-left: 4px;
+            margin-top: 4px;
+        }
+
+        .downloads-group .downloads-hint .min-downloads {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .custom-download-input {
+            display: none;
+        }
+
+        .custom-download-input.visible {
+            display: block;
+            margin-top: 0.4rem;
+        }
+
+        .custom-download-input input {
+            width: 100%;
+            max-width: 150px;
+            padding: 0.5rem 0.8rem;
+            border: 1px solid var(--border-input);
+            border-radius: 16px;
+            font-size: 0.88rem;
+            background: #fcf9f6;
+            transition: 0.2s;
+        }
+
+        .custom-download-input input:focus {
+            outline: 2px solid var(--primary);
+            border-color: transparent;
+            background: #ffffff;
+        }
+
+        /* ---------- PRICING ---------- */
+        .pricing-group {
+            background: #f8f5f0;
+            border-radius: 16px;
+            padding: 0.8rem 1rem;
+            border: 1px solid var(--border-light);
+        }
+
+        .pricing-group .pricing-title {
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 0.6rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.9rem;
+        }
+
+        .pricing-group .pricing-title i {
+            color: var(--primary);
+        }
+
+        .pricing-group .pricing-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            align-items: center;
+        }
+
+        .pricing-group .pricing-row .form-group {
+            flex: 1 1 120px;
+        }
+
+        .pricing-group .pricing-row .form-group input {
+            padding: 0.5rem 0.8rem;
+        }
+
+        .currency-select {
+            padding: 0.5rem 0.8rem !important;
+            font-weight: 500;
+        }
+
+        .price-input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .price-input-wrapper .currency-symbol {
+            position: absolute;
+            left: 0.8rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.85rem;
+            pointer-events: none;
+        }
+
+        .price-input-wrapper input {
+            padding-left: 2.2rem !important;
+        }
+
+        /* ---------- CURRENCY CONVERTER ---------- */
+        .currency-converter {
+            margin-top: 0.6rem;
+            padding: 0.6rem 0.8rem;
+            background: #f0f5f8;
+            border-radius: 10px;
+            border: 1px solid #dce4e8;
+            display: none;
+        }
+
+        .currency-converter.show {
+            display: block;
+        }
+
+        .currency-converter .converter-header {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.7rem;
+            color: #4a6a7a;
+            font-weight: 500;
+            margin-bottom: 4px;
+            flex-wrap: wrap;
+        }
+
+        .currency-converter .converter-header i {
+            color: #2c7a9e;
+        }
+
+        .currency-converter .converter-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        .currency-converter .converter-item {
+            background: white;
+            padding: 0.2rem 0.6rem;
+            border-radius: 16px;
+            font-size: 0.7rem;
+            border: 1px solid #e0e8ee;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            transition: 0.2s;
+        }
+
+        .currency-converter .converter-item:hover {
+            border-color: var(--primary);
+            background: #faf7f2;
+        }
+
+        .currency-converter .converter-item .flag {
+            font-size: 0.8rem;
+        }
+
+        .currency-converter .converter-item .amount {
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .currency-converter .converter-item .code {
+            color: #8a7b6a;
+            font-size: 0.6rem;
+        }
+
+        .currency-converter .converter-loading {
+            font-size: 0.7rem;
+            color: #8a7b6a;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .currency-converter .converter-loading .spinner-small {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid #ede7df;
+            border-top: 2px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .currency-converter .converter-error {
+            color: var(--primary);
+            font-size: 0.7rem;
+        }
+
+        .currency-converter .converter-timestamp {
+            font-size: 0.55rem;
+            color: #aaa;
+            margin-top: 2px;
+        }
+
+        .currency-converter .converter-info {
+            font-size: 0.6rem;
+            color: #6f8a9a;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 3px;
+        }
+
+        .currency-converter .converter-info i {
+            color: #2c7a9e;
+        }
+
+        /* ---------- COUNTRY DROPDOWN ---------- */
+        .country-select-wrapper {
+            position: relative;
+        }
+
+        .country-select-wrapper input {
+            width: 100%;
+            padding: 0.6rem 0.8rem;
+            border: 1px solid var(--border-input);
+            border-radius: 16px;
+            font-size: 0.88rem;
+            background: #fcf9f6;
+            transition: 0.2s;
+            cursor: pointer;
+        }
+
+        .country-select-wrapper input:focus {
+            outline: 2px solid var(--primary);
+            border-color: transparent;
+            background: #ffffff;
+        }
+
+        .country-select-wrapper .country-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            max-height: 200px;
+            overflow-y: auto;
+            background: #ffffff;
+            border: 1px solid var(--border-input);
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+            z-index: 100;
+            margin-top: 3px;
+            padding: 0.2rem 0;
+        }
+
+        .country-select-wrapper .country-dropdown.show {
+            display: block;
+        }
+
+        .country-select-wrapper .country-dropdown .country-option {
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            transition: 0.15s;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .country-select-wrapper .country-dropdown .country-option:hover {
+            background: #f0ece6;
+        }
+
+        .country-select-wrapper .country-dropdown .country-option.selected {
+            background: #ede7df;
+            font-weight: 500;
+        }
+
+        .country-select-wrapper .country-dropdown .country-option .flag {
+            font-size: 1rem;
+        }
+
+        .country-select-wrapper .country-dropdown .no-results {
+            padding: 0.8rem 1rem;
+            color: #8a7b6a;
+            text-align: center;
+            font-size: 0.8rem;
+        }
+
+        .country-select-wrapper .country-dropdown::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .country-select-wrapper .country-dropdown::-webkit-scrollbar-track {
+            background: #f5f0eb;
+            border-radius: 8px;
+        }
+
+        .country-select-wrapper .country-dropdown::-webkit-scrollbar-thumb {
+            background: var(--border-input);
+            border-radius: 8px;
+        }
+
+        .country-select-wrapper .country-dropdown::-webkit-scrollbar-thumb:hover {
+            background: var(--primary);
+        }
+
+        /* ---------- KEYWORDS ---------- */
+        .keyword-input-wrapper {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .keyword-input-wrapper input {
+            flex: 1;
+            min-width: 140px;
+        }
+
+        .keyword-input-wrapper .add-keyword-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: 0.2s;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.85rem;
+        }
+
+        .keyword-input-wrapper .add-keyword-btn:hover {
+            background: var(--primary-dark);
+            transform: scale(1.02);
+        }
+
+        .keyword-input-wrapper .add-keyword-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .keyword-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 6px;
+            min-height: 30px;
+            padding: 2px 0;
+        }
+
+        .keyword-tag {
+            background: #f0ece6;
+            padding: 0.2rem 0.6rem 0.2rem 1rem;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid var(--border-input);
+            transition: 0.15s;
+        }
+
+        .keyword-tag .remove-keyword {
+            background: none;
+            border: none;
+            color: #8a7b6a;
+            cursor: pointer;
+            font-size: 0.8rem;
+            padding: 0 2px;
+            transition: 0.15s;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .keyword-tag .remove-keyword:hover {
+            color: var(--primary);
+            transform: scale(1.2);
+        }
+
+        .keyword-counter {
+            font-size: 0.65rem;
+            color: #8a7b6a;
+            margin-top: 3px;
+        }
+
+        .keyword-counter .count-required {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        /* ---------- FILE UPLOAD ---------- */
+        .file-upload-wrapper {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+            background: #fcf9f6;
+            border: 1px solid var(--border-input);
+            border-radius: 24px;
+            padding: 0.3rem 0.8rem 0.3rem 1rem;
+            transition: 0.2s;
+        }
+
+        .file-upload-wrapper:focus-within {
+            outline: 2px solid var(--primary);
+            border-color: transparent;
+        }
+
+        .file-upload-wrapper input[type="file"] {
+            flex: 1;
+            border: none;
+            padding: 0.3rem 0;
+            background: transparent;
+            font-size: 0.8rem;
+            color: var(--text-dark);
+            min-width: 120px;
+        }
+
+        .file-upload-wrapper input[type="file"]::file-selector-button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 5px 14px;
+            border-radius: 30px;
+            margin-right: 10px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: 0.2s;
+            font-size: 0.7rem;
+        }
+
+        .file-upload-wrapper input[type="file"]::file-selector-button:hover {
+            background: var(--primary-dark);
+        }
+
+        .file-hint {
+            font-size: 0.6rem;
+            color: #8a7b6a;
+            white-space: nowrap;
+            background: #ede7df;
+            padding: 0.1rem 0.6rem;
+            border-radius: 30px;
+        }
+
+        .file-feedback {
+            font-size: 0.7rem;
+            margin-top: 3px;
+            padding-left: 4px;
+            color: #2d7d46;
+        }
+
+        .file-feedback.error {
+            color: var(--primary);
+        }
+
+        /* ---------- CHECKBOX ---------- */
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0.1rem 0;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--primary);
+            cursor: pointer;
+        }
+
+        .checkbox-group label {
+            font-weight: 400;
+            font-size: 0.85rem;
+            color: var(--text-dark);
+            cursor: pointer;
+        }
+
+        .checkbox-group label a {
+            color: var(--primary);
+            text-decoration: underline;
+            font-weight: 500;
+        }
+        .checkbox-group label a:hover {
+            color: var(--primary-dark);
+        }
+
+        .conditional-input {
+            margin-top: 4px;
+            display: none;
+        }
+
+        .conditional-input.visible {
+            display: block;
+        }
+
+        .divider {
+            border: 0;
+            height: 1px;
+            background: linear-gradient(to right, var(--border-light), transparent);
+            margin: 0.4rem 0 0.6rem 0;
+        }
+
+        /* ---------- BUTTONS ---------- */
+        .form-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+            margin-top: 1.2rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-light);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            border: none;
+            color: white;
+            font-weight: 600;
+            font-size: 0.95rem;
+            padding: 0.8rem 2rem;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 6px 14px rgba(183, 110, 75, 0.2);
+            flex: 1 1 auto;
+            justify-content: center;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: scale(1.01);
+            box-shadow: 0 8px 20px rgba(183, 110, 75, 0.3);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: #f0ece6;
+            border: 1px solid var(--border-input);
+            color: var(--text-dark);
+            font-weight: 500;
+            padding: 0.8rem 1.5rem;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1 1 auto;
+            justify-content: center;
+            font-size: 0.9rem;
+        }
+
+        .btn-secondary:hover {
+            background: #e6dfd6;
+            border-color: var(--primary);
+        }
+
+        /* Save Profile Button - appears before submit button */
+        #saveProfileBtn {
+            display: none;
+            background: #6a34ff;
+            color: white;
+            border: none;
+            padding: 0.8rem 2rem;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1 1 auto;
+            justify-content: center;
+        }
+
+        #saveProfileBtn:hover {
+            background: #5428d9;
+            transform: scale(1.01);
+        }
+
+        #saveProfileBtn.show {
+            display: inline-flex !important;
+        }
+
+        /* ---------- PERSISTENT SUCCESS FEEDBACK ---------- */
+        #formFeedback {
+            margin-top: 1rem;
+            padding: 1.2rem 1.5rem;
+            border-radius: 24px;
+            font-weight: 500;
+            display: none;
+            font-size: 0.9rem;
+            line-height: 1.8;
+            white-space: pre-line;
+            border: 2px solid transparent;
+            position: relative;
+        }
+
+        #formFeedback.success {
+            display: block;
+            background: #e6f0e6;
+            color: #1d6b2c;
+            border-color: #2d7d46;
+            white-space: pre-line;
+        }
+
+        #formFeedback.error {
+            display: block;
+            background: #fce8e8;
+            color: #a12b2b;
+            border-color: var(--primary);
+        }
+
+        #formFeedback .feedback-actions {
+            display: flex;
+            gap: 0.8rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding-top: 0.8rem;
+            border-top: 1px solid rgba(45, 125, 70, 0.2);
+        }
+
+        #formFeedback .feedback-actions .btn-dismiss {
+            background: #2d7d46;
+            color: white;
+            border: none;
+            padding: 0.6rem 1.8rem;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: 0.2s;
+        }
+
+        #formFeedback .feedback-actions .btn-dismiss:hover {
+            background: #1d6b2c;
+            transform: scale(1.02);
+        }
+
+        #formFeedback .feedback-actions .btn-dashboard {
+            background: #4b2aad;
+            color: white;
+            text-decoration: none;
+            padding: 0.6rem 1.8rem;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: 0.2s;
+        }
+
+        #formFeedback .feedback-actions .btn-dashboard:hover {
+            background: #3a1f8a;
+            transform: scale(1.02);
+        }
+
+        .upload-progress {
+            display: none;
+            margin: 0.8rem 0 0.4rem 0;
+            padding: 0.8rem;
+            background: #f8f5f0;
+            border-radius: 10px;
+            border: 1px solid var(--border-light);
+        }
+
+        .upload-progress.show {
+            display: block;
+        }
+
+        .upload-progress .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #ede7df;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-top: 6px;
+        }
+
+        .upload-progress .progress-bar .progress-fill {
+            height: 100%;
+            background: var(--primary);
+            border-radius: 8px;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .upload-progress .progress-text {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 3px;
+        }
+
+        .upload-progress .progress-status {
+            font-weight: 500;
+            color: var(--text-dark);
+            font-size: 0.85rem;
+        }
+
+        .pending-notice {
+            display: none;
+            background: #fef3e2;
+            border: 1px solid #f5cba7;
+            border-radius: 12px;
+            padding: 0.8rem 1rem;
+            margin-top: 0.4rem;
+            margin-bottom: 0.4rem;
+        }
+
+        .pending-notice.show {
+            display: block;
+        }
+
+        .pending-notice .pending-content {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .pending-notice .pending-content i {
+            color: var(--primary);
+            font-size: 1rem;
+        }
+
+        .pending-notice .pending-content .pending-text {
+            font-weight: 600;
+            color: #7a4a2a;
+            margin: 0;
+            font-size: 0.85rem;
+        }
+
+        .pending-notice .pending-content .pending-sub {
+            font-size: 0.75rem;
+            color: #8a6a4a;
+            margin: 0;
+        }
+
+        /* ---------- PRE-ORDER STYLES ---------- */
+        .preorder-fields {
+            display: none;
+            margin-top: 0.5rem;
+            padding: 0.8rem 1rem;
+            background: #f0f4ff;
+            border-radius: 12px;
+            border: 1px solid #d0ddf5;
+        }
+
+        .preorder-fields.show {
+            display: block;
+        }
+
+        .preorder-fields label {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text-dark);
+        }
+
+        .preorder-fields input[type="date"] {
+            width: 100%;
+            padding: 0.5rem 0.8rem;
+            border: 1px solid var(--border-input);
+            border-radius: 12px;
+            font-size: 0.88rem;
+            background: #fcf9f6;
+        }
+
+        .preorder-fields input[type="date"]:focus {
+            outline: 2px solid var(--primary);
+            border-color: transparent;
+        }
+
+        .preorder-fields .preorder-price-input {
+            display: flex;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .preorder-fields .preorder-price-input .form-group {
+            flex: 1;
+            min-width: 120px;
+        }
+
+        .preorder-fields .hint {
+            font-size: 0.65rem;
+            color: #8a7b6a;
+            padding-left: 4px;
+            line-height: 1.3;
+        }
+
+        /* ---------- DRAFT NOTIFICATION ---------- */
+        .draft-notice {
+            background: #e8f0fe;
+            border-left: 4px solid #2d7d46;
+            padding: 12px 18px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .draft-notice i {
+            color: #2d7d46;
+            font-size: 1.2rem;
+        }
+        .draft-notice .draft-text {
+            flex: 1;
+            font-size: 0.9rem;
+            color: #1d3b2c;
+        }
+        .draft-notice .draft-text strong {
+            font-weight: 600;
+        }
+        .draft-notice .draft-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .draft-notice .draft-actions button {
+            background: #2d7d46;
+            color: white;
+            border: none;
+            padding: 4px 16px;
+            border-radius: 30px;
+            font-weight: 500;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .draft-notice .draft-actions button:hover {
+            background: #1d6b2c;
+        }
+        .draft-notice .draft-actions .btn-discard-draft {
+            background: #b33;
+        }
+        .draft-notice .draft-actions .btn-discard-draft:hover {
+            background: #922;
+        }
+
+        /* ===== RIGHTS & TERMS SECTION ===== */
+        .legal-section {
+            background: #fcf9f6;
+            padding: 0.8rem 1rem;
+            border-radius: 16px;
+            border: 1px solid var(--border-light);
+        }
+
+        .legal-section .legal-item {
+            padding: 0.3rem 0;
+        }
+
+        .legal-section .legal-item:not(:last-child) {
+            border-bottom: 1px solid #f0ece6;
+        }
+
+        .legal-section .legal-item .checkbox-group {
+            padding: 0.1rem 0;
+        }
+
+        .legal-section .legal-item .checkbox-group label {
+            font-size: 0.85rem;
+        }
+
+        .legal-section .legal-item .checkbox-group label a {
+            color: var(--primary);
+            text-decoration: underline;
+            font-weight: 500;
+        }
+
+        .legal-section .legal-item .checkbox-group label a:hover {
+            color: var(--primary-dark);
+        }
+
+        .legal-section .legal-subtext {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-left: 28px;
+            margin-top: 2px;
+            line-height: 1.4;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 0.5rem 0.4rem;
+            }
+            .container {
+                padding: 1rem 0.8rem;
+                border-radius: 20px;
+            }
+            .form-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 2px;
+            }
+            .subhead {
+                font-size: 0.8rem;
+                margin-bottom: 1rem;
+                padding-left: 8px;
+            }
+            .form-grid {
+                gap: 0.8rem;
+            }
+            .form-row {
+                flex-direction: column;
+                gap: 0.8rem;
+            }
+            .form-row .form-group {
+                flex: 1 1 100%;
+            }
+            .form-group input,
+            .form-group textarea,
+            .form-group select {
+                padding: 0.5rem 0.7rem;
+                font-size: 0.85rem;
+                border-radius: 14px;
+            }
+            .form-group label {
+                font-size: 0.78rem;
+            }
+            .form-group textarea {
+                min-height: 60px;
+            }
+            .form-actions {
+                flex-direction: column;
+                gap: 0.6rem;
+            }
+            .btn-primary,
+            .btn-secondary,
+            #saveProfileBtn {
+                width: 100%;
+                justify-content: center;
+                padding: 0.7rem 1.5rem;
+                font-size: 0.9rem;
+            }
+            .file-upload-wrapper {
+                flex-direction: column;
+                align-items: stretch;
+                padding: 0.5rem 0.6rem;
+                border-radius: 16px;
+                gap: 4px;
+            }
+            .file-upload-wrapper input[type="file"] {
+                min-width: 100%;
+                font-size: 0.78rem;
+            }
+            .file-hint {
+                white-space: normal;
+                text-align: center;
+                font-size: 0.55rem;
+            }
+            .keyword-input-wrapper {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 4px;
+            }
+            .keyword-input-wrapper input {
+                min-width: 100%;
+            }
+            .keyword-input-wrapper .add-keyword-btn {
+                justify-content: center;
+                padding: 0.5rem 1rem;
+                font-size: 0.8rem;
+            }
+            .auth-overlay .btn-auth {
+                display: block;
+                margin: 0.3rem auto;
+                width: 100%;
+                max-width: 250px;
+                padding: 0.6rem 1.5rem;
+                font-size: 0.9rem;
+            }
+            .auth-overlay {
+                padding: 1.5rem 1rem;
+            }
+            .auth-overlay h2 {
+                font-size: 1.3rem;
+            }
+            .auth-overlay i {
+                font-size: 2.5rem;
+            }
+            .country-select-wrapper .country-dropdown {
+                max-height: 150px;
+            }
+            .country-select-wrapper .country-dropdown .country-option {
+                padding: 0.4rem 0.8rem;
+                font-size: 0.8rem;
+            }
+            .pricing-group {
+                padding: 0.6rem 0.8rem;
+                border-radius: 14px;
+            }
+            .pricing-group .pricing-row {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            .pricing-group .pricing-row .form-group {
+                width: 100%;
+                flex: 1 1 100%;
+            }
+            .pricing-group .pricing-title {
+                font-size: 0.85rem;
+                margin-bottom: 0.4rem;
+            }
+            .price-input-wrapper input {
+                padding: 0.5rem 0.7rem;
+                padding-left: 2rem !important;
+            }
+            .currency-select {
+                padding: 0.5rem 0.7rem !important;
+            }
+            .currency-converter {
+                padding: 0.4rem 0.6rem;
+                margin-top: 0.4rem;
+            }
+            .currency-converter .converter-item {
+                padding: 0.15rem 0.5rem;
+                font-size: 0.65rem;
+            }
+            .keyword-tag {
+                padding: 0.15rem 0.5rem 0.15rem 0.8rem;
+                font-size: 0.7rem;
+            }
+            .keyword-tags {
+                gap: 4px;
+                min-height: 26px;
+            }
+            .keyword-counter {
+                font-size: 0.6rem;
+            }
+            .checkbox-group {
+                gap: 8px;
+            }
+            .checkbox-group input[type="checkbox"] {
+                width: 16px;
+                height: 16px;
+            }
+            .checkbox-group label {
+                font-size: 0.8rem;
+            }
+            .user-badge {
+                font-size: 0.75rem;
+                padding: 0.15rem 0.7rem;
+                margin-bottom: 0.6rem;
+            }
+            .file-feedback {
+                font-size: 0.65rem;
+            }
+            .divider {
+                margin: 0.3rem 0 0.4rem 0;
+            }
+            #formFeedback {
+                font-size: 0.8rem;
+                padding: 0.8rem 1rem;
+                border-radius: 16px;
+            }
+            #formFeedback .feedback-actions {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            #formFeedback .feedback-actions .btn-dismiss,
+            #formFeedback .feedback-actions .btn-dashboard {
+                width: 100%;
+                justify-content: center;
+                text-align: center;
+            }
+            .upload-progress {
+                padding: 0.6rem;
+                margin: 0.6rem 0;
+            }
+            .upload-progress .progress-status {
+                font-size: 0.8rem;
+            }
+            .pending-notice {
+                padding: 0.6rem 0.8rem;
+            }
+            .pending-notice .pending-content .pending-text {
+                font-size: 0.8rem;
+            }
+            .pending-notice .pending-content .pending-sub {
+                font-size: 0.7rem;
+            }
+            .downloads-group {
+                padding: 0.6rem 0.8rem;
+                border-radius: 14px;
+            }
+            .downloads-group .downloads-row {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            .downloads-group .downloads-row .form-group {
+                width: 100%;
+                flex: 1 1 100%;
+            }
+            .downloads-group .downloads-title {
+                font-size: 0.85rem;
+                margin-bottom: 0.4rem;
+            }
+            .custom-download-input input {
+                max-width: 100%;
+            }
+            .preorder-fields {
+                padding: 0.6rem 0.8rem;
+            }
+            .preorder-fields .preorder-price-input {
+                flex-direction: column;
+            }
+            .preorder-fields .preorder-price-input .form-group {
+                width: 100%;
+            }
+            .legal-section {
+                padding: 0.6rem 0.8rem;
+            }
+            .legal-section .legal-item .checkbox-group label {
+                font-size: 0.78rem;
+            }
+            .legal-section .legal-subtext {
+                font-size: 0.65rem;
+                margin-left: 24px;
+            }
+            .section-divider .divider-label {
+                font-size: 0.6rem;
+                padding: 0.2rem 0.8rem;
+            }
+            .section-title-block h3 {
+                font-size: 0.85rem;
+            }
+        }
+
+        @media (max-width: 450px) {
+            .container {
+                padding: 0.8rem 0.6rem;
+                border-radius: 16px;
+            }
+            .logo-text {
+                font-size: 1.2rem;
+            }
+            .nav-logo-img {
+                height: 26px;
+            }
+            .subhead {
+                font-size: 0.75rem;
+                margin-bottom: 0.8rem;
+                padding-left: 6px;
+            }
+            .subhead .tagline {
+                font-size: 0.6rem;
+            }
+            .form-grid {
+                gap: 0.6rem;
+            }
+            .form-row {
+                gap: 0.6rem;
+            }
+            .form-group input,
+            .form-group textarea,
+            .form-group select {
+                padding: 0.4rem 0.6rem;
+                font-size: 0.82rem;
+                border-radius: 12px;
+            }
+            .form-group label {
+                font-size: 0.72rem;
+            }
+            .form-group label .optional-badge {
+                display: none;
+            }
+            .form-group textarea {
+                min-height: 50px;
+            }
+            .btn-primary,
+            .btn-secondary,
+            #saveProfileBtn {
+                font-size: 0.85rem;
+                padding: 0.6rem 1.2rem;
+            }
+            .file-upload-wrapper input[type="file"] {
+                font-size: 0.75rem;
+            }
+            .file-upload-wrapper input[type="file"]::file-selector-button {
+                padding: 4px 12px;
+                font-size: 0.65rem;
+            }
+            .file-hint {
+                font-size: 0.5rem;
+            }
+            .pricing-group {
+                padding: 0.5rem 0.6rem;
+            }
+            .pricing-group .pricing-title {
+                font-size: 0.8rem;
+            }
+            .keyword-input-wrapper .add-keyword-btn {
+                padding: 0.4rem 0.8rem;
+                font-size: 0.75rem;
+            }
+            .keyword-tag {
+                font-size: 0.65rem;
+                padding: 0.1rem 0.4rem 0.1rem 0.7rem;
+            }
+            .auth-overlay {
+                padding: 1rem 0.8rem;
+            }
+            .auth-overlay h2 {
+                font-size: 1.1rem;
+            }
+            .auth-overlay p {
+                font-size: 0.85rem;
+            }
+            .auth-overlay i {
+                font-size: 2rem;
+            }
+            .auth-overlay .btn-auth {
+                font-size: 0.85rem;
+                padding: 0.5rem 1.2rem;
+            }
+            .currency-converter .converter-item {
+                font-size: 0.6rem;
+                padding: 0.1rem 0.4rem;
+            }
+            #formFeedback {
+                font-size: 0.75rem;
+                padding: 0.6rem 0.8rem;
+            }
+            #formFeedback .feedback-actions .btn-dismiss,
+            #formFeedback .feedback-actions .btn-dashboard {
+                font-size: 0.75rem;
+                padding: 0.5rem 1.2rem;
+            }
+            .draft-notice {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 8px;
+            }
+            .draft-notice .draft-actions {
+                justify-content: flex-end;
+            }
+            .preorder-fields {
+                padding: 0.5rem 0.6rem;
+            }
+            .preorder-fields .preorder-price-input {
+                flex-direction: column;
+            }
+            .preorder-fields .preorder-price-input .form-group {
+                width: 100%;
+            }
+            .legal-section .legal-item .checkbox-group label {
+                font-size: 0.72rem;
+            }
+            .legal-section .legal-subtext {
+                font-size: 0.6rem;
+                margin-left: 20px;
+            }
+            .section-divider .divider-label {
+                font-size: 0.55rem;
+                padding: 0.15rem 0.6rem;
+            }
+            .section-title-block h3 {
+                font-size: 0.8rem;
+            }
+            .section-title-block .title-icon {
+                width: 28px;
+                height: 28px;
+                font-size: 0.7rem;
+            }
+        }
+
+        .platform-badge.reads {
+            background: linear-gradient(135deg, #d4a574, #c9944d);
+        }
+
+       /* Hide pre-order section */
+#preorderCheckbox,
+#preorderCheckbox + label,
+#preorderCheckbox + label + .hint,
+.preorder-fields,
+.preorder-fields.show,
+.preorder-fields .form-group,
+.preorder-fields .preorder-price-input,
+.preorder-fields .preorder-price-input .form-group,
+.preorder-fields .hint {
+    display: none !important;
+}
+.hint {display: none !important;}
+      
+    </style>
+</head>
+<body>
+    <div class="container">
+      <!-- HEADER WITH LOGO AND BACK LINK - UPPER RIGHT -->
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding: 8px 0; border-bottom: 1px solid var(--border-light);">
+    <!-- Logo (left side) - Clickable to index.html with hand cursor -->
+    <div class="form-header" style="margin-bottom: 0;">
+        <a href="index.html" class="logo" style="text-decoration:none; font-size: 1.4rem; display: flex; align-items: center; gap: 0.6rem; cursor: pointer;">
+            <img src="../images/logokk.png" alt="Volant Reads Logo" class="nav-logo-img" style="height: 32px;" />
+            <span class="logo-text">
+                <span class="logo-highlight">Volant</span> Reads
+            </span>
+        </a>
+    </div>
+    
+    <!-- Back link (right side) -->
+    <div style="display: flex; align-items: center; gap: 8px;">
+        <a href="#" id="backLink" style="display: inline-flex; align-items: center; gap: 6px; color: var(--primary); text-decoration: none; font-weight: 500; font-size: 0.85rem; transition: 0.2s; padding: 6px 14px; border-radius: 30px; background: #f5f1eb; white-space: nowrap; cursor: pointer;">
+            <i class="fas fa-arrow-left"></i> <span id="backText">Back</span>
+        </a>
+        <span style="color: var(--text-muted); font-size: 0.7rem; display: none;" id="backDestination">Return to previous page</span>
+    </div>
+</div>
+
+        <div class="subhead">
+            <span class="tagline"><i class="fas fa-feather-alt"></i>Books with Soaring Words</span>
+        </div>
+
+        <!-- USER BADGE -->
+        <div id="userBadge" class="user-badge" style="display: none;">
+            <i class="fas fa-user-circle"></i>
+            <span id="userNameDisplay">User</span>
+            <span style="color: #8a7b6a; font-size: 0.75rem;">•</span>
+            <span style="color: #8a7b6a; font-size: 0.75rem;">Signed in</span>
+        </div>
+
+        <!-- ================================================================ -->
+        <!-- ===== DRAFT NOTICE ===== -->
+        <!-- ================================================================ -->
+        <div id="draftNotice" class="draft-notice" style="display:none;">
+            <i class="fas fa-save"></i>
+            <div class="draft-text">
+                <strong>📝 Draft saved!</strong> You have a saved draft from <span id="draftTimestamp"></span>. 
+                You can continue where you left off.
+            </div>
+            <div class="draft-actions">
+                <button id="loadDraftBtn"><i class="fas fa-undo"></i> Load Draft</button>
+                <button id="discardDraftBtn" class="btn-discard-draft"><i class="fas fa-trash"></i> Discard</button>
+            </div>
+        </div>
+
+        <!-- ================================================================ -->
+        <!-- ===== PAYOUT ACCOUNT WARNING BANNER ===== -->
+        <!-- ================================================================ -->
+        <div id="payoutWarningBanner" class="">
+            <div class="banner-content">
+                <div class="banner-icon">
+                    <i class="fas fa-wallet"></i>
+                </div>
+                <div class="banner-text">
+                    <h4>💳 One More Step: Set Up Your Payout Account</h4>
+                    <p>
+                        To receive payments when your book sells, you need to add your bank or mobile money details. Go to Dashboard → Settings to set up your payout account.
+                        <strong>It takes less than 6 minutes!</strong>
+                    </p>
+                    <div class="banner-actions">
+                        <a href="dashboard.html#settings" class="btn-setup-payout">
+                            <i class="fas fa-arrow-right"></i> Set Up Payout Now (Progress is autosaved.)
+                        </a>
+                        <span class="banner-time">
+                            <i class="fas fa-clock"></i> ~5 minutes
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AUTH OVERLAY -->
+        <div id="authOverlay" class="auth-overlay">
+            <i class="fas fa-lock"></i>
+            <h2>Sign In Required</h2>
+            <p>You need to be signed in to submit your book to Volant Reads.</p>
+            <div>
+                <a href="../shared/universal-login.html?platform=reads" class="btn-auth">Sign In</a>
+                <a href="../shared/universal-signup.html?platform=reads" class="btn-auth btn-auth-outline">Create Account</a>
+            </div>
+            <p style="margin-top: 1.5rem; font-size: 0.9rem; color: #8a7b6a;">
+                <i class="fas fa-info-circle"></i> You'll be redirected back after signing in.
+            </p>
+        </div>
+
+        <!-- FORM WRAPPER -->
+        <div id="formWrapper" style="display: none;">
+            <form id="bookSubmissionForm" class="form-grid" enctype="multipart/form-data">
+
+                <!-- ============================================================ -->
+                <!-- SECTION 1: AUTHOR INFORMATION -->
+                <!-- ============================================================ -->
+                <div class="section-title-block">
+                    <div class="title-icon"><i class="fas fa-user-pen"></i></div>
+                    <h3>Author Information</h3>
+                    <span class="section-badge">Required</span>
+                </div>
+
+                <!-- AUTHOR NAME - Fetched from user settings -->
+                <div class="form-group">
+                    <label for="authorName"><i class="fas fa-user-edit"></i> Author Name <span style="color:#b76e4b;">*</span></label>
+                    <input type="text" id="authorName" placeholder="Enter the author name (e.g., your pen name or full name)" required />
+                    <span class="hint"><i class="fas fa-info-circle"></i> Enter the name you want to appear as the author of this book.</span>
+                </div>
+
+                <!-- PUBLISHER NAME -->
+                <div class="form-group">
+                    <label for="publisherName"><i class="fas fa-building"></i> Publisher Name <span class="optional-badge">optional</span></label>
+                    <input type="text" id="publisherName" placeholder="Publisher name (leave empty to use author name)" />
+                    <span class="hint"><i class="fas fa-info-circle"></i> If different from author name. Leave empty to use author name as publisher.</span>
+                </div>
+
+                <!-- EMAIL ADDRESS - Fetched from user email -->
+                <div class="form-group">
+                    <label for="authorEmail"><i class="fas fa-envelope"></i> Email Address <span style="color:#b76e4b;">*</span></label>
+                    <input type="email" id="authorEmail" placeholder="your-email@gmail.com" required />
+                    <span class="hint">We'll use this to contact you about your submission.</span>
+                </div>
+
+                <!-- COUNTRY -->
+                <div class="form-group">
+                    <label for="countryInput"><i class="fas fa-map-marker-alt"></i> Country <span style="color:#b76e4b;">*</span></label>
+                    <div class="country-select-wrapper">
+                        <input type="text" id="countryInput" placeholder="Start typing to search for your country..." autocomplete="off" />
+                        <input type="hidden" id="countryHidden" value="" />
+                        <div class="country-dropdown" id="countryDropdown"></div>
+                    </div>
+                    <span class="hint">Type to filter countries, then click to select.</span>
+                </div>
+
+                <!-- PHONE NUMBER -->
+                <div class="form-group">
+                    <label for="phoneNumber"><i class="fas fa-phone"></i> Phone number <span style="color:#b76e4b;">*</span></label>
+                    <input type="tel" id="phoneNumber" placeholder="+233 24 444 4444" required />
+                    <span class="hint">Include country code (e.g., +233 for Ghana, +44 for UK).</span>
+                </div>
+
+                <!-- ============================================================ -->
+                <!-- SECTION 2: BOOK DETAILS -->
+                <!-- ============================================================ -->
+                <div class="section-title-block">
+                    <div class="title-icon"><i class="fas fa-book-open"></i></div>
+                    <h3>Book Details</h3>
+                    <span class="section-badge">Required</span>
+                </div>
+
+                <!-- TITLE & SUBTITLE -->
+                <div class="form-row">
+                    <div class="form-group" style="flex: 2;">
+                        <label for="bookTitle"><i class="fas fa-heading"></i> Book title <span style="color:#b76e4b;">*</span></label>
+                        <input type="text" id="bookTitle" placeholder="e.g. The Silent Waves" required />
+                    </div>
+                    <div class="form-group" style="flex: 1.5;">
+                        <label for="bookSubtitle"><i class="fas fa-quote-right"></i> Subtitle <span class="optional-badge">optional</span></label>
+                        <input type="text" id="bookSubtitle" placeholder="A story of resilience" />
+                    </div>
+                </div>
+
+                <!-- AUTHOR BIO -->
+                <div class="form-group">
+                    <label for="authorBio"><i class="fas fa-align-left"></i> Author bio <span style="color:#b76e4b;">*</span></label>
+                    <textarea id="authorBio" rows="3" placeholder="Brief bio of the author..." required></textarea>
+                    <span class="hint">Tell readers about the author (background, previous works, etc.)</span>
+                </div>
+
+                <!-- SYNOPSIS -->
+                <div class="form-group">
+                    <label for="bookSynopsis"><i class="fas fa-align-left"></i> Synopsis / book description <span style="color:#b76e4b;">*</span></label>
+                    <textarea id="bookSynopsis" rows="5" placeholder="A compelling summary of the book..." required></textarea>
+                    <span class="hint">A few paragraphs that capture the essence of the book.</span>
+                </div>
+
+                <!-- ISBN & PUBLISHING DATE -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="isbn"><i class="fas fa-barcode"></i> ISBN <span class="optional-badge">optional</span></label>
+                        <input type="text" id="isbn" placeholder="978-3-16-148410-0" />
+                    </div>
+                    <div class="form-group">
+                        <label for="publishDate"><i class="fas fa-calendar-alt"></i> Publishing date <span style="color:#b76e4b;">*</span></label>
+                        <input type="date" id="publishDate" required />
+                    </div>
+                </div>
+
+                <!-- ============================================================ -->
+                <!-- SECTION 3: GENRE & LANGUAGE -->
+                <!-- ============================================================ -->
+                <div class="section-title-block">
+                    <div class="title-icon"><i class="fas fa-tags"></i></div>
+                    <h3>Genre &amp; Language</h3>
+                    <span class="section-badge">Required</span>
+                </div>
+
+                <!-- GENRE -->
+                <div class="form-group">
+                    <label for="bookGenre"><i class="fas fa-tag"></i> Genre <span style="color:#b76e4b;">*</span></label>
+                    <select id="bookGenre" required>
+                        <option value="">Select a genre</option>
+                        <option value="Poetry">Poetry</option>
+                        <option value="Fiction">Fiction</option>
+                        <option value="Non-fiction">Non-fiction</option>
+                        <option value="Science Fiction">Science Fiction</option>
+                        <option value="Fantasy">Fantasy</option>
+                        <option value="Mystery">Mystery</option>
+                        <option value="Thriller">Thriller</option>
+                        <option value="Romance">Romance</option>
+                        <option value="Historical">Historical</option>
+                        <option value="Biography">Biography</option>
+                        <option value="Self-Help">Self-Help</option>
+                        <option value="Young Adult">Young Adult</option>
+                        <option value="Children's">Children's</option>
+                        <option value="Horror">Horror</option>
+                        <option value="Other">Other (specify below)</option>
+                    </select>
+                    <div id="genreOtherContainer" class="conditional-input">
+                        <input type="text" id="genreOther" placeholder="Please specify your genre" />
+                    </div>
+                    <span class="hint">Select the primary genre. If "Other", specify in the field below.</span>
+                </div>
+
+                <!-- LANGUAGE -->
+                <div class="form-group">
+                    <label for="bookLanguage"><i class="fas fa-globe"></i> Language <span style="color:#b76e4b;">*</span></label>
+                    <select id="bookLanguage" required>
+                        <option value="">Select language</option>
+                        <option value="English">English</option>
+                        <option value="Spanish">Spanish</option>
+                        <option value="French">French</option>
+                        <option value="German">German</option>
+                        <option value="Portuguese">Portuguese</option>
+                        <option value="Chinese">Chinese</option>
+                        <option value="Japanese">Japanese</option>
+                        <option value="Arabic">Arabic</option>
+                        <option value="Hindi">Hindi</option>
+                        <option value="Russian">Russian</option>
+                        <option value="Italian">Italian</option>
+                        <option value="Other">Other (specify below)</option>
+                    </select>
+                    <div id="languageOtherContainer" class="conditional-input">
+                        <input type="text" id="languageOther" placeholder="Please specify your language" />
+                    </div>
+                    <span class="hint">Select the book's primary language. If "Other", specify in the field below.</span>
+                </div>
+
+                <!-- ============================================================ -->
+                <!-- SECTION 4: BOOK SPECIFICATIONS -->
+                <!-- ============================================================ -->
+                <div class="section-title-block">
+                    <div class="title-icon"><i class="fas fa-sliders-h"></i></div>
+                    <h3>Book Specifications</h3>
+                    <span class="section-badge">Required</span>
+                </div>
+
+                <!-- NUMBER OF PAGES -->
+                <div class="form-group">
+                    <label for="pageCount"><i class="fas fa-file-alt"></i> Number of Pages <span style="color:#b76e4b;">*</span></label>
+                    <input type="number" id="pageCount" placeholder="e.g. 320" min="1" required />
+                    <span class="hint">Total number of pages in the book.</span>
+                </div>
+
+                <!-- DOWNLOADS SECTION -->
+                <div class="downloads-group">
+                    <div class="downloads-title">
+                        <i class="fas fa-download"></i> Number of Downloads <span style="color:#b76e4b;">*</span>
+                    </div>
+                    <div class="downloads-row">
+                        <div class="form-group">
+                            <label for="downloadsSelect"><i class="fas fa-list"></i> Select option</label>
+                            <select id="downloadsSelect">
+                                <option value="5">5 downloads (Default)</option>
+                                <option value="3">3 downloads</option>
+                                <option value="10">10 downloads</option>
+                                <option value="unlimited">Unlimited</option>
+                                <option value="custom">Custom (enter below)</option>
+                            </select>
+                        </div>
+                        <div class="form-group custom-download-input" id="customDownloadContainer">
+                            <label for="customDownloads"><i class="fas fa-pencil-alt"></i> Custom number</label>
+                            <input type="number" id="customDownloads" placeholder="Enter number" min="3" />
+                        </div>
+                    </div>
+                    <div class="downloads-hint">
+                        <i class="fas fa-info-circle"></i> 
+                        <span class="min-downloads">Minimum is 3 downloads</span> — you can set any number or choose Unlimited.
+                    </div>
+                </div>
+
+                <!-- ============================================================ -->
+                <!-- SECTION 5: PRICING -->
+                <!-- ============================================================ -->
+                <div class="section-title-block">
+                    <div class="title-icon"><i class="fas fa-coins"></i></div>
+                    <h3>Pricing</h3>
+                    <span class="section-badge">Required</span>
+                </div>
+
+                <div class="pricing-group">
+                    <div class="pricing-title">
+                        <i class="fas fa-tag"></i> Set Your Price
+                    </div>
+                    <div class="pricing-row">
+                        <div class="form-group">
+                            <label for="currency"><i class="fas fa-dollar-sign"></i> Currency</label>
+                            <select id="currency" class="currency-select" required>
+                                <option value="GHS">₵ GHS (Ghana Cedis)</option>
+                                <option value="USD">$ USD</option>
+                                <option value="EUR">€ EUR</option>
+                                <option value="GBP">£ GBP</option>
+                                <option value="CAD">C$ CAD</option>
+                                <option value="AUD">A$ AUD</option>
+                                <option value="NGN">₦ NGN</option>
+                                <option value="KES">KSh KES</option>
+                                <option value="ZAR">R ZAR</option>
+                                <option value="INR">₹ INR</option>
+                                <option value="JPY">¥ JPY</option>
+                                <option value="CNY">¥ CNY</option>
+                                <option value="BRL">R$ BRL</option>
+                                <option value="MXN">$ MXN</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="priceAmount"><i class="fas fa-coins"></i> Price <span style="color:#b76e4b;">*</span></label>
+                            <div class="price-input-wrapper">
+                                <span class="currency-symbol" id="currencySymbol">₵</span>
+                                <input type="number" id="priceAmount" placeholder="0.00" step="0.01" min="0" required />
+                            </div>
+                            <span class="hint">Enter 0 for free books.</span>
+                        </div>
+                    </div>
+
+                    <!-- Currency Converter -->
+                    <div id="currencyConverter" class="currency-converter">
+                        <div class="converter-header">
+                            <i class="fas fa-exchange-alt"></i>
+                            <span>Live Exchange Rates</span>
+                            <span style="font-size:0.65rem; color:#aaa; font-weight:400;" id="converterTimestamp"></span>
+                        </div>
+                        <div id="converterContent">
+                            <div class="converter-loading">
+                                <div class="spinner-small"></div>
+                                <span>Enter a price to see conversions</span>
+                            </div>
+                        </div>
+                        <div class="converter-info">
+                            <i class="fas fa-info-circle"></i>
+                            <span>Rates updated hourly from exchangerate-api.com</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ============================================================ -->
+                <!-- SECTION 6: KEYWORDS & FILES -->
+                <!-- ============================================================ -->
+                <div class="section-title-block">
+                    <div class="title-icon"><i class="fas fa-key"></i></div>
+                    <h3>Keywords &amp; Files</h3>
+                    <span class="section-badge">Required</span>
+                </div>
+
+                <!-- KEYWORDS -->
+                <div class="form-group">
+                    <label for="keywordInput"><i class="fas fa-hashtag"></i> Keywords <span style="color:#b76e4b;">*</span></label>
+                    <div class="keyword-input-wrapper">
+                        <input type="text" id="keywordInput" placeholder="Enter a keyword (e.g., poetry, love, nature)" />
+                        <button type="button" id="addKeywordBtn" class="add-keyword-btn"><i class="fas fa-plus"></i> Add</button>
+                    </div>
+                    <div class="keyword-tags" id="keywordTags"></div>
+                    <div class="keyword-counter" id="keywordCounter">
+                        <span id="keywordCountDisplay">0</span> keywords added
+                        <span class="count-required">(minimum 3, maximum 5)</span>
+                    </div>
+                    <span class="hint">Add at least 3 and up to 5 keywords to help readers find your book.</span>
+                </div>
+
+                <!-- PDF UPLOAD -->
+                <div class="form-group">
+                    <label for="pdfUpload"><i class="fas fa-file-pdf"></i> Upload PDF <span style="color:#b76e4b;">*</span></label>
+                    <div class="file-upload-wrapper">
+                        <input type="file" id="pdfUpload" accept=".pdf,application/pdf" required />
+                        <span class="file-hint"><i class="fas fa-info-circle"></i> max 15 MB</span>
+                    </div>
+                    <div id="pdfFeedback" class="file-feedback"></div>
+                    <span class="hint">Upload the full book in PDF format (max 15MB).</span>
+                </div>
+
+                <!-- COVER IMAGE -->
+                <div class="form-group">
+                    <label for="coverImage"><i class="fas fa-image"></i> Cover image <span style="color:#b76e4b;">*</span></label>
+                    <div class="file-upload-wrapper">
+                        <input type="file" id="coverImage" accept="image/*" required />
+                        <span class="file-hint"><i class="fas fa-info-circle"></i> max 5 MB</span>
+                    </div>
+                    <div id="imageFeedback" class="file-feedback"></div>
+                    <span class="hint">JPG, PNG, or WEBP recommended (max 5MB).</span>
+                </div>
+
+                <!-- OTHER DETAILS -->
+                <div class="form-group">
+                    <label for="otherDetails"><i class="fas fa-ellipsis-h"></i> Other details <span class="optional-badge">optional</span></label>
+                    <textarea id="otherDetails" rows="3" placeholder="Any additional info: edition, series, special notes, etc."></textarea>
+                    <span class="hint">Mention anything else that might be relevant (e.g., cover artist, translator).</span>
+                </div>
+
+                <!-- ============================================================ -->
+                <!-- SECTION 7: PRE-ORDER (HIDDEN) -->
+                <!-- ============================================================ -->
+                <div class="section-title-block" style="display:none;">
+                    <div class="title-icon"><i class="fas fa-clock"></i></div>
+                    <h3>Pre-Order (Coming Soon)</h3>
+                    <span class="section-badge">Optional</span>
+                </div>
+
+                <!-- PRE-ORDER COMING SOON NOTICE -->
+                <div style="background: #fef3e2; border: 1px solid #f5cba7; border-radius: 12px; padding: 0.8rem 1.2rem; margin-bottom: 1rem;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-clock" style="color: #b76e4b; font-size: 1.1rem;"></i>
+                        <div>
+                            <p style="margin: 0; font-weight: 600; color: #7a4a2a; font-size: 0.9rem;">
+                                📅 Pre-orders Coming Soon
+                            </p>
+                            <p style="margin: 0; font-size: 0.8rem; color: #8a6a4a;">
+                                We're working on allowing pre-orders for books. Stay tuned!
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PRE-ORDER SECTION (HIDDEN) -->
+                <div class="form-group" style="display:none;">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="preorderCheckbox" />
+                        <label for="preorderCheckbox"><i class="fas fa-clock"></i> Mark as pre-order</label>
+                    </div>
+                    <span class="hint">Check if the book is available for pre-order.</span>
+                </div>
+
+                <div id="preorderFields" class="preorder-fields" style="display:none;">
+                    <div class="form-group">
+                        <label for="preorderReleaseDate"><i class="fas fa-calendar-day"></i> Release Date <span style="color:#b76e4b;">*</span></label>
+                        <input type="date" id="preorderReleaseDate" />
+                        <span class="hint">The date when the book will be available for download.</span>
+                    </div>
+                    <div class="preorder-price-input">
+                        <div class="form-group">
+                            <label for="preorderPrice"><i class="fas fa-tag"></i> Pre-order Price</label>
+                            <input type="number" id="preorderPrice" placeholder="0.00" step="0.01" min="0" />
+                            <span class="hint">Leave empty to use the regular price.</span>
+                        </div>
+                        <div class="form-group">
+                            <label for="originalPrice"><i class="fas fa-tag"></i> Original Price (for display)</label>
+                            <input type="number" id="originalPrice" placeholder="0.00" step="0.01" min="0" />
+                            <span class="hint">Show original price crossed out next to pre-order price.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="divider" />
+
+                <!-- ============================================================ -->
+                <!-- SECTION 8: RIGHTS & TERMS -->
+                <!-- ============================================================ -->
+                <div class="section-title-block">
+                    <div class="title-icon"><i class="fas fa-gavel"></i></div>
+                    <h3>Rights &amp; Terms</h3>
+                    <span class="section-badge">Required</span>
+                </div>
+
+                <div class="legal-section">
+                    <div class="legal-item">
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="rightsDeclaration" required />
+                            <label for="rightsDeclaration">
+                                <i class="fas fa-check-circle" style="color: var(--primary);"></i>
+                                I declare that I have the full rights to distribute this book
+                            </label>
+                        </div>
+                        <div class="legal-subtext">
+                            By checking this box, I confirm that I own the copyright or have obtained all necessary permissions 
+                            to publish and distribute this book. I understand that false claims may result in termination of my account 
+                            and legal action.
+                        </div>
+                    </div>
+
+                    <div class="legal-item">
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="termsAgreement" required />
+                            <label for="termsAgreement">
+                                <i class="fas fa-file-contract" style="color: var(--primary);"></i>
+                                I agree to the <a href="../shared/terms.html" target="_blank">Terms of Service</a> and <a href="../shared/privacy.html" target="_blank">Privacy Policy</a>
+                            </label>
+                        </div>
+                        <div class="legal-subtext">
+                            By submitting this book, you agree to our Terms of Service and Privacy Policy.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ============================================================ -->
+                <!-- UPLOAD PROGRESS - RIGHT AFTER RIGHTS & TERMS (checkbox section) -->
+                <!-- ============================================================ -->
+                <div id="uploadProgress" class="upload-progress">
+                    <div class="progress-status" id="progressStatus">Preparing upload...</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <div class="progress-text" id="progressText">0%</div>
+                </div>
+
+                <!-- PENDING NOTICE - RIGHT AFTER PROGRESS -->
+                <div id="pendingNotice" class="pending-notice">
+                    <div class="pending-content">
+                        <i class="fas fa-clock"></i>
+                        <div>
+                            <p class="pending-text">⏳ Pending Review</p>
+                            <p class="pending-sub">Your book has been submitted and is awaiting admin approval.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ============================================================ -->
+                <!-- FORM ACTIONS: Save Profile BEFORE Submit Button -->
+                <!-- ============================================================ -->
+                <div class="form-actions">
+                    <!-- Save Profile Button - appears BEFORE submit when changes detected -->
+                    <button type="button" class="btn-secondary" id="saveProfileBtn" style="background:#6a34ff; color:white; border:none; display:none;">
+                        <i class="fas fa-save"></i> Save Profile
+                    </button>
+                    
+                    <!-- Submit Button -->
+                    <button type="submit" class="btn-primary" id="submitBookBtn">
+                        <i class="fas fa-cloud-upload-alt"></i> Submit to Volant Reads
+                    </button>
+                    
+                    <!-- Reset Button -->
+                    <button type="reset" class="btn-secondary">
+                        <i class="fas fa-undo-alt"></i> Reset form
+                    </button>
+                </div>
+
+                <div id="formFeedback"></div>
+            </form>
+        </div>
+    </div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "firebase/app": "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js",
+                "firebase/firestore": "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js",
+                "firebase/auth": "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"
+            }
+        }
+    </script>
+<script type="module">
+        import { initializeApp } from "firebase/app";
+        import {
+            getFirestore, collection, addDoc, serverTimestamp, doc, getDoc, updateDoc
+        } from "firebase/firestore";
+        import {
+            getAuth, onAuthStateChanged
+        } from "firebase/auth";
+
+        // ===== BACK LINK FUNCTIONALITY =====
+function setupBackLink() {
+    const backLink = document.getElementById('backLink');
+    const backText = document.getElementById('backText');
+    const backDestination = document.getElementById('backDestination');
+    
+    // Check if there's a return URL in localStorage or URL params
+    let returnUrl = null;
+    let returnText = '← Home';
+    let fullText = 'Back to Home';
+    
+    // ⭐ CHECK: Was this page opened directly?
+    // - No redirect parameter in URL
+    // - No stored return URL in localStorage
+    // - No stored return URL in sessionStorage
+    // - No referrer from the same site
+    const urlParams = new URLSearchParams(window.location.search);
+    const hasRedirectParam = urlParams.has('redirect');
+    const hasStoredLocal = localStorage.getItem('volant_return_url') !== null;
+    const hasStoredSession = sessionStorage.getItem('volant_return_url') !== null;
+    const hasReferrer = document.referrer && new URL(document.referrer).hostname === window.location.hostname;
+    
+    // If no redirect param, no stored URLs, and no referrer, this page was opened directly
+    const isDirectOpen = !hasRedirectParam && !hasStoredLocal && !hasStoredSession && !hasReferrer;
+    
+    if (isDirectOpen) {
+        // ⭐ Page opened directly - go to index.html
+        returnUrl = 'index.html';
+        returnText = '← Home';
+        fullText = 'Back to Home';
+        console.log('📄 Page opened directly - Back link set to Home');
+    } else {
+        // 1. Check URL parameters for redirect parameter
+        if (hasRedirectParam) {
+            returnUrl = decodeURIComponent(urlParams.get('redirect'));
+            // Try to get a friendly name from the URL
+            if (returnUrl.includes('dashboard')) {
+                returnText = '← Dashboard';
+                fullText = 'Back to Dashboard';
+            } else if (returnUrl.includes('store')) {
+                returnText = '← Store';
+                fullText = 'Back to Store';
+            } else if (returnUrl.includes('details')) {
+                returnText = '← Details';
+                fullText = 'Back to Book Details';
+            } else if (returnUrl.includes('profile')) {
+                returnText = '← Profile';
+                fullText = 'Back to Profile';
+            } else if (returnUrl.includes('index')) {
+                returnText = '← Home';
+                fullText = 'Back to Home';
+            } else {
+                returnText = '← Back';
+                fullText = 'Back to Previous Page';
+            }
+        }
+        
+        // 2. Check localStorage for return URL (if not set by redirect param)
+        if (!returnUrl && hasStoredLocal) {
+            returnUrl = localStorage.getItem('volant_return_url');
+            const storedText = localStorage.getItem('volant_return_text');
+            returnText = storedText || '← Back';
+            fullText = storedText || 'Back to Previous Page';
+            // Clear after reading
+            localStorage.removeItem('volant_return_url');
+            localStorage.removeItem('volant_return_text');
+        }
+        
+        // 3. Check sessionStorage for return URL (if not set yet)
+        if (!returnUrl && hasStoredSession) {
+            returnUrl = sessionStorage.getItem('volant_return_url');
+            const storedText = sessionStorage.getItem('volant_return_text');
+            returnText = storedText || '← Back';
+            fullText = storedText || 'Back to Previous Page';
+            // Don't clear sessionStorage so it persists
+        }
+        
+        // 4. Check document.referrer (last resort)
+        if (!returnUrl && hasReferrer) {
+            const referrerUrl = new URL(document.referrer);
+            returnUrl = document.referrer;
+            if (returnUrl.includes('dashboard')) {
+                returnText = '← Dashboard';
+                fullText = 'Back to Dashboard';
+            } else if (returnUrl.includes('store')) {
+                returnText = '← Store';
+                fullText = 'Back to Store';
+            } else if (returnUrl.includes('details')) {
+                returnText = '← Details';
+                fullText = 'Back to Book Details';
+            } else if (returnUrl.includes('index')) {
+                returnText = '← Home';
+                fullText = 'Back to Home';
+            } else {
+                returnText = '← Back';
+                fullText = 'Back to Previous Page';
+            }
+        }
+        
+        // 5. Default fallback (if nothing else works)
+        if (!returnUrl) {
+            returnUrl = 'index.html';
+            returnText = '← Home';
+            fullText = 'Back to Home';
+        }
+    }
+    
+    // Update the back link
+    if (backLink) {
+        backLink.href = returnUrl;
+        backLink.title = fullText;
+    }
+    
+    if (backText) {
+        // Remove the arrow from the text if it exists
+        const cleanText = returnText.replace('←', '').trim();
+        backText.textContent = cleanText;
+        // Keep the arrow in the link HTML
+        backLink.innerHTML = `<i class="fas fa-arrow-left"></i> ${cleanText}`;
+    }
+    
+    if (backDestination) {
+        backDestination.textContent = fullText;
+    }
+    
+    console.log('🔙 Back link set to:', returnUrl, '-', fullText);
+}
+
+// Call setupBackLink when the page loads
+document.addEventListener('DOMContentLoaded', setupBackLink);
+      
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyC4DHI8aBVY4JjTvJ-r-TGIDPsewtEWxzU",
+            authDomain: "silent-depth.firebaseapp.com",
+            projectId: "silent-depth",
+            storageBucket: "silent-depth.appspot.com",
+            messagingSenderId: "78008755450",
+            appId: "1:78008755450:web:3fd0f0f298a08820935543"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        const CLOUDINARY_CONFIG = {
+            cloudName: 'dzoq4pgjn',
+            uploadPreset: 'volant_books',
+            fallbackPreset: 'profile_pics',
+            folder: 'volant-reads'
+        };
+
+        const currencySymbols = {
+            'GHS': '₵',
+            'USD': '$',
+            'EUR': '€',
+            'GBP': '£',
+            'CAD': 'C$',
+            'AUD': 'A$',
+            'NGN': '₦',
+            'KES': 'KSh',
+            'ZAR': 'R',
+            'INR': '₹',
+            'JPY': '¥',
+            'CNY': '¥',
+            'BRL': 'R$',
+            'MXN': '$',
+            'Other': '¤'
+        };
+
+        const currencyNames = {
+            'GHS': 'Ghana Cedis',
+            'USD': 'US Dollar',
+            'EUR': 'Euro',
+            'GBP': 'British Pound',
+            'CAD': 'Canadian Dollar',
+            'AUD': 'Australian Dollar',
+            'NGN': 'Nigerian Naira',
+            'KES': 'Kenyan Shilling',
+            'ZAR': 'South African Rand',
+            'INR': 'Indian Rupee',
+            'JPY': 'Japanese Yen',
+            'CNY': 'Chinese Yuan',
+            'BRL': 'Brazilian Real',
+            'MXN': 'Mexican Peso'
+        };
+
+        const currencyFlags = {
+            'GHS': '🇬🇭',
+            'USD': '🇺🇸',
+            'EUR': '🇪🇺',
+            'GBP': '🇬🇧',
+            'CAD': '🇨🇦',
+            'AUD': '🇦🇺',
+            'NGN': '🇳🇬',
+            'KES': '🇰🇪',
+            'ZAR': '🇿🇦',
+            'INR': '🇮🇳',
+            'JPY': '🇯🇵',
+            'CNY': '🇨🇳',
+            'BRL': '🇧🇷',
+            'MXN': '🇲🇽'
+        };
+
+        // DOM refs
+        const authOverlay = document.getElementById('authOverlay');
+        const formWrapper = document.getElementById('formWrapper');
+        const userBadge = document.getElementById('userBadge');
+        const userNameDisplay = document.getElementById('userNameDisplay');
+        const form = document.getElementById('bookSubmissionForm');
+        const feedback = document.getElementById('formFeedback');
+        const pdfInput = document.getElementById('pdfUpload');
+        const coverInput = document.getElementById('coverImage');
+        const pdfFeedback = document.getElementById('pdfFeedback');
+        const imageFeedback = document.getElementById('imageFeedback');
+        const genreSelect = document.getElementById('bookGenre');
+        const genreOtherContainer = document.getElementById('genreOtherContainer');
+        const genreOtherInput = document.getElementById('genreOther');
+        const languageSelect = document.getElementById('bookLanguage');
+        const languageOtherContainer = document.getElementById('languageOtherContainer');
+        const languageOtherInput = document.getElementById('languageOther');
+        const keywordInput = document.getElementById('keywordInput');
+        const addKeywordBtn = document.getElementById('addKeywordBtn');
+        const keywordTags = document.getElementById('keywordTags');
+        const keywordCountDisplay = document.getElementById('keywordCountDisplay');
+        const countryInput = document.getElementById('countryInput');
+        const countryHidden = document.getElementById('countryHidden');
+        const countryDropdown = document.getElementById('countryDropdown');
+        const uploadProgress = document.getElementById('uploadProgress');
+        const progressStatus = document.getElementById('progressStatus');
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+        const currencySelect = document.getElementById('currency');
+        const currencySymbolSpan = document.getElementById('currencySymbol');
+        const priceAmount = document.getElementById('priceAmount');
+        const pendingNotice = document.getElementById('pendingNotice');
+        const authorNameInput = document.getElementById('authorName');
+        const authorEmailInput = document.getElementById('authorEmail');
+        const publisherNameInput = document.getElementById('publisherName');
+        const phoneNumberInput = document.getElementById('phoneNumber');
+        const pageCountInput = document.getElementById('pageCount');
+        const authorBioInput = document.getElementById('authorBio');
+        const saveProfileBtn = document.getElementById('saveProfileBtn');
+
+        // ===== PRE-ORDER DOM REFS =====
+        const preorderCheckbox = document.getElementById('preorderCheckbox');
+        const preorderFields = document.getElementById('preorderFields');
+        const preorderReleaseDate = document.getElementById('preorderReleaseDate');
+        const preorderPrice = document.getElementById('preorderPrice');
+        const originalPrice = document.getElementById('originalPrice');
+
+        // ===== RIGHTS & TERMS DOM REFS =====
+        const rightsDeclaration = document.getElementById('rightsDeclaration');
+        const termsAgreement = document.getElementById('termsAgreement');
+
+        // ===== DRAFT DOM REFS =====
+        const draftNotice = document.getElementById('draftNotice');
+        const draftTimestamp = document.getElementById('draftTimestamp');
+        const loadDraftBtn = document.getElementById('loadDraftBtn');
+        const discardDraftBtn = document.getElementById('discardDraftBtn');
+
+        // ===== PAYOUT WARNING DOM REFS =====
+        const payoutWarningBanner = document.getElementById('payoutWarningBanner');
+        const submitBookBtn = document.getElementById('submitBookBtn');
+
+        // Downloads DOM refs
+        const downloadsSelect = document.getElementById('downloadsSelect');
+        const customDownloadContainer = document.getElementById('customDownloadContainer');
+        const customDownloadsInput = document.getElementById('customDownloads');
+
+        let keywords = [];
+        let currentUser = null;
+        let currentUsername = '';
+        let selectedCountry = '';
+        let isSubmitSuccess = false;
+
+        // ===== ORIGINAL VALUES FOR CHANGE DETECTION =====
+        let originalAuthorName = '';
+        let originalAuthorBio = '';
+        let originalAuthorEmail = '';
+        let originalPublisherName = '';
+        let originalPhoneNumber = '';
+        let originalCountry = '';
+
+        const MAX_PDF_SIZE = 15 * 1024 * 1024;
+        const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
+
+        const countries = [
+            { name: "Afghanistan", flag: "🇦🇫" }, { name: "Albania", flag: "🇦🇱" }, { name: "Algeria", flag: "🇩🇿" },
+            { name: "Andorra", flag: "🇦🇩" }, { name: "Angola", flag: "🇦🇴" }, { name: "Argentina", flag: "🇦🇷" },
+            { name: "Armenia", flag: "🇦🇲" }, { name: "Australia", flag: "🇦🇺" }, { name: "Austria", flag: "🇦🇹" },
+            { name: "Azerbaijan", flag: "🇦🇿" }, { name: "Bahamas", flag: "🇧🇸" }, { name: "Bahrain", flag: "🇧🇭" },
+            { name: "Bangladesh", flag: "🇧🇩" }, { name: "Barbados", flag: "🇧🇧" }, { name: "Belarus", flag: "🇧🇾" },
+            { name: "Belgium", flag: "🇧🇪" }, { name: "Belize", flag: "🇧🇿" }, { name: "Benin", flag: "🇧🇯" },
+            { name: "Bhutan", flag: "🇧🇹" }, { name: "Bolivia", flag: "🇧🇴" }, { name: "Bosnia and Herzegovina", flag: "🇧🇦" },
+            { name: "Botswana", flag: "🇧🇼" }, { name: "Brazil", flag: "🇧🇷" }, { name: "Brunei", flag: "🇧🇳" },
+            { name: "Bulgaria", flag: "🇧🇬" }, { name: "Burkina Faso", flag: "🇧🇫" }, { name: "Burundi", flag: "🇧🇮" },
+            { name: "Cambodia", flag: "🇰🇭" }, { name: "Cameroon", flag: "🇨🇲" }, { name: "Canada", flag: "🇨🇦" },
+            { name: "Cape Verde", flag: "🇨🇻" }, { name: "Central African Republic", flag: "🇨🇫" }, { name: "Chad", flag: "🇹🇩" },
+            { name: "Chile", flag: "🇨🇱" }, { name: "China", flag: "🇨🇳" }, { name: "Colombia", flag: "🇨🇴" },
+            { name: "Comoros", flag: "🇰🇲" }, { name: "Congo", flag: "🇨🇬" }, { name: "Costa Rica", flag: "🇨🇷" },
+            { name: "Croatia", flag: "🇭🇷" }, { name: "Cuba", flag: "🇨🇺" }, { name: "Cyprus", flag: "🇨🇾" },
+            { name: "Czech Republic", flag: "🇨🇿" }, { name: "Denmark", flag: "🇩🇰" }, { name: "Djibouti", flag: "🇩🇯" },
+            { name: "Dominica", flag: "🇩🇲" }, { name: "Dominican Republic", flag: "🇩🇴" }, { name: "East Timor", flag: "🇹🇱" },
+            { name: "Ecuador", flag: "🇪🇨" }, { name: "Egypt", flag: "🇪🇬" }, { name: "El Salvador", flag: "🇸🇻" },
+            { name: "Equatorial Guinea", flag: "🇬🇶" }, { name: "Eritrea", flag: "🇪🇷" }, { name: "Estonia", flag: "🇪🇪" },
+            { name: "Eswatini", flag: "🇸🇿" }, { name: "Ethiopia", flag: "🇪🇹" }, { name: "Fiji", flag: "🇫🇯" },
+            { name: "Finland", flag: "🇫🇮" }, { name: "France", flag: "🇫🇷" }, { name: "Gabon", flag: "🇬🇦" },
+            { name: "Gambia", flag: "🇬🇲" }, { name: "Georgia", flag: "🇬🇪" }, { name: "Germany", flag: "🇩🇪" },
+            { name: "Ghana", flag: "🇬🇭" }, { name: "Greece", flag: "🇬🇷" }, { name: "Grenada", flag: "🇬🇩" },
+            { name: "Guatemala", flag: "🇬🇹" }, { name: "Guinea", flag: "🇬🇳" }, { name: "Guinea-Bissau", flag: "🇬🇼" },
+            { name: "Guyana", flag: "🇬🇾" }, { name: "Haiti", flag: "🇭🇹" }, { name: "Honduras", flag: "🇭🇳" },
+            { name: "Hungary", flag: "🇭🇺" }, { name: "Iceland", flag: "🇮🇸" }, { name: "India", flag: "🇮🇳" },
+            { name: "Indonesia", flag: "🇮🇩" }, { name: "Iran", flag: "🇮🇷" }, { name: "Iraq", flag: "🇮🇶" },
+            { name: "Ireland", flag: "🇮🇪" }, { name: "Israel", flag: "🇮🇱" }, { name: "Italy", flag: "🇮🇹" },
+            { name: "Ivory Coast", flag: "🇨🇮" }, { name: "Jamaica", flag: "🇯🇲" }, { name: "Japan", flag: "🇯🇵" },
+            { name: "Jordan", flag: "🇯🇴" }, { name: "Kazakhstan", flag: "🇰🇿" }, { name: "Kenya", flag: "🇰🇪" },
+            { name: "Kiribati", flag: "🇰🇮" }, { name: "Kuwait", flag: "🇰🇼" }, { name: "Kyrgyzstan", flag: "🇰🇬" },
+            { name: "Laos", flag: "🇱🇦" }, { name: "Latvia", flag: "🇱🇻" }, { name: "Lebanon", flag: "🇱🇧" },
+            { name: "Lesotho", flag: "🇱🇸" }, { name: "Liberia", flag: "🇱🇷" }, { name: "Libya", flag: "🇱🇾" },
+            { name: "Liechtenstein", flag: "🇱🇮" }, { name: "Lithuania", flag: "🇱🇹" }, { name: "Luxembourg", flag: "🇱🇺" },
+            { name: "Madagascar", flag: "🇲🇬" }, { name: "Malawi", flag: "🇲🇼" }, { name: "Malaysia", flag: "🇲🇾" },
+            { name: "Maldives", flag: "🇲🇻" }, { name: "Mali", flag: "🇲🇱" }, { name: "Malta", flag: "🇲🇹" },
+            { name: "Marshall Islands", flag: "🇲🇭" }, { name: "Mauritania", flag: "🇲🇷" }, { name: "Mauritius", flag: "🇲🇺" },
+            { name: "Mexico", flag: "🇲🇽" }, { name: "Micronesia", flag: "🇫🇲" }, { name: "Moldova", flag: "🇲🇩" },
+            { name: "Monaco", flag: "🇲🇨" }, { name: "Mongolia", flag: "🇲🇳" }, { name: "Montenegro", flag: "🇲🇪" },
+            { name: "Morocco", flag: "🇲🇦" }, { name: "Mozambique", flag: "🇲🇿" }, { name: "Myanmar", flag: "🇲🇲" },
+            { name: "Namibia", flag: "🇳🇦" }, { name: "Nauru", flag: "🇳🇷" }, { name: "Nepal", flag: "🇳🇵" },
+            { name: "Netherlands", flag: "🇳🇱" }, { name: "New Zealand", flag: "🇳🇿" }, { name: "Nicaragua", flag: "🇳🇮" },
+            { name: "Niger", flag: "🇳🇪" }, { name: "Nigeria", flag: "🇳🇬" }, { name: "North Korea", flag: "🇰🇵" },
+            { name: "North Macedonia", flag: "🇲🇰" }, { name: "Norway", flag: "🇳🇴" }, { name: "Oman", flag: "🇴🇲" },
+            { name: "Pakistan", flag: "🇵🇰" }, { name: "Palau", flag: "🇵🇼" }, { name: "Palestine", flag: "🇵🇸" },
+            { name: "Panama", flag: "🇵🇦" }, { name: "Papua New Guinea", flag: "🇵🇬" }, { name: "Paraguay", flag: "🇵🇾" },
+            { name: "Peru", flag: "🇵🇪" }, { name: "Philippines", flag: "🇵🇭" }, { name: "Poland", flag: "🇵🇱" },
+            { name: "Portugal", flag: "🇵🇹" }, { name: "Qatar", flag: "🇶🇦" }, { name: "Romania", flag: "🇷🇴" },
+            { name: "Russia", flag: "🇷🇺" }, { name: "Rwanda", flag: "🇷🇼" }, { name: "Saint Kitts and Nevis", flag: "🇰🇳" },
+            { name: "Saint Lucia", flag: "🇱🇨" }, { name: "Saint Vincent and the Grenadines", flag: "🇻🇨" },
+            { name: "Samoa", flag: "🇼🇸" }, { name: "San Marino", flag: "🇸🇲" }, { name: "Sao Tome and Principe", flag: "🇸🇹" },
+            { name: "Saudi Arabia", flag: "🇸🇦" }, { name: "Senegal", flag: "🇸🇳" }, { name: "Serbia", flag: "🇷🇸" },
+            { name: "Seychelles", flag: "🇸🇨" }, { name: "Sierra Leone", flag: "🇸🇱" }, { name: "Singapore", flag: "🇸🇬" },
+            { name: "Slovakia", flag: "🇸🇰" }, { name: "Slovenia", flag: "🇸🇮" }, { name: "Solomon Islands", flag: "🇸🇧" },
+            { name: "Somalia", flag: "🇸🇴" }, { name: "South Africa", flag: "🇿🇦" }, { name: "South Korea", flag: "🇰🇷" },
+            { name: "South Sudan", flag: "🇸🇸" }, { name: "Spain", flag: "🇪🇸" }, { name: "Sri Lanka", flag: "🇱🇰" },
+            { name: "Sudan", flag: "🇸🇩" }, { name: "Suriname", flag: "🇸🇷" }, { name: "Sweden", flag: "🇸🇪" },
+            { name: "Switzerland", flag: "🇨🇭" }, { name: "Syria", flag: "🇸🇾" }, { name: "Taiwan", flag: "🇹🇼" },
+            { name: "Tajikistan", flag: "🇹🇯" }, { name: "Tanzania", flag: "🇹🇿" }, { name: "Thailand", flag: "🇹🇭" },
+            { name: "Togo", flag: "🇹🇬" }, { name: "Tonga", flag: "🇹🇴" }, { name: "Trinidad and Tobago", flag: "🇹🇹" },
+            { name: "Tunisia", flag: "🇹🇳" }, { name: "Turkey", flag: "🇹🇷" }, { name: "Turkmenistan", flag: "🇹🇲" },
+            { name: "Tuvalu", flag: "🇹🇻" }, { name: "Uganda", flag: "🇺🇬" }, { name: "Ukraine", flag: "🇺🇦" },
+            { name: "United Arab Emirates", flag: "🇦🇪" }, { name: "United Kingdom", flag: "🇬🇧" },
+            { name: "United States", flag: "🇺🇸" }, { name: "Uruguay", flag: "🇺🇾" }, { name: "Uzbekistan", flag: "🇺🇿" },
+            { name: "Vanuatu", flag: "🇻🇺" }, { name: "Vatican City", flag: "🇻🇦" }, { name: "Venezuela", flag: "🇻🇪" },
+            { name: "Vietnam", flag: "🇻🇳" }, { name: "Yemen", flag: "🇾🇪" }, { name: "Zambia", flag: "🇿🇲" },
+            { name: "Zimbabwe", flag: "🇿🇼" }
+        ];
+
+        let exchangeRates = {};
+        let lastFetchTime = 0;
+        const CACHE_DURATION = 60 * 60 * 1000;
+
+        const FALLBACK_RATES = {
+            'GHS': { 'USD': 0.077, 'EUR': 0.071, 'GBP': 0.061, 'CAD': 0.105, 'AUD': 0.118, 'NGN': 115, 'KES': 10.2,
+            'ZAR': 1.45, 'INR': 6.4, 'JPY': 11.7, 'CNY': 0.56, 'BRL': 0.39, 'MXN': 1.43 },
+            'USD': { 'GHS': 13.0, 'EUR': 0.92, 'GBP': 0.79, 'CAD': 1.36, 'AUD': 1.53, 'NGN': 1495, 'KES': 132, 'ZAR': 18.8,
+                'INR': 83.2, 'JPY': 152.5, 'CNY': 7.25, 'BRL': 5.05, 'MXN': 17.1 },
+            'EUR': { 'GHS': 14.1, 'USD': 1.09, 'GBP': 0.86, 'CAD': 1.48, 'AUD': 1.66, 'NGN': 1625, 'KES': 143, 'ZAR': 20.4,
+                'INR': 90.4, 'JPY': 165.8, 'CNY': 7.88, 'BRL': 5.49, 'MXN': 18.6 },
+            'GBP': { 'GHS': 16.4, 'USD': 1.27, 'EUR': 1.16, 'CAD': 1.72, 'AUD': 1.93, 'NGN': 1880, 'KES': 166, 'ZAR': 23.7,
+                'INR': 105, 'JPY': 192, 'CNY': 9.15, 'BRL': 6.38, 'MXN': 21.6 },
+            'NGN': { 'GHS': 0.009, 'USD': 0.00067, 'EUR': 0.00062, 'GBP': 0.00053, 'CAD': 0.00091, 'AUD': 0.0010,
+                'KES': 0.088, 'ZAR': 0.0126, 'INR': 0.055, 'JPY': 0.102, 'CNY': 0.0048, 'BRL': 0.0034, 'MXN': 0.012 },
+            'KES': { 'GHS': 0.098, 'USD': 0.0076, 'EUR': 0.0070, 'GBP': 0.0060, 'CAD': 0.0103, 'AUD': 0.0116, 'NGN': 11.3,
+                'ZAR': 0.14, 'INR': 0.63, 'JPY': 1.15, 'CNY': 0.055, 'BRL': 0.038, 'MXN': 0.13 },
+            'ZAR': { 'GHS': 0.69, 'USD': 0.053, 'EUR': 0.049, 'GBP': 0.042, 'CAD': 0.072, 'AUD': 0.081, 'NGN': 79.5,
+                'KES': 7.0, 'INR': 4.4, 'JPY': 8.1, 'CNY': 0.39, 'BRL': 0.27, 'MXN': 0.91 },
+            'INR': { 'GHS': 0.16, 'USD': 0.012, 'EUR': 0.011, 'GBP': 0.0095, 'CAD': 0.016, 'AUD': 0.018, 'NGN': 18.0,
+                'KES': 1.6, 'ZAR': 0.23, 'JPY': 1.8, 'CNY': 0.087, 'BRL': 0.061, 'MXN': 0.21 },
+            'JPY': { 'GHS': 0.085, 'USD': 0.0066, 'EUR': 0.0060, 'GBP': 0.0052, 'CAD': 0.0089, 'AUD': 0.010, 'NGN': 9.8,
+                'KES': 0.87, 'ZAR': 0.12, 'INR': 0.55, 'CNY': 0.048, 'BRL': 0.033, 'MXN': 0.11 },
+            'CNY': { 'GHS': 1.78, 'USD': 0.14, 'EUR': 0.13, 'GBP': 0.11, 'CAD': 0.19, 'AUD': 0.21, 'NGN': 206, 'KES': 18.2,
+                'ZAR': 2.6, 'INR': 11.5, 'JPY': 21, 'BRL': 0.70, 'MXN': 2.4 },
+            'BRL': { 'GHS': 2.5, 'USD': 0.20, 'EUR': 0.18, 'GBP': 0.16, 'CAD': 0.27, 'AUD': 0.30, 'NGN': 296, 'KES': 26,
+                'ZAR': 3.7, 'INR': 16.4, 'JPY': 30, 'CNY': 1.43, 'MXN': 3.4 },
+            'MXN': { 'GHS': 0.73, 'USD': 0.058, 'EUR': 0.054, 'GBP': 0.046, 'CAD': 0.079, 'AUD': 0.089, 'NGN': 86.5,
+                'KES': 7.6, 'ZAR': 1.09, 'INR': 4.8, 'JPY': 8.9, 'CNY': 0.42, 'BRL': 0.29 }
+        };
+
+        // --- Pre-order functions ---
+        function togglePreorderFields() {
+            if (preorderCheckbox.checked) {
+                preorderFields.classList.add('show');
+                preorderReleaseDate.setAttribute('required', 'required');
+            } else {
+                preorderFields.classList.remove('show');
+                preorderReleaseDate.removeAttribute('required');
+                preorderReleaseDate.value = '';
+                preorderPrice.value = '';
+                originalPrice.value = '';
+            }
+        }
+
+        preorderCheckbox.addEventListener('change', togglePreorderFields);
+
+        // --- Downloads logic ---
+        function toggleCustomDownloadInput() {
+            const selected = downloadsSelect.value;
+            if (selected === 'custom') {
+                customDownloadContainer.classList.add('visible');
+                customDownloadsInput.setAttribute('required', 'required');
+                customDownloadsInput.min = 3;
+            } else {
+                customDownloadContainer.classList.remove('visible');
+                customDownloadsInput.removeAttribute('required');
+                customDownloadsInput.value = '';
+            }
+        }
+
+        downloadsSelect.addEventListener('change', toggleCustomDownloadInput);
+
+        function getDownloadsValue() {
+            const selected = downloadsSelect.value;
+            if (selected === 'custom') {
+                const val = parseInt(customDownloadsInput.value);
+                if (isNaN(val) || val < 3) {
+                    return null;
+                }
+                return val;
+            } else if (selected === 'unlimited') {
+                return 'unlimited';
+            } else {
+                return parseInt(selected);
+            }
+        }
+
+        // --- Currency functions ---
+        async function fetchExchangeRates(baseCurrency) {
+            if (baseCurrency === 'Other' || !baseCurrency) return {};
+            const now = Date.now();
+            if (exchangeRates[baseCurrency] && (now - lastFetchTime) < CACHE_DURATION) {
+                return exchangeRates[baseCurrency];
+            }
+            const apis = [{
+                url: `https://api.exchangerate-api.com/v4/latest/${baseCurrency}`,
+                parser: (data) => data && data.rates ? data.rates : null
+            }, {
+                url: `https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/${baseCurrency.toLowerCase()}.json`,
+                parser: (data) => {
+                    if (data && data[baseCurrency.toLowerCase()]) {
+                        const rates = {};
+                        const raw = data[baseCurrency.toLowerCase()];
+                        for (const [k, v] of Object.entries(raw)) rates[k.toUpperCase()] = v;
+                        return rates;
+                    }
+                    return null;
+                }
+            }];
+            for (const api of apis) {
+                try {
+                    const resp = await fetch(api.url);
+                    if (!resp.ok) continue;
+                    const data = await resp.json();
+                    const rates = api.parser(data);
+                    if (rates && Object.keys(rates).length > 0) {
+                        exchangeRates[baseCurrency] = rates;
+                        lastFetchTime = now;
+                        return rates;
+                    }
+                } catch (_) { continue; }
+            }
+            const fallback = FALLBACK_RATES[baseCurrency];
+            if (fallback) { exchangeRates[baseCurrency] = fallback;
+                lastFetchTime = now; return fallback; }
+            return {};
+        }
+
+        async function updateCurrencyConverter() {
+            const currency = currencySelect.value;
+            const amount = parseFloat(priceAmount.value);
+            const converter = document.getElementById('currencyConverter');
+            const content = document.getElementById('converterContent');
+            const timestamp = document.getElementById('converterTimestamp');
+            if (!amount || amount <= 0 || !currency || currency === 'Other') {
+                converter.classList.remove('show');
+                return;
+            }
+            converter.classList.add('show');
+            content.innerHTML =
+                `<div class="converter-loading"><div class="spinner-small"></div><span>Fetching live rates...</span></div>`;
+            try {
+                const rates = await fetchExchangeRates(currency);
+                if (!rates || Object.keys(rates).length === 0) {
+                    content.innerHTML =
+                        `<div class="converter-error"><i class="fas fa-exclamation-circle"></i> Unable to fetch live rates. Using approximate rates.</div>`;
+                    const fallback = FALLBACK_RATES[currency];
+                    if (fallback) displayConvertedRates(amount, currency, fallback);
+                    return;
+                }
+                displayConvertedRates(amount, currency, rates);
+            } catch (_) {
+                const fallback = FALLBACK_RATES[currency];
+                if (fallback) {
+                    displayConvertedRates(amount, currency, fallback);
+                    content.innerHTML +=
+                        `<div class="converter-info" style="color:#b76e4b;margin-top:4px;"><i class="fas fa-exclamation-triangle"></i> Using approximate rates</div>`;
+                } else {
+                    content.innerHTML =
+                        `<div class="converter-error"><i class="fas fa-exclamation-circle"></i> Unable to fetch rates. Please try again later.</div>`;
+                }
+            }
+        }
+
+        function displayConvertedRates(amount, baseCurrency, rates) {
+            const content = document.getElementById('converterContent');
+            const timestamp = document.getElementById('converterTimestamp');
+            const displayCurrencies = ['USD', 'EUR', 'GBP', 'GHS', 'NGN', 'KES', 'ZAR', 'CAD', 'AUD'];
+            let html = '<div class="converter-grid">';
+            let count = 0;
+            for (const target of displayCurrencies) {
+                if (target === baseCurrency || !rates[target] || count >= 8) continue;
+                const converted = amount * rates[target];
+                const symbol = currencySymbols[target] || target;
+                const flag = currencyFlags[target] || '🌍';
+                html +=
+                    `<div class="converter-item"><span class="flag">${flag}</span><span class="amount">${symbol}${converted.toFixed(2)}</span><span class="code">${target}</span></div>`;
+                count++;
+            }
+            if (count < 4) {
+                for (const target of Object.keys(rates)) {
+                    if (target === baseCurrency || displayCurrencies.includes(target) || count >= 8) continue;
+                    const converted = amount * rates[target];
+                    const symbol = currencySymbols[target] || target;
+                    const flag = currencyFlags[target] || '🌍';
+                    html +=
+                        `<div class="converter-item"><span class="flag">${flag}</span><span class="amount">${symbol}${converted.toFixed(2)}</span><span class="code">${target}</span></div>`;
+                    count++;
+                }
+            }
+            html += '</div>';
+            content.innerHTML = html;
+            const timeStr = lastFetchTime > 0 ? new Date(lastFetchTime).toLocaleTimeString() : 'Just now';
+            timestamp.textContent = `Rates updated: ${timeStr} (hourly) ⚡`;
+        }
+
+        function debounce(fn, wait) { let t; return function(...a) { clearTimeout(t);
+                t = setTimeout(() => fn.apply(this, a), wait); }; }
+
+        function updateCurrencySymbol() {
+            const symbol = currencySymbols[currencySelect.value] || '¤';
+            currencySymbolSpan.textContent = symbol;
+            updateCurrencyConverter();
+        }
+
+        const debouncedConverter = debounce(updateCurrencyConverter, 600);
+        currencySelect.addEventListener('change', updateCurrencySymbol);
+        priceAmount.addEventListener('input', debouncedConverter);
+
+        // --- Country dropdown ---
+        function renderCountryDropdown(filter = '') {
+            const term = filter.toLowerCase().trim();
+            const filtered = countries.filter(c => c.name.toLowerCase().includes(term));
+            countryDropdown.innerHTML = '';
+            if (filtered.length === 0) {
+                countryDropdown.innerHTML = `<div class="no-results">No countries found</div>`;
+                countryDropdown.classList.add('show');
+                return;
+            }
+            filtered.forEach(c => {
+                const opt = document.createElement('div');
+                opt.className = 'country-option' + (c.name === selectedCountry ? ' selected' : '');
+                opt.innerHTML = `<span class="flag">${c.flag}</span> ${c.name}`;
+                opt.addEventListener('click', () => { selectedCountry = c.name;
+                    countryInput.value = c.name;
+                    countryHidden.value = c.name;
+                    countryDropdown.classList.remove('show');
+                    countryInput.blur(); });
+                countryDropdown.appendChild(opt);
+            });
+            countryDropdown.classList.add('show');
+        }
+
+        countryInput.addEventListener('input', function() {
+            if (this.value === '') { selectedCountry = '';
+                countryHidden.value = '';
+                countryDropdown.classList.remove('show'); return; }
+            renderCountryDropdown(this.value);
+        });
+        countryInput.addEventListener('focus', function() { renderCountryDropdown(this.value || ''); });
+        document.addEventListener('click', function(e) {
+            const wrapper = document.querySelector('.country-select-wrapper');
+            if (wrapper && !wrapper.contains(e.target)) countryDropdown.classList.remove('show');
+        });
+        countryInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') { countryDropdown.classList.remove('show');
+                this.blur(); }
+            if (e.key === 'Enter' && countryDropdown.classList.contains('show')) {
+                const first = countryDropdown.querySelector('.country-option:not(.no-results)');
+                if (first) first.click();
+            }
+        });
+
+        // --- Keywords ---
+        function updateKeywordUI() {
+            keywordTags.innerHTML = '';
+            keywords.forEach((kw, i) => {
+                const tag = document.createElement('span');
+                tag.className = 'keyword-tag';
+                tag.innerHTML =
+                    `${kw} <button type="button" class="remove-keyword" data-index="${i}"><i class="fas fa-times"></i></button>`;
+                keywordTags.appendChild(tag);
+            });
+            keywordCountDisplay.textContent = keywords.length;
+            addKeywordBtn.disabled = keywords.length >= 5;
+            addKeywordBtn.innerHTML = keywords.length >= 5 ? '<i class="fas fa-times"></i> Max' :
+                '<i class="fas fa-plus"></i> Add';
+            document.querySelectorAll('.remove-keyword').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const idx = parseInt(this.dataset.index);
+                    if (!isNaN(idx)) { keywords.splice(idx, 1);
+                        updateKeywordUI(); }
+                });
+            });
+        }
+
+        function addKeyword() {
+            const val = keywordInput.value.trim();
+            if (!val) { keywordInput.focus(); return; }
+            if (keywords.some(k => k.toLowerCase() === val.toLowerCase())) {
+                keywordInput.value = '';
+                keywordInput.placeholder = 'Keyword already added';
+                setTimeout(() => { keywordInput.placeholder = 'Enter a keyword'; }, 1500);
+                return;
+            }
+            if (keywords.length >= 5) { alert('Maximum 5 keywords allowed.'); return; }
+            keywords.push(val);
+            keywordInput.value = '';
+            updateKeywordUI();
+            keywordInput.focus();
+        }
+
+        addKeywordBtn.addEventListener('click', addKeyword);
+        keywordInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault();
+                addKeyword(); } });
+
+        // --- Genre / Language ---
+        genreSelect.addEventListener('change', function() {
+            if (this.value === 'Other') { genreOtherContainer.classList.add('visible');
+                genreOtherInput.setAttribute('required', 'required'); } else { genreOtherContainer.classList.remove(
+                    'visible');
+                genreOtherInput.removeAttribute('required');
+                genreOtherInput.value = ''; }
+        });
+        languageSelect.addEventListener('change', function() {
+            if (this.value === 'Other') { languageOtherContainer.classList.add('visible');
+                languageOtherInput.setAttribute('required', 'required'); } else { languageOtherContainer.classList.remove(
+                    'visible');
+                languageOtherInput.removeAttribute('required');
+                languageOtherInput.value = ''; }
+        });
+
+        // --- File validation ---
+        function validateFile(input, feedbackEl, maxSize, label) {
+            const file = input.files[0];
+            if (!file) { feedbackEl.textContent = '';
+                feedbackEl.className = 'file-feedback'; return true; }
+            if (file.size > maxSize) {
+                feedbackEl.textContent = `❌ ${label} is ${(file.size/(1024*1024)).toFixed(2)} MB (max ${maxSize/(1024*1024)} MB).`;
+                feedbackEl.className = 'file-feedback error';
+                return false;
+            } else {
+                feedbackEl.textContent = `✅ ${file.name} (${(file.size/1024).toFixed(0)} KB)`;
+                feedbackEl.className = 'file-feedback';
+                return true;
+            }
+        }
+        pdfInput.addEventListener('change', function() { validateFile(this, pdfFeedback, MAX_PDF_SIZE, 'PDF'); });
+        coverInput.addEventListener('change', function() { validateFile(this, imageFeedback, MAX_IMAGE_SIZE,
+            'Cover image'); });
+
+        // --- Feedback ---
+        function showFeedback(message, type = 'success') {
+            feedback.textContent = message;
+            feedback.className = type;
+            feedback.style.display = 'block';
+            if (type === 'error') {
+                setTimeout(() => { feedback.style.display = 'none';
+                    feedback.className = ''; }, 7000);
+            }
+        }
+
+        // --- Show persistent success message ---
+        function showPersistentSuccess(message, bookData) {
+            isSubmitSuccess = true;
+            feedback.innerHTML = `
+                <div style="white-space:pre-line; text-align:left; padding:0.2rem 0; font-size:0.9rem; line-height:1.8;">
+                    ${message}
+                </div>
+                <div class="feedback-actions">
+                    <button class="btn-dismiss" onclick="window.dismissSubmissionSuccess()">
+                        <i class="fas fa-check"></i> Got it, Submit Another
+                    </button>
+                    <a href="dashboard.html?refresh=${Date.now()}" class="btn-dashboard">
+                        <i class="fas fa-tachometer-alt"></i> View Dashboard
+                    </a>
+                </div>
+            `;
+            feedback.className = 'success';
+            feedback.style.display = 'block';
+            
+            // Disable submit button and all form inputs
+            submitBookBtn.disabled = true;
+            form.querySelectorAll('input, textarea, select').forEach(el => {
+                el.disabled = true;
+            });
+            
+            const dismissBtn = feedback.querySelector('.btn-dismiss');
+            if (dismissBtn) dismissBtn.disabled = false;
+            
+            // Scroll to the success message
+            setTimeout(() => {
+                feedback.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 300);
+        }
+
+        window.dismissSubmissionSuccess = function() {
+            isSubmitSuccess = false;
+            form.reset();
+            keywords = [];
+            updateKeywordUI();
+            pdfFeedback.textContent = '';
+            pdfFeedback.className = 'file-feedback';
+            imageFeedback.textContent = '';
+            imageFeedback.className = 'file-feedback';
+            countryInput.value = '';
+            countryHidden.value = '';
+            selectedCountry = '';
+            countryDropdown.classList.remove('show');
+            updateCurrencySymbol();
+            downloadsSelect.value = '5';
+            toggleCustomDownloadInput();
+            pendingNotice.classList.remove('show');
+            preorderFields.classList.remove('show');
+            preorderCheckbox.checked = false;
+            feedback.style.display = 'none';
+            feedback.className = '';
+            feedback.innerHTML = '';
+            
+            // Re-enable all form inputs and submit button
+            submitBookBtn.disabled = false;
+            form.querySelectorAll('input, textarea, select').forEach(el => {
+                el.disabled = false;
+            });
+            
+            // Reload user settings
+            if (currentUser) {
+                loadUserSettings(currentUser.uid);
+            }
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            showToast('✨ Ready to submit another book!', 'success');
+        };
+
+        function showToast(message, type = 'info') {
+            let toast = document.getElementById('submissionToast');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'submissionToast';
+                toast.style.cssText = `
+                    position: fixed;
+                    bottom: 30px;
+                    right: 30px;
+                    padding: 16px 28px;
+                    border-radius: 16px;
+                    background: #1d1833;
+                    color: white;
+                    font-weight: 500;
+                    box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+                    transform: translateY(100px);
+                    opacity: 0;
+                    transition: all 0.4s ease;
+                    z-index: 2000;
+                    max-width: 400px;
+                `;
+                document.body.appendChild(toast);
+            }
+            toast.textContent = message;
+            toast.style.background = type === 'success' ? '#15723d' : type === 'error' ? '#b33' : '#6a34ff';
+            toast.style.transform = 'translateY(0)';
+            toast.style.opacity = '1';
+            setTimeout(() => {
+                toast.style.transform = 'translateY(100px)';
+                toast.style.opacity = '0';
+            }, 4000);
+        }
+
+        // --- Cloudinary upload ---
+        async function uploadToCloudinary(file, resourceType = 'auto', onProgress) {
+            return new Promise((resolve, reject) => {
+                const formData = new FormData();
+                formData.append('file', file);
+                const preset = CLOUDINARY_CONFIG.uploadPreset || CLOUDINARY_CONFIG.fallbackPreset;
+                formData.append('upload_preset', preset);
+                if (CLOUDINARY_CONFIG.folder) formData.append('folder', CLOUDINARY_CONFIG.folder);
+                const url =
+                    `https://api.cloudinary.com/v1_1/${CLOUDINARY_CONFIG.cloudName}/${resourceType === 'raw' ? 'raw' : 'image'}/upload`;
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', url);
+                xhr.upload.addEventListener('progress', function(e) {
+                    if (e.lengthComputable && onProgress) {
+                        const pct = Math.round((e.loaded / e.total) * 100);
+                        onProgress(pct);
+                    }
+                });
+                xhr.onload = function() {
+                    if (xhr.status === 200) { try { const data = JSON.parse(xhr.responseText);
+                            resolve(data.secure_url); } catch (_) { reject(new Error('Invalid response')); } } else { try {
+                            const err = JSON.parse(xhr.responseText);
+                            reject(new Error(err.error?.message || `Upload failed: ${xhr.status}`)); } catch (_) { reject(
+                                new Error(`Upload failed: ${xhr.status}`)); } }
+                };
+                xhr.onerror = function() { reject(new Error('Network error')); };
+                xhr.send(formData);
+            });
+        }
+
+        async function uploadWithProgress(file, resourceType, label) {
+            let lastPct = 0;
+            const url = await uploadToCloudinary(file, resourceType, (pct) => {
+                const total = Math.round((lastPct + pct) / 2);
+                progressFill.style.width = total + '%';
+                progressText.textContent = total + '%';
+                progressStatus.textContent = `Uploading ${label}... ${pct}%`;
+                if (pct === 100) progressStatus.textContent = `Processing ${label}...`;
+            });
+            return url;
+        }
+
+        function showProgress(show, status = 'Preparing upload...') {
+            if (show) { uploadProgress.classList.add('show');
+                progressStatus.textContent = status;
+                progressFill.style.width = '0%';
+                progressText.textContent = '0%'; } else { uploadProgress.classList.remove('show'); }
+        }
+
+        // ================================================================
+        // ===== CHANGE DETECTION =====
+        // ================================================================
+
+        function checkForChanges() {
+            // Don't check for changes if submit was successful
+            if (isSubmitSuccess) return false;
+            
+            const currentAuthorName = authorNameInput.value.trim();
+            const currentAuthorBio = authorBioInput.value.trim();
+            const currentAuthorEmail = authorEmailInput.value.trim();
+            const currentPublisherName = publisherNameInput.value.trim();
+            const currentPhoneNumber = phoneNumberInput.value.trim();
+            const currentCountry = countryHidden.value.trim();
+
+            const hasChanges = 
+                currentAuthorName !== originalAuthorName ||
+                currentAuthorBio !== originalAuthorBio ||
+                currentAuthorEmail !== originalAuthorEmail ||
+                currentPublisherName !== originalPublisherName ||
+                currentPhoneNumber !== originalPhoneNumber ||
+                currentCountry !== originalCountry;
+
+            if (hasChanges && !isSubmitSuccess) {
+                saveProfileBtn.classList.add('show');
+                saveProfileBtn.style.display = 'inline-flex';
+                // Re-enable submit button if it was disabled
+                submitBookBtn.disabled = false;
+            } else if (!hasChanges || isSubmitSuccess) {
+                saveProfileBtn.classList.remove('show');
+                saveProfileBtn.style.display = 'none';
+            }
+
+            return hasChanges;
+        }
+
+        // ================================================================
+        // ===== SAVE PROFILE =====
+        // ================================================================
+
+        async function saveProfile() {
+            if (!currentUser) {
+                showToast('❌ Please sign in first.', 'error');
+                return;
+            }
+
+            const authorName = authorNameInput.value.trim();
+            const authorBio = authorBioInput.value.trim();
+            const email = authorEmailInput.value.trim();
+            const phone = phoneNumberInput.value.trim();
+            const country = countryHidden.value.trim();
+            const publisher = publisherNameInput.value.trim();
+
+            if (!authorName) {
+                showFeedback('❌ Author name is required.', 'error');
+                authorNameInput.focus();
+                return;
+            }
+
+            if (!authorBio) {
+                showFeedback('❌ Author bio is required.', 'error');
+                authorBioInput.focus();
+                return;
+            }
+
+            if (!email || !email.includes('@')) {
+                showFeedback('❌ Valid email is required.', 'error');
+                authorEmailInput.focus();
+                return;
+            }
+
+            if (!phone) {
+                showFeedback('❌ Phone number is required.', 'error');
+                phoneNumberInput.focus();
+                return;
+            }
+
+            if (!country) {
+                showFeedback('❌ Please select your country.', 'error');
+                countryInput.focus();
+                return;
+            }
+
+            const saveBtn = saveProfileBtn;
+            const origText = saveBtn.innerHTML;
+            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            saveBtn.disabled = true;
+
+            try {
+                const updateData = {
+                    authorName: authorName,
+                    authorBio: authorBio,
+                    gmail: email,
+                    phoneNumber: phone,
+                    country: country,
+                    publisherName: publisher || '',
+                    updatedAt: new Date().toISOString()
+                };
+
+                await updateDoc(doc(db, "users", currentUser.uid), updateData);
+
+                // Update original values to match current
+                originalAuthorName = authorName;
+                originalAuthorBio = authorBio;
+                originalAuthorEmail = email;
+                originalPublisherName = publisher;
+                originalPhoneNumber = phone;
+                originalCountry = country;
+
+                // ⭐ STORE IN LOCALSTORAGE FOR CROSS-PAGE SYNC
+                try {
+                    localStorage.setItem('volant_user_country', country);
+                    localStorage.setItem('volant_user_updated', Date.now().toString());
+                    localStorage.setItem('volant_user_data', JSON.stringify({
+                        country: country,
+                        authorName: authorName,
+                        authorBio: authorBio,
+                        gmail: email,
+                        phoneNumber: phone,
+                        publisherName: publisher || '',
+                        timestamp: Date.now()
+                    }));
+                    console.log('✅ Stored user data in localStorage for sync');
+                } catch (e) {
+                    console.warn('Could not store in localStorage:', e);
+                }
+
+                // Hide the save button
+                saveProfileBtn.classList.remove('show');
+                saveProfileBtn.style.display = 'none';
+
+                showToast('✅ Profile settings saved successfully!', 'success');
+                showFeedback('✅ Your author profile has been updated.', 'success');
+
+                // Force a reload of the user data
+                await loadUserSettings(currentUser.uid);
+
+                setTimeout(() => {
+                    if (feedback.classList.contains('success')) {
+                        feedback.style.display = 'none';
+                    }
+                }, 3000);
+
+            } catch (err) {
+                showFeedback('❌ Error saving profile: ' + err.message, 'error');
+            } finally {
+                saveBtn.innerHTML = origText;
+                saveBtn.disabled = false;
+            }
+        }
+
+        // ================================================================
+        // ===== LOAD USER SETTINGS =====
+        // ================================================================
+
+        async function loadUserSettings(userId) {
+            try {
+                const userDoc = await getDoc(doc(db, "users", userId));
+                if (userDoc.exists()) {
+                    const data = userDoc.data();
+                    
+                    // Author Name - from authorName field, fallback to username/displayName
+                    const authorName = data.authorName || data.username || data.displayName || '';
+                    if (authorName) {
+                        authorNameInput.value = authorName;
+                        originalAuthorName = authorName;
+                        console.log('✅ Author name loaded:', authorName);
+                    }
+                    
+                    // Author Bio - from authorBio field
+                    const authorBio = data.authorBio || '';
+                    if (authorBio) {
+                        authorBioInput.value = authorBio;
+                        originalAuthorBio = authorBio;
+                        console.log('✅ Author bio loaded:', authorBio.substring(0, 50) + '...');
+                    }
+                    
+                    // Email - from gmail field, fallback to email
+                    const email = data.gmail || data.email || currentUser?.email || '';
+                    if (email) {
+                        authorEmailInput.value = email;
+                        originalAuthorEmail = email;
+                        console.log('✅ Email loaded:', authorEmailInput.value);
+                    }
+                    
+                    // Country
+                    if (data.country) {
+                        selectedCountry = data.country;
+                        countryInput.value = data.country;
+                        countryHidden.value = data.country;
+                        originalCountry = data.country;
+                        console.log('✅ Country loaded:', data.country);
+                    } else {
+                        console.log('⚠️ No country found in user data');
+                    }
+                    
+                    // Phone Number
+                    if (data.phoneNumber) {
+                        phoneNumberInput.value = data.phoneNumber;
+                        originalPhoneNumber = data.phoneNumber;
+                        console.log('✅ Phone number loaded:', data.phoneNumber);
+                    }
+                    
+                    // Publisher Name
+                    if (data.publisherName) {
+                        publisherNameInput.value = data.publisherName;
+                        originalPublisherName = data.publisherName;
+                        console.log('✅ Publisher name loaded:', data.publisherName);
+                    }
+
+                    // Check for changes after loading
+                    setTimeout(checkForChanges, 100);
+                }
+            } catch (err) {
+                console.warn('Error loading user settings:', err);
+                // Fallback: use auth user info
+                if (currentUser) {
+                    authorEmailInput.value = currentUser.email || '';
+                    originalAuthorEmail = currentUser.email || '';
+                    if (currentUser.displayName) {
+                        authorNameInput.value = currentUser.displayName;
+                        originalAuthorName = currentUser.displayName;
+                    }
+                }
+            }
+        }
+
+        // ================================================================
+        // ===== DRAFT FUNCTIONS =====
+        // ================================================================
+
+        const DRAFT_KEY = 'volant_reads_draft';
+
+        function getDraft() {
+            try {
+                const raw = localStorage.getItem(DRAFT_KEY);
+                if (!raw) return null;
+                return JSON.parse(raw);
+            } catch (_) { return null; }
+        }
+
+        function saveDraft() {
+            const draft = {
+                authorName: document.getElementById('authorName').value,
+                publisherName: document.getElementById('publisherName').value,
+                authorEmail: document.getElementById('authorEmail').value,
+                country: countryHidden.value,
+                phoneNumber: document.getElementById('phoneNumber').value,
+                bookTitle: document.getElementById('bookTitle').value,
+                bookSubtitle: document.getElementById('bookSubtitle').value,
+                authorBio: document.getElementById('authorBio').value,
+                bookSynopsis: document.getElementById('bookSynopsis').value,
+                isbn: document.getElementById('isbn').value,
+                publishDate: document.getElementById('publishDate').value,
+                bookGenre: document.getElementById('bookGenre').value,
+                genreOther: document.getElementById('genreOther').value,
+                bookLanguage: document.getElementById('bookLanguage').value,
+                languageOther: document.getElementById('languageOther').value,
+                pageCount: document.getElementById('pageCount').value,
+                downloadsSelect: document.getElementById('downloadsSelect').value,
+                customDownloads: document.getElementById('customDownloads').value,
+                currency: document.getElementById('currency').value,
+                priceAmount: document.getElementById('priceAmount').value,
+                keywords: keywords.slice(),
+                otherDetails: document.getElementById('otherDetails').value,
+                preorderCheckbox: document.getElementById('preorderCheckbox').checked,
+                preorderReleaseDate: document.getElementById('preorderReleaseDate').value,
+                preorderPrice: document.getElementById('preorderPrice').value,
+                originalPrice: document.getElementById('originalPrice').value,
+                rightsDeclaration: document.getElementById('rightsDeclaration').checked,
+                termsAgreement: document.getElementById('termsAgreement').checked,
+                savedAt: new Date().toISOString()
+            };
+            localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+        }
+
+        function loadDraft(draft) {
+            if (!draft) return;
+            document.getElementById('authorName').value = draft.authorName || '';
+            document.getElementById('publisherName').value = draft.publisherName || '';
+            document.getElementById('authorEmail').value = draft.authorEmail || '';
+            if (draft.country) {
+                selectedCountry = draft.country;
+                countryHidden.value = draft.country;
+                countryInput.value = draft.country;
+            }
+            document.getElementById('phoneNumber').value = draft.phoneNumber || '';
+            document.getElementById('bookTitle').value = draft.bookTitle || '';
+            document.getElementById('bookSubtitle').value = draft.bookSubtitle || '';
+            document.getElementById('authorBio').value = draft.authorBio || '';
+            document.getElementById('bookSynopsis').value = draft.bookSynopsis || '';
+            document.getElementById('isbn').value = draft.isbn || '';
+            document.getElementById('publishDate').value = draft.publishDate || '';
+            document.getElementById('bookGenre').value = draft.bookGenre || '';
+            if (draft.bookGenre === 'Other') {
+                genreOtherContainer.classList.add('visible');
+                document.getElementById('genreOther').value = draft.genreOther || '';
+            }
+            document.getElementById('bookLanguage').value = draft.bookLanguage || '';
+            if (draft.bookLanguage === 'Other') {
+                languageOtherContainer.classList.add('visible');
+                document.getElementById('languageOther').value = draft.languageOther || '';
+            }
+            document.getElementById('pageCount').value = draft.pageCount || '';
+            document.getElementById('downloadsSelect').value = draft.downloadsSelect || '5';
+            toggleCustomDownloadInput();
+            document.getElementById('customDownloads').value = draft.customDownloads || '';
+            document.getElementById('currency').value = draft.currency || 'GHS';
+            updateCurrencySymbol();
+            document.getElementById('priceAmount').value = draft.priceAmount || '';
+            keywords = draft.keywords || [];
+            updateKeywordUI();
+            document.getElementById('otherDetails').value = draft.otherDetails || '';
+            document.getElementById('preorderCheckbox').checked = draft.preorderCheckbox || false;
+            togglePreorderFields();
+            document.getElementById('preorderReleaseDate').value = draft.preorderReleaseDate || '';
+            document.getElementById('preorderPrice').value = draft.preorderPrice || '';
+            document.getElementById('originalPrice').value = draft.originalPrice || '';
+            document.getElementById('rightsDeclaration').checked = draft.rightsDeclaration || false;
+            document.getElementById('termsAgreement').checked = draft.termsAgreement || false;
+            if (draft.priceAmount && parseFloat(draft.priceAmount) > 0) {
+                setTimeout(() => { updateCurrencyConverter(); }, 300);
+            }
+            
+            // Check for changes after loading draft
+            setTimeout(checkForChanges, 100);
+        }
+
+        function discardDraft() {
+            localStorage.removeItem(DRAFT_KEY);
+            draftNotice.style.display = 'none';
+            showToast('🗑️ Draft discarded.', 'info');
+        }
+
+        function checkDraft() {
+            const draft = getDraft();
+            if (draft) {
+                const savedTime = new Date(draft.savedAt);
+                const timeStr = savedTime.toLocaleString();
+                draftTimestamp.textContent = timeStr;
+                draftNotice.style.display = 'flex';
+            } else {
+                draftNotice.style.display = 'none';
+            }
+        }
+
+        // --- Auto-save on input changes ---
+        function setupAutoSave() {
+            const inputs = form.querySelectorAll('input, textarea, select');
+            inputs.forEach(el => {
+                el.addEventListener('change', () => { 
+                    if (currentUser && !isSubmitSuccess) {
+                        saveDraft();
+                        checkForChanges();
+                    }
+                });
+                el.addEventListener('input', () => { 
+                    if (currentUser && !isSubmitSuccess) {
+                        saveDraft();
+                        checkForChanges();
+                    }
+                });
+            });
+            const origUpdateUI = updateKeywordUI;
+            updateKeywordUI = function() {
+                origUpdateUI();
+                if (currentUser && !isSubmitSuccess) saveDraft();
+            };
+            preorderCheckbox.addEventListener('change', () => { if (currentUser && !isSubmitSuccess) saveDraft(); });
+            rightsDeclaration.addEventListener('change', () => { if (currentUser && !isSubmitSuccess) saveDraft(); });
+            termsAgreement.addEventListener('change', () => { if (currentUser && !isSubmitSuccess) saveDraft(); });
+        }
+
+        // ================================================================
+        // ===== PAYOUT ACCOUNT CHECK FUNCTIONS =====
+        // ================================================================
+
+        async function checkPayoutAccount(userId) {
+            try {
+                const userDoc = await getDoc(doc(db, "users", userId));
+                if (!userDoc.exists()) {
+                    return { hasAccount: false, message: 'User profile not found.' };
+                }
+                
+                const userData = userDoc.data();
+                const hasAccount = userData.subaccountCode && userData.hasPayoutAccount === true;
+                
+                return { 
+                    hasAccount: hasAccount,
+                    message: hasAccount ? 'Payout account found.' : 'No payout account found.'
+                };
+            } catch (err) {
+                console.error('Error checking payout account:', err);
+                return { hasAccount: false, message: 'Error checking payout account.' };
+            }
+        }
+
+        async function updatePayoutWarning(userId) {
+            if (!payoutWarningBanner) return;
+            
+            const result = await checkPayoutAccount(userId);
+            
+            if (!result.hasAccount) {
+                payoutWarningBanner.classList.add('show');
+            } else {
+                payoutWarningBanner.classList.remove('show');
+            }
+            
+            return result.hasAccount;
+        }
+
+        // ================================================================
+        // ===== SAVE PROFILE BUTTON EVENT =====
+        // ================================================================
+        
+        saveProfileBtn.addEventListener('click', saveProfile);
+
+        // ================================================================
+        // ===== AUTH STATE HANDLER =====
+        // ================================================================
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUser = user;
+                
+                // Get the signed-in user's username
+                try {
+                    const docSnap = await getDoc(doc(db, "users", user.uid));
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
+                        currentUsername = data.username || user.displayName || user.email?.split('@')[0] || 'User';
+                        console.log('✅ Signed-in user (submitter) username:', currentUsername);
+                    } else {
+                        currentUsername = user.displayName || user.email?.split('@')[0] || 'User';
+                        console.log('✅ Signed-in user (submitter) username (fallback):', currentUsername);
+                    }
+                } catch (_) {
+                    currentUsername = user.displayName || user.email?.split('@')[0] || 'User';
+                    console.log('✅ Signed-in user (submitter) username (error fallback):', currentUsername);
+                }
+                
+                // Show the form
+                authOverlay.classList.remove('show');
+                authOverlay.style.display = 'none';
+                formWrapper.style.display = 'block';
+                userBadge.style.display = 'inline-flex';
+                userNameDisplay.textContent = currentUsername;
+                
+                // Load author settings
+                await loadUserSettings(user.uid);
+                await updatePayoutWarning(user.uid);
+                checkDraft();
+                setupAutoSave();
+                
+            } else {
+                currentUser = null;
+                currentUsername = '';
+                isSubmitSuccess = false;
+                authOverlay.style.display = 'block';
+                authOverlay.classList.add('show');
+                formWrapper.style.display = 'none';
+                userBadge.style.display = 'none';
+                if (payoutWarningBanner) {
+                    payoutWarningBanner.classList.remove('show');
+                }
+                draftNotice.style.display = 'none';
+            }
+        });
+
+        // --- Draft buttons ---
+        loadDraftBtn.addEventListener('click', () => {
+            const draft = getDraft();
+            if (draft) {
+                loadDraft(draft);
+                draftNotice.style.display = 'none';
+                showToast('📂 Draft loaded successfully!', 'success');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        });
+
+        discardDraftBtn.addEventListener('click', () => {
+            if (confirm('Are you sure you want to discard this draft?')) {
+                discardDraft();
+            }
+        });
+
+        // ================================================================
+        // ===== FORM SUBMIT =====
+        // ================================================================
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            if (!currentUser) { showFeedback('❌ You must be signed in to submit a book.', 'error'); return; }
+            
+            // If already submitted successfully, don't allow re-submit
+            if (isSubmitSuccess) {
+                showFeedback('✅ This book has already been submitted. Click "Got it, Submit Another" to submit a new book.', 'success');
+                return;
+            }
+
+            // ===== CHECK RIGHTS DECLARATION =====
+            if (!rightsDeclaration.checked) {
+                showFeedback('❌ You must declare that you have the rights to distribute this book.', 'error');
+                rightsDeclaration.focus();
+                return;
+            }
+
+            // ===== CHECK TERMS AGREEMENT =====
+            if (!termsAgreement.checked) {
+                showFeedback('❌ You must agree to the Terms of Service and Privacy Policy.', 'error');
+                termsAgreement.focus();
+                return;
+            }
+
+            // ===== CHECK PAYOUT ACCOUNT =====
+            const checkResult = await checkPayoutAccount(currentUser.uid);
+            
+            if (!checkResult.hasAccount) {
+                showFeedback('💳 Please set up your payout account first. It takes less than 6 minutes! Go to Settings to add your bank or mobile money details.', 'error');
+                if (payoutWarningBanner) {
+                    payoutWarningBanner.classList.add('show');
+                    payoutWarningBanner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+                return;
+            }
+
+            const authorName = authorNameInput.value.trim();
+            const publisherName = publisherNameInput.value.trim();
+            const authorEmail = authorEmailInput.value.trim();
+            const title = document.getElementById('bookTitle').value.trim();
+            const subtitle = document.getElementById('bookSubtitle').value.trim();
+            const authorBio = document.getElementById('authorBio').value.trim();
+            const synopsis = document.getElementById('bookSynopsis').value.trim();
+            const publishDate = document.getElementById('publishDate').value;
+            const genre = document.getElementById('bookGenre').value;
+            const language = document.getElementById('bookLanguage').value;
+            const country = countryHidden.value.trim();
+            const phoneNumber = document.getElementById('phoneNumber').value.trim();
+            const pageCount = parseInt(document.getElementById('pageCount').value.trim());
+            const price = priceAmount.value.trim();
+            const currency = currencySelect.value;
+
+            // Validation...
+            if (!authorName) { showFeedback('❌ Author name is required.', 'error');
+                authorNameInput.focus(); return; }
+            if (!authorEmail || !authorEmail.includes('@') || !authorEmail.includes('.')) { showFeedback(
+                    '❌ Please enter a valid email address.', 'error');
+                authorEmailInput.focus(); return; }
+            if (!title) { showFeedback('❌ Book title is required.', 'error');
+                document.getElementById('bookTitle').focus(); return; }
+            if (!authorBio) { showFeedback('❌ Author bio is required.', 'error');
+                document.getElementById('authorBio').focus(); return; }
+            if (!synopsis) { showFeedback('❌ Synopsis is required.', 'error');
+                document.getElementById('bookSynopsis').focus(); return; }
+            if (!publishDate) { showFeedback('❌ Publishing date is required.', 'error');
+                document.getElementById('publishDate').focus(); return; }
+            if (!genre) { showFeedback('❌ Please select a genre.', 'error');
+                document.getElementById('bookGenre').focus(); return; }
+            if (!language) { showFeedback('❌ Please select a language.', 'error');
+                document.getElementById('bookLanguage').focus(); return; }
+            if (!country) { showFeedback('❌ Please select your country.', 'error');
+                countryInput.focus(); return; }
+            if (!phoneNumber) { showFeedback('❌ Phone number is required.', 'error');
+                document.getElementById('phoneNumber').focus(); return; }
+            if (!pageCount || pageCount < 1) { showFeedback('❌ Please enter a valid number of pages (minimum 1).',
+                    'error');
+                document.getElementById('pageCount').focus(); return; }
+            if (!price || isNaN(price) || parseFloat(price) < 0) { showFeedback('❌ Please enter a valid price (0 or higher).',
+                    'error');
+                priceAmount.focus(); return; }
+            if (currency === 'Other') { showFeedback('❌ Please select a valid currency.', 'error');
+                currencySelect.focus(); return; }
+
+            if (genre === 'Other') { const g = genreOtherInput.value.trim(); if (!g) { showFeedback(
+                        '❌ Please specify the genre.', 'error');
+                    genreOtherInput.focus(); return; } }
+            if (language === 'Other') { const l = languageOtherInput.value.trim(); if (!l) { showFeedback(
+                        '❌ Please specify the language.', 'error');
+                    languageOtherInput.focus(); return; } }
+            if (keywords.length < 3) { showFeedback(`❌ Please add at least 3 keywords (currently ${keywords.length}).`,
+                    'error');
+                keywordInput.focus(); return; }
+
+            const downloadsValue = getDownloadsValue();
+            if (downloadsValue === null) {
+                showFeedback('❌ Please enter a valid number of downloads (minimum 3).', 'error');
+                customDownloadsInput.focus();
+                return;
+            }
+
+            // --- Validate pre-order ---
+            let preorderData = null;
+            if (preorderCheckbox.checked) {
+                const releaseDate = preorderReleaseDate.value;
+                if (!releaseDate) {
+                    showFeedback('❌ Please select a release date for pre-order.', 'error');
+                    preorderReleaseDate.focus();
+                    return;
+                }
+                preorderData = {
+                    preorder: true,
+                    preorderReleaseDate: releaseDate,
+                    preorderPrice: parseFloat(preorderPrice.value) || parseFloat(price) || 0,
+                    originalPrice: parseFloat(originalPrice.value) || parseFloat(price) || 0
+                };
+            }
+
+            const pdfFile = pdfInput.files[0];
+            const coverFile = coverInput.files[0];
+            if (!pdfFile) { showFeedback('❌ Please upload a PDF file.', 'error');
+                pdfInput.focus(); return; }
+            if (!coverFile) { showFeedback('❌ Please upload a cover image.', 'error');
+                coverInput.focus(); return; }
+            if (!validateFile(pdfInput, pdfFeedback, MAX_PDF_SIZE, 'PDF') || !validateFile(coverInput, imageFeedback,
+                    MAX_IMAGE_SIZE, 'Cover image')) {
+                showFeedback('❌ One or more files exceed the size limit.', 'error');
+                return;
+            }
+
+            // ⭐ SAVE PROFILE DATA TO FIRESTORE AND LOCALSTORAGE BEFORE SUBMITTING
+            try {
+                const profileUpdate = {
+                    country: country,
+                    authorName: authorName,
+                    gmail: authorEmail,
+                    phoneNumber: phoneNumber,
+                    authorBio: authorBio,
+                    publisherName: publisherName || '',
+                    updatedAt: new Date().toISOString()
+                };
+                
+                await updateDoc(doc(db, "users", currentUser.uid), profileUpdate);
+                
+                // ⭐ Store in localStorage for cross-page sync
+                try {
+                    localStorage.setItem('volant_user_country', country);
+                    localStorage.setItem('volant_user_updated', Date.now().toString());
+                    localStorage.setItem('volant_user_data', JSON.stringify({
+                        country: country,
+                        authorName: authorName,
+                        authorBio: authorBio,
+                        gmail: authorEmail,
+                        phoneNumber: phoneNumber,
+                        publisherName: publisherName || '',
+                        timestamp: Date.now()
+                    }));
+                    console.log('✅ Stored user data in localStorage from form submission');
+                } catch (e) {
+                    console.warn('Could not store in localStorage:', e);
+                }
+            } catch (err) {
+                console.warn('Could not update user profile:', err);
+                // Don't block the book submission if this fails
+            }
+
+            const submitBtn = form.querySelector('.btn-primary');
+            const origText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting for review...';
+            submitBtn.disabled = true;
+            showProgress(true, 'Uploading files...');
+
+            try {
+                let imageUrl, pdfUrl;
+                progressStatus.textContent = 'Uploading cover image...';
+                imageUrl = await uploadWithProgress(coverFile, 'image', 'cover image');
+                progressStatus.textContent = 'Uploading PDF...';
+                pdfUrl = await uploadWithProgress(pdfFile, 'raw', 'PDF');
+                progressStatus.textContent = 'Saving to database...';
+                progressFill.style.width = '100%';
+                progressText.textContent = '100%';
+
+                const isbn = document.getElementById('isbn').value.trim();
+                const otherDetails = document.getElementById('otherDetails').value.trim();
+                const finalGenre = genre === 'Other' ? genreOtherInput.value.trim() : genre;
+                const finalLanguage = language === 'Other' ? languageOtherInput.value.trim() : language;
+
+                const bookData = {
+                    authorName,
+                    publisherName: publisherName || authorName,
+                    email: authorEmail,                   
+                    title,
+                    subtitle: subtitle || null,
+                    authorBio,
+                    synopsis,
+                    isbn: isbn || null,
+                    publishDate,
+                    genre: finalGenre,
+                    language: finalLanguage,
+                    country,
+                    phoneNumber,                          
+                    pageCount,
+                    downloads: 0,
+                    downloadLimit: downloadsValue,
+                    keywords,
+                    ...preorderData,
+                    otherDetails: otherDetails || null,
+                    imageUrl,
+                    pdfUrl,
+                    pricing: { currency, amount: parseFloat(price) },
+                    submittedBy: currentUser.uid,
+                    submittedByUsername: currentUsername,
+                    status: 'pending',
+                    rightsDeclared: true,
+                    termsAgreed: true,
+                    submittedAt: serverTimestamp(),
+                    updatedAt: serverTimestamp()
+                };
+                await addDoc(collection(db, "books"), bookData);
+                
+                discardDraft();
+                showProgress(false);
+                pendingNotice.classList.add('show');
+
+                const priceDisplay = `${currencySymbols[currency] || '¤'}${parseFloat(price).toFixed(2)}`;
+                const keywordList = keywords.join(', ');
+                const downloadsDisplay = downloadsValue === 'unlimited' ? 'Unlimited' : downloadsValue;
+                
+                const successMessage = `
+        ✅ BOOK SUCCESSFULLY SUBMITTED TO VOLANT READS!
+
+        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        📖 Title: ${title}${subtitle ? ` (${subtitle})` : ''}
+        ✍️ Author: ${authorName}
+        🏢 Publisher: ${publisherName || authorName}
+        📧 Email: ${authorEmail}
+        📝 Pages: ${pageCount}
+        📅 Publish date: ${publishDate}
+        🏷️ Genre: ${finalGenre}
+        🌐 Language: ${finalLanguage}
+        📍 Country: ${country}
+        📱 Phone: ${phoneNumber}
+        💰 Price: ${priceDisplay} ${currencyNames[currency] || currency}
+        📥 Download Limit: ${downloadsDisplay} downloads per buyer
+        🔑 Keywords (${keywords.length}): ${keywordList}
+        ${isbn ? `🔢 ISBN: ${isbn}` : ''}
+        ${otherDetails ? `📝 Additional: ${otherDetails}` : ''}
+        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+        ⏳ Your book is now PENDING REVIEW.
+        You will be notified when it's approved!
+
+        💡 Click "Got it, Submit Another" to submit another book, 
+        or "View Dashboard" to see all your books.
+        `;
+
+                showPersistentSuccess(successMessage, bookData);
+
+            } catch (err) {
+                console.error(err);
+                showProgress(false);
+                pendingNotice.classList.remove('show');
+                showFeedback(`❌ Upload failed: ${err.message || 'Please try again.'}`, 'error');
+                submitBtn.disabled = false;
+            } finally {
+                submitBtn.innerHTML = origText;
+                // Only re-enable if not success
+                if (!isSubmitSuccess) {
+                    submitBtn.disabled = false;
+                }
+            }
+        });
+
+        // --- Reset ---
+        form.addEventListener('reset', function() {
+            if (feedback.classList.contains('success') && feedback.style.display === 'block') {
+                return;
+            }
+            isSubmitSuccess = false;
+            feedback.style.display = 'none';
+            feedback.className = '';
+            pdfFeedback.textContent = '';
+            pdfFeedback.className = 'file-feedback';
+            imageFeedback.textContent = '';
+            imageFeedback.className = 'file-feedback';
+            showProgress(false);
+            pendingNotice.classList.remove('show');
+            genreOtherContainer.classList.remove('visible');
+            genreOtherInput.value = '';
+            genreOtherInput.removeAttribute('required');
+            languageOtherContainer.classList.remove('visible');
+            languageOtherInput.value = '';
+            languageOtherInput.removeAttribute('required');
+            keywords = [];
+            updateKeywordUI();
+            keywordInput.value = '';
+            countryInput.value = '';
+            countryHidden.value = '';
+            selectedCountry = '';
+            countryDropdown.classList.remove('show');
+            updateCurrencySymbol();
+            downloadsSelect.value = '5';
+            toggleCustomDownloadInput();
+            preorderFields.classList.remove('show');
+            preorderCheckbox.checked = false;
+            preorderReleaseDate.value = '';
+            preorderPrice.value = '';
+            originalPrice.value = '';
+            rightsDeclaration.checked = false;
+            termsAgreement.checked = false;
+            // Re-enable submit button
+            submitBookBtn.disabled = false;
+            // Hide save profile button on reset
+            saveProfileBtn.classList.remove('show');
+            saveProfileBtn.style.display = 'none';
+            // Reload user settings after reset
+            if (currentUser) {
+                loadUserSettings(currentUser.uid);
+            }
+        });
+
+        // --- Init ---
+        const dateInput = document.getElementById('publishDate');
+        if (dateInput) dateInput.value = new Date().toISOString().split('T')[0];
+
+        updateKeywordUI();
+        updateCurrencySymbol();
+        toggleCustomDownloadInput();
+        togglePreorderFields();
+        console.log('📝 Volant Reads submission form ready with Author Name, Publisher Name, Country, Phone, Email, Pre-order, Rights Declaration, and Terms Agreement.');
+    </script>
+    <script src="../shared/return-url-handler.js"></script>
+</body>
+</html>
