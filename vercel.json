@@ -1,8 +1,13 @@
 {
   "redirects": [
     {
-      "source": "/api/:path*",
-      "destination": "https://volantpoetry.vercel.app/api/:path*",
+      "source": "/",
+      "destination": "https://volantpoetry.vercel.app/store/",
+      "permanent": true
+    },
+    {
+      "source": "/(.*)",
+      "destination": "https://volantpoetry.vercel.app/store/",
       "permanent": true
     }
   ]
