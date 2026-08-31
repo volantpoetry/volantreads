@@ -9,8 +9,8 @@
   
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="icon" type="image/png" href="../images/volant-reads-favicon.png" />
-  <link rel="apple-touch-icon" href="../images/volant-reads-favicon.png" />
+  <link rel="icon" type="image/png" href="https://volantpoetry.vercel.app/images/volant-reads-favicon.png" />
+  <link rel="apple-touch-icon" href="https://volantpoetry.vercel.app/images/volant-reads-favicon.png" />
 
   <style>
     /* ===== ALL YOUR EXISTING CSS (KEPT THE SAME) ===== */
@@ -2924,7 +2924,7 @@ header .logo-header {
 // Helper function for login redirect
 function goToLogin() {
     const currentUrl = window.location.pathname + window.location.search;
-    window.location.href = '../shared/universal-login.html?platform=reads&redirect=' + encodeURIComponent(currentUrl);
+    window.location.href = 'https://volantpoetry.vercel.app/shared/universal-login.html?platform=reads&redirect=' + encodeURIComponent(currentUrl);
 }
 </script>
 
@@ -2935,7 +2935,7 @@ function goToLogin() {
   <header>
     <nav>
       <a href="index.html" class="logo" style="text-decoration:none;">
-        <img src="../images/logokk.png" alt="Volant Reads Logo" class="nav-logo-img">
+        <img src="https://volantpoetry.vercel.app/images/logokk.png" alt="Volant Reads Logo" class="nav-logo-img">
         <span class="logo-text"><span class="logo-highlight">Volant</span> Reads</span>
       </a>
       <div class="nav-right" id="navRight">
@@ -3342,7 +3342,7 @@ function goToLogin() {
 
     function getLoginRedirectLink() {
         const currentPage = window.location.pathname + window.location.search;
-        return '../shared/universal-login.html?platform=reads&redirect=' + encodeURIComponent(currentPage);
+        return 'https://volantpoetry.vercel.app/shared/universal-login.html?platform=reads&redirect=' + encodeURIComponent(currentPage);
     }
 
     window.addEventListener('storage', (e) => {
@@ -3531,7 +3531,7 @@ function goToLogin() {
     function openContactModal(book) {
       if (!currentUser) {
         showToast('🔐 Please sign in to contact the author.', 'error');
-        window.location.href = "../shared/universal-login.html?platform=reads&redirect=" + encodeURIComponent(window.location.pathname + window.location.search);
+        window.location.href = "https://volantpoetry.vercel.app/shared/universal-login.html?platform=reads&redirect=" + encodeURIComponent(window.location.pathname + window.location.search);
         return;
       }
       contactBookTitle.textContent = `About: ${book.title || 'Untitled'}`;
@@ -4472,7 +4472,7 @@ function goToLogin() {
         console.log('Verifying payment...');
         console.log('Reference:', response.reference);
 
-        const verificationResponse = await fetch('/api/verify-paystack-transaction', {
+        const verificationResponse = await fetch('https://volantpoetry.vercel.app/api/verify-paystack-transaction', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -4884,7 +4884,7 @@ function goToLogin() {
           
           const bookData = bookSnap.data();
           
-          const verificationResponse = await fetch('/api/verify-paystack-transaction', {
+          const verificationResponse = await fetch('https://volantpoetry.vercel.app/api/verify-paystack-transaction', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -5115,7 +5115,7 @@ function goToLogin() {
 
     // ===== PAY BUTTON =====
     payBtn.addEventListener('click', function() {
-      if (!currentUser) { showToast('🔐 Please sign in to purchase.', 'error'); window.location.href = "../shared/universal-login.html?platform=reads&redirect=" + encodeURIComponent(window.location.pathname + window.location.search); return; }
+      if (!currentUser) { showToast('🔐 Please sign in to purchase.', 'error'); window.location.href = "https://volantpoetry.vercel.app/shared/universal-login.html?platform=reads&redirect=" + encodeURIComponent(window.location.pathname + window.location.search); return; }
       if (!currentBook) { showToast('❌ Book not loaded.', 'error'); return; }
       if (hasPaidForBook) { showToast('✅ You already own this book!', 'success'); return; }
       const amount = currentBook.pricing?.amount || 0;
@@ -5133,7 +5133,7 @@ function goToLogin() {
 
     // ===== RE-PURCHASE BUTTON =====
     repurchaseBtn.addEventListener('click', function() {
-      if (!currentUser) { showToast('🔐 Please sign in to purchase.', 'error'); window.location.href = "../shared/universal-login.html?platform=reads&redirect=" + encodeURIComponent(window.location.pathname + window.location.search); return; }
+      if (!currentUser) { showToast('🔐 Please sign in to purchase.', 'error'); window.location.href = "https://volantpoetry.vercel.app/shared/universal-login.html?platform=reads&redirect=" + encodeURIComponent(window.location.pathname + window.location.search); return; }
       if (!currentBook) { showToast('❌ Book not loaded.', 'error'); return; }
       const amount = currentBook.pricing?.amount || 0;
       if (amount <= 0) {
@@ -5150,7 +5150,7 @@ function goToLogin() {
     checkoutBtn.addEventListener('click', async function() {
       if (!currentUser) {
         showToast('🔐 Please sign in to checkout.', 'error');
-        window.location.href = "../shared/universal-login.html?platform=reads&redirect=" + encodeURIComponent(window.location.pathname + window.location.search);
+        window.location.href = "https://volantpoetry.vercel.app/shared/universal-login.html?platform=reads&redirect=" + encodeURIComponent(window.location.pathname + window.location.search);
         return;
       }
 
@@ -5387,7 +5387,7 @@ function goToLogin() {
 
     // ===== WISHLIST BUTTON =====
     wishlistBtn.addEventListener('click', async function() {
-      if (!currentUser) { showToast('🔐 Please sign in to use wishlist.', 'error'); window.location.href = "../shared/universal-login.html?platform=reads&redirect=" + encodeURIComponent(window.location.pathname + window.location.search); return; }
+      if (!currentUser) { showToast('🔐 Please sign in to use wishlist.', 'error'); window.location.href = "https://volantpoetry.vercel.app/shared/universal-login.html?platform=reads&redirect=" + encodeURIComponent(window.location.pathname + window.location.search); return; }
       if (!currentBook) { showToast('❌ Book not loaded.', 'error'); return; }
       wishlistBtn.disabled = true;
       const inWishlist = await isBookInWishlist(currentUser.uid, currentBook.id);
@@ -5440,6 +5440,6 @@ function goToLogin() {
       }
     })();
   </script>
-<script src="../shared/return-url-handler.js"></script>
+<script src="https://volantpoetry.vercel.app/shared/return-url-handler.js"></script>
 </body>
 </html>

@@ -30,9 +30,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
     
-    <link rel="stylesheet" href="../style.css" />
-    <link rel="icon" type="image/png" href="../images/volant-reads-favicon.png" />
-    <link rel="apple-touch-icon" href="../images/volant-reads-favicon.png" />
+    <link rel="stylesheet" href="https://volantpoetry.vercel.app/style.css" />
+    <link rel="icon" type="image/png" href="https://volantpoetry.vercel.app/images/volant-reads-favicon.png" />
+    <link rel="apple-touch-icon" href="https://volantpoetry.vercel.app/images/volant-reads-favicon.png" />
 
     <!-- SEO Meta Tags - Volant Reads Bookstore -->
     <meta name="description" content="Volant Reads is a digital literary marketplace where readers can discover, purchase, and access books, poetry, and other written content from talented authors.">
@@ -3912,7 +3912,7 @@ header .logo-header {
 <header>
     <nav>
         <a href="store/index.html" class="logo" style="text-decoration:none;">
-            <img src="../images/logokk.png" alt="Volant Reads Logo" class="nav-logo-img">
+            <img src="https://volantpoetry.vercel.app/images/logokk.png" alt="Volant Reads Logo" class="nav-logo-img">
             <span class="logo-text">
                 <span class="logo-highlight">Volant</span> Reads
             </span>
@@ -3986,7 +3986,7 @@ header .logo-header {
 
 <!-- ===== HERO SECTION - DESKTOP ===== -->
 <section id="store-hero">
-    <img src="../images/store-logo.png" alt="Volant Reads Store" />
+    <img src="https://volantpoetry.vercel.app/images/store-logo.png" alt="Volant Reads Store" />
     <a href="#new-books" class="hero-btn-link">
         <i class="fas fa-book-open"></i> Browse New Books
     </a>
@@ -3994,7 +3994,7 @@ header .logo-header {
 
 <!-- ===== HERO SECTION - MOBILE ===== -->
 <section id="store-hero-mobile">
-    <img src="../images/hero-mobile.png" alt="Volant Reads Mobile Banner" />
+    <img src="https://volantpoetry.vercel.app/images/hero-mobile.png" alt="Volant Reads Mobile Banner" />
     <a href="#new-books" class="hero-btn-link">
         <i class="fas fa-book-open"></i> Browse New Books
     </a>
@@ -4039,7 +4039,7 @@ header .logo-header {
     <div id="volant-footer-container">
         <div class="volant-footer-col volant-footer-brand">
             <div class="volant-footer-logo">
-                <img src="../images/logo.png" alt="Volant Reads Logo" />
+                <img src="https://volantpoetry.vercel.app/images/logo.png" alt="Volant Reads Logo" />
                 <span>Volant Reads</span>
             </div>
             <p class="volant-footer-desc">A digital literary marketplace where readers can discover, purchase, and access books, poetry, and other written content from talented authors.</p>
@@ -4054,7 +4054,7 @@ header .logo-header {
             <h4 class="volant-footer-heading">Volant Reads</h4>
             <ul class="volant-footer-links">
                 <li><a href="dashboard.html">Dashboard</a></li>
-                <li><a href="../shared/about.html">About Us</a></li>
+                <li><a href="https://volantpoetry.vercel.app/shared/about.html">About Us</a></li>
                 <li><a href="index.html">Bookstore</a></li>
                 <li><a href="submit.html">Submit Book</a></li>
                 <li><a href="pwu.html">Publish With Us</a></li>
@@ -4067,9 +4067,9 @@ header .logo-header {
             <ul class="volant-footer-links">
                 <li><a href="faq.html">FAQ</a></li>
                 <li><a href="refund.html">Refund Policy</a></li>
-                <li><a href="../shared/terms.html">Terms &amp; Conditions</a></li>
-                <li><a href="../shared/privacy.html">Privacy Policy</a></li>
-                            <li><a href="../shared/contact.html">Contact Us</a></li>
+                <li><a href="https://volantpoetry.vercel.app/shared/terms.html">Terms &amp; Conditions</a></li>
+                <li><a href="https://volantpoetry.vercel.app/shared/privacy.html">Privacy Policy</a></li>
+                            <li><a href="https://volantpoetry.vercel.app/shared/contact.html">Contact Us</a></li>
                                    
             </ul>
         </div>
@@ -4095,8 +4095,8 @@ header .logo-header {
 
     <div id="volant-footer-bottom">
         <p style="display:flex; flex-wrap:wrap; justify-content:center; gap:6px 14px; margin-bottom:6px;">
-                              <a href="../volant_foundry/index.html" style="color:#b76e4b; text-decoration:none; font-size:0.8rem; font-weight:600;">🏛️ Volant Foundry</a>
-                              <a href="../index.html" style="color:#b76e4b; text-decoration:none; font-size:0.8rem; font-weight:600;">📖 Volant Poetry</a>
+                              <a href="https://volantpoetry.vercel.app/volant_foundry/index.html" style="color:#b76e4b; text-decoration:none; font-size:0.8rem; font-weight:600;">🏛️ Volant Foundry</a>
+                              <a href="https://volantpoetry.vercel.app/index.html" style="color:#b76e4b; text-decoration:none; font-size:0.8rem; font-weight:600;">📖 Volant Poetry</a>
         </p>
         <p style="margin:4px 0;">
             <span style="background:rgba(183,110,75,0.12); padding:2px 14px; border-radius:20px; font-size:0.7rem; color:#b76e4b; font-weight:500;">Part of the Volant Foundry Platform</span>
@@ -4639,7 +4639,7 @@ async function handleCartPaymentCallback(response, items) {
             
             const bookData = bookSnap.data();
             
-            const verificationResponse = await fetch('/api/verify-paystack-transaction', {
+            const verificationResponse = await fetch('https://volantpoetry.vercel.app/api/verify-paystack-transaction', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -4871,7 +4871,7 @@ cartBackdrop.addEventListener('click', closeCart);
 checkoutBtn.addEventListener('click', async function() {
     if (!currentUser) {
         showToast('🔐 Please sign in to checkout.', 'error');
-        window.location.href = '../shared/universal-login.html?platform=reads&platform=reads&redirect=store/index.html';
+        window.location.href = 'https://volantpoetry.vercel.app/shared/universal-login.html?platform=reads&platform=reads&redirect=store/index.html';
         return;
     }
 
@@ -5003,7 +5003,7 @@ async function renderWishlist() {
             <div class="empty-wishlist">
                 <i class="fas fa-heart"></i>
                 <p>Please sign in to view your wishlist</p>
-                <a href="../shared/universal-login.html?platform=reads" class="btn-login" style="display:inline-block;margin-top:1rem;background:var(--secondary);color:#fff;padding:0.5rem 1.5rem;border-radius:30px;text-decoration:none;">Sign In</a>
+                <a href="https://volantpoetry.vercel.app/shared/universal-login.html?platform=reads" class="btn-login" style="display:inline-block;margin-top:1rem;background:var(--secondary);color:#fff;padding:0.5rem 1.5rem;border-radius:30px;text-decoration:none;">Sign In</a>
             </div>
         `;
         addAllWishlistToCartBtn.disabled = true;
@@ -5250,13 +5250,13 @@ async function renderHeader(user) {
                 <i class="fas fa-shopping-cart"></i> <span class="cart-text">Cart</span>
                 <span class="cart-count">${getCartCount()}</span>
             </button>
-            <a href="../shared/universal-login.html?platform=reads" class="btn-signin">
+            <a href="https://volantpoetry.vercel.app/shared/universal-login.html?platform=reads" class="btn-signin">
                 <i class="fas fa-sign-in-alt"></i> Sign In
             </a>
         `;
         document.getElementById('cartOpenBtn')?.addEventListener('click', openCart);
         document.getElementById('wishlistHeaderBtn')?.addEventListener('click', () => {
-            window.location.href = '../shared/universal-login.html?platform=reads&platform=reads&redirect=store/index.html';
+            window.location.href = 'https://volantpoetry.vercel.app/shared/universal-login.html?platform=reads&platform=reads&redirect=store/index.html';
         });
     }
     updateCartBadge();
@@ -5604,6 +5604,6 @@ window.addEventListener('storage', (e) => {
     
 })();
 </script>
-<script src="../shared/return-url-handler.js"></script>
+<script src="https://volantpoetry.vercel.app/shared/return-url-handler.js"></script>
 </body>
 </html>
