@@ -4511,6 +4511,7 @@ body:has(#page-mylibrary.active) #setupAlertBanner {
       
       snapshot.forEach(doc => {
         const data = doc.data();
+        if (data.itemType === 'lyric' || data.platform === 'lyrics' || data.lyricTitle) return;
         const amount = data.amount || 0;
         const fee = data.fee || 0;
         const netAmount = amount - fee;
@@ -5284,6 +5285,7 @@ async function updateBook() {
         // Add purchases first (these take priority)
         purchasesSnapshot.forEach((doc) => {
             const data = doc.data();
+            if (data.itemType === 'lyric' || data.platform === 'lyrics' || data.lyricTitle) return;
             if (data.status === 'completed' && data.verified === true) {
                 bookMap.set(data.bookId, {
                     bookId: data.bookId,
@@ -5710,7 +5712,11 @@ function loadBadges() {
       
       // Collect book IDs the user has interacted with
       const userBookIds = new Set();
-      purchasesSnap.forEach(doc => userBookIds.add(doc.data().bookId));
+      purchasesSnap.forEach(doc => {
+        const pd = doc.data();
+        if (pd.itemType === 'lyric' || pd.platform === 'lyrics' || pd.lyricTitle) return;
+        userBookIds.add(pd.bookId);
+      });
       progressSnap.forEach(doc => userBookIds.add(doc.data().bookId));
       
       if (userBookIds.size === 0) {

@@ -4254,6 +4254,7 @@ async function loadEarnings(userId) {
         
         snapshot.forEach(doc => {
             const data = doc.data();
+            if (data.itemType === 'lyric' || data.platform === 'lyrics' || data.lyricTitle) return;
             const amount = data.amount || 0;
             const fee = data.fee || 0;
             const netAmount = amount - fee;
@@ -4341,6 +4342,7 @@ async function recordPurchase(userId, bookId, transactionRef, paymentData = {}) 
             await updateDoc(purchaseRef, {
                 status: 'completed',
                 verified: true,
+                platform: 'reads',
                 purchasedAt: serverTimestamp(),
                 transactionRef: transactionRef || 'paystack',
                 amount: paymentData.amount || 0,
@@ -4357,6 +4359,7 @@ async function recordPurchase(userId, bookId, transactionRef, paymentData = {}) 
             await setDoc(purchaseRef, {
                 userId: userId,
                 bookId: bookId,
+                platform: 'reads',
                 status: 'completed',
                 verified: true,
                 purchasedAt: serverTimestamp(),
