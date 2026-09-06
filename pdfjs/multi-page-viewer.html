@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preview</title>
+      <script>
+    // Simple console blocker - production only
+    (function() {
+        if (window.location.hostname.includes('localhost') || 
+            window.location.hostname.includes('127.0.0.1')) {
+            return; // Allow in development
+        }
+        
+        // Block all console methods
+        var methods = ['log', 'info', 'warn', 'error', 'debug', 'trace', 'table', 'group', 'groupEnd', 'dir'];
+        methods.forEach(function(m) {
+            console[m] = function() {};
+            try {
+                Object.defineProperty(console, m, { configurable: false, writable: false });
+            } catch(e) {}
+        });
+        
+        window.onerror = function() { return true; };
+        window.onunhandledrejection = function() { return true; };
+    })();
+</script>
+   <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+        background: #1a1a1a;
+        font-family: 'Inter', sans-serif;
+        padding: 0;
+        overflow-y: auto;
+        margin: 0;
+    }
+    #viewer {
+        max-width: 100%;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    .page-container {
+        background: white;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+        margin-bottom: 20px;
+        border-radius: 4px;
+        overflow: hidden;
+        max-width: 900px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    @media (min-width: 769px) {
+        #viewer {
+            width: min(100%, 1100px);
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        .page-container,
+        .preview-end-message {
+            width: fit-content;
+            max-width: none;
+        }
+
+        .page-container canvas {
+            width: auto;
+            max-width: 100%;
+        }
+    }
+
+    @media (max-width: 600px) {
+        #viewer {
+            padding: 4px;
+        }
+
+        .page-container {
+            width: 100%;
+        }
+    }
+    .page-container canvas {
+        width: 100%;
+        height: auto;
+        display: block;
+    }
+    .page-number {
+        padding: 8px 16px;
+        background: #f8f5f0;
+        border-top: 1px solid #ede7df;
+        font-size: 0.85rem;
+        color: #6f6252;
+        text-align: center;
+    }
+    .loading {
+        text-align: center;
+        padding: 60px 20px;
+        color: #8a7b6a;
+    }
+    .loading .spinner {
+        display: inline-block;
+        width: 40px;
+        height: 40px;
+        border: 4px solid #ede7df;
+        border-top: 4px solid #4b2aad;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    .preview-info-bar {
+        display: none !important;
+    }
+    .short-book-notice {
+        display: none !important;
+    }
+    .preview-watermark {
+        display: none !important;
+    }
+    
+    .preview-end-message {
+        text-align: center;
+        padding: 40px 20px;
+        background: #f8f5f0;
+        border-radius: 12px;
+        margin-top: 20px;
+        border: 2px dashed #d0c8b8;
+        max-width: 900px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    .preview-end-message h4 {
+        color: #4b2aad;
+        font-size: 1.1rem;
+        margin-bottom: 8px;
+    }
+    .preview-end-message p {
+        color: #6f6252;
+        font-size: 0.95rem;
+    }
+    
+    .preview-end-message .btn-buy-now-preview {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 10px !important;
+        margin-top: 12px !important;
+        padding: 12px 40px !important;
+        background: #0a6b4d !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 30px !important;
+        font-weight: 600 !important;
+        font-size: 1.05rem !important;
+        cursor: pointer !important;
+        transition: 0.3s !important;
+        box-shadow: 0 4px 15px rgba(10, 107, 77, 0.3) !important;
+    }
+    .preview-end-message .btn-buy-now-preview:hover {
+        background: #08573e !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 8px 25px rgba(10, 107, 77, 0.4) !important;
+    }
+    .preview-end-message .btn-buy-now-preview i {
+        font-size: 1.1rem !important;
+    }
+    
+    .preview-end-message .btn-signin-preview {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 10px !important;
+        margin-top: 12px !important;
+        padding: 12px 40px !important;
+        background: #b76e4b !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 30px !important;
+        font-weight: 600 !important;
+        font-size: 1.05rem !important;
+        cursor: pointer !important;
+        transition: 0.3s !important;
+        box-shadow: 0 4px 15px rgba(183, 110, 75, 0.3) !important;
+    }
+    .preview-end-message .btn-signin-preview:hover {
+        background: #9f5e3f !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 8px 25px rgba(183, 110, 75, 0.4) !important;
+    }
+    .preview-end-message .btn-signin-preview i {
+        font-size: 1.1rem !important;
+    }
+    
+    .preview-end-message .btn-read-preview {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 10px !important;
+        margin-top: 12px !important;
+        padding: 12px 30px !important;
+        background: #4b2aad !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 30px !important;
+        font-weight: 600 !important;
+        font-size: 1.05rem !important;
+        cursor: pointer !important;
+        transition: 0.3s !important;
+        box-shadow: 0 4px 15px rgba(75, 42, 173, 0.3) !important;
+        margin-right: 10px !important;
+    }
+    .preview-end-message .btn-read-preview:hover {
+        background: #3a1f8a !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 8px 25px rgba(75, 42, 173, 0.4) !important;
+    }
+    .preview-end-message .btn-read-preview i {
+        font-size: 1.1rem !important;
+    }
+    
+    .preview-end-message .btn-download-preview {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 10px !important;
+        margin-top: 12px !important;
+        padding: 12px 30px !important;
+        background: #2d7d46 !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 30px !important;
+        font-weight: 600 !important;
+        font-size: 1.05rem !important;
+        cursor: pointer !important;
+        transition: 0.3s !important;
+        box-shadow: 0 4px 15px rgba(45, 125, 70, 0.3) !important;
+    }
+    .preview-end-message .btn-download-preview:hover {
+        background: #1f5f33 !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 8px 25px rgba(45, 125, 70, 0.4) !important;
+    }
+    .preview-end-message .btn-download-preview i {
+        font-size: 1.1rem !important;
+    }
+    
+    .signin-prompt-box {
+        margin-top: 12px;
+        padding: 16px 20px;
+        background: #fef3e2;
+        border-radius: 12px;
+        border: 1px solid #f5cba7;
+    }
+    .signin-prompt-box p {
+        color: #7a4a2a;
+        font-size: 0.95rem;
+        margin: 0 0 10px 0;
+    }
+
+    /* ===== SIGN IN OVERLAY INSIDE PREVIEW ===== */
+    .signin-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.85);
+        backdrop-filter: blur(10px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        padding: 20px;
+    }
+    .signin-overlay.active {
+        display: flex;
+    }
+    .signin-overlay-content {
+        background: white;
+        border-radius: 24px;
+        padding: 40px;
+        max-width: 420px;
+        width: 100%;
+        text-align: center;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        animation: slideUp 0.3s ease;
+    }
+    @keyframes slideUp {
+        from { transform: translateY(30px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+    .signin-overlay-content h2 {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.8rem;
+        color: #2d2a24;
+        margin-bottom: 8px;
+    }
+    .signin-overlay-content p {
+        color: #6f6252;
+        font-size: 0.95rem;
+        margin-bottom: 20px;
+    }
+    .signin-overlay-content .btn-signin-primary {
+        display: inline-block;
+        width: 100%;
+        padding: 14px;
+        background: #4b2aad;
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: 0.3s;
+        text-decoration: none;
+    }
+    .signin-overlay-content .btn-signin-primary:hover {
+        background: #3a1f8a;
+        transform: translateY(-2px);
+    }
+    .signin-overlay-content .btn-signin-close {
+        display: inline-block;
+        margin-top: 12px;
+        background: transparent;
+        border: none;
+        color: #8a7b6a;
+        cursor: pointer;
+        font-size: 0.85rem;
+        transition: 0.3s;
+        text-decoration: underline;
+    }
+    .signin-overlay-content .btn-signin-close:hover {
+        color: #2d2a24;
+    }
+    .signin-overlay-content .signin-benefits {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin: 16px 0;
+        text-align: left;
+    }
+    .signin-overlay-content .signin-benefits span {
+        color: #4a8b5e;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .signin-overlay-content .signin-benefits span i {
+        color: #2d7d46;
+        font-size: 1rem;
+    }
+
+    
+</style>
+</head>
+<body>
+    <!-- ===== SIGN IN OVERLAY ===== -->
+    <div class="signin-overlay" id="signinOverlay">
+        <div class="signin-overlay-content">
+            <h2>🔐 Sign In</h2>
+            <p>Sign in to read this book online or download it for free.</p>
+            <div class="signin-benefits">
+                <span><i class="fas fa-check-circle"></i> Read full books online</span>
+                <span><i class="fas fa-check-circle"></i> Download to read offline</span>
+                <span><i class="fas fa-check-circle"></i> Save to your library</span>
+            </div>
+            <button class="btn-signin-primary" id="signinPrimaryBtn">
+                <i class="fas fa-sign-in-alt"></i> Continue to Sign In
+            </button>
+            <button class="btn-signin-close" id="signinCloseBtn">Continue browsing without signing in</button>
+        </div>
+    </div>
+
+    <div id="previewInfoBar" class="preview-info-bar">Loading preview...</div>
+    <div id="viewer">
+        <div class="loading" id="loadingState">
+            <div class="spinner"></div>
+            <p style="margin-top: 16px;">Loading preview...</p>
+        </div>
+    </div>
+    <div class="preview-watermark">🔍 Preview</div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <script>
+        (function() {
+            // ===== GET PARAMETERS =====
+            const urlParams = new URLSearchParams(window.location.search);
+            const file = urlParams.get('file');
+            const startPage = parseInt(urlParams.get('startPage')) || 1;
+            const endPage = parseInt(urlParams.get('endPage')) || 10;
+            const totalPages = parseInt(urlParams.get('totalPages')) || 0;
+            
+            const isFree = urlParams.get('isFree') === 'true';
+            const isPurchased = urlParams.get('isPurchased') === 'true';
+            const isSignedIn = urlParams.get('isSignedIn') === 'true';
+            const currency = urlParams.get('currency') || 'GHS';
+            const amount = parseFloat(urlParams.get('amount')) || 0;
+            
+            const viewer = document.getElementById('viewer');
+            const loadingState = document.getElementById('loadingState');
+            const previewInfoBar = document.getElementById('previewInfoBar');
+            const signinOverlay = document.getElementById('signinOverlay');
+
+            console.log('📄 Preview Config:', { startPage, endPage, totalPages, file: file ? '✅' : '❌' });
+            console.log('📄 Book Status:', { isFree, isPurchased, isSignedIn, currency, amount });
+
+            if (!file) {
+                loadingState.innerHTML = '<p>❌ No file specified</p>';
+                return;
+            }
+
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+
+            // ===== TRIGGER PARENT =====
+            function triggerParent(action) {
+                console.log('🔔 Triggering parent action:', action);
+                if (window.parent) {
+                    window.parent.postMessage({ action: action }, '*');
+                }
+            }
+
+            // ===== SIGN IN FUNCTIONS =====
+            function openSigninOverlay() {
+                signinOverlay.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeSigninOverlay() {
+                signinOverlay.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+
+            // Sign in button in overlay
+            document.getElementById('signinPrimaryBtn')?.addEventListener('click', function() {
+                console.log('🔐 Sign In from overlay');
+                closeSigninOverlay();
+                triggerParent('signIn');
+            });
+
+            // Close button in overlay
+            document.getElementById('signinCloseBtn')?.addEventListener('click', function() {
+                console.log('❌ Close sign in overlay');
+                closeSigninOverlay();
+            });
+
+            // Close overlay on outside click
+            signinOverlay?.addEventListener('click', function(e) {
+                if (e.target === signinOverlay) {
+                    closeSigninOverlay();
+                }
+            });
+
+            async function renderPreview() {
+                try {
+                    const pdf = await pdfjsLib.getDocument(file).promise;
+                    const actualTotalPages = pdf.numPages;
+                    
+                    console.log('📄 PDF loaded:', { actualTotalPages, requestedEnd: endPage });
+                    
+                    const renderEnd = Math.min(endPage, actualTotalPages);
+                    const renderStart = Math.min(startPage, renderEnd);
+                    const pageCount = renderEnd - renderStart + 1;
+                    
+                    console.log('📄 Rendering:', { renderStart, renderEnd, pageCount });
+                    
+                    loadingState.style.display = 'none';
+                    viewer.innerHTML = '';
+                    
+                    if (pageCount <= 0) {
+                        viewer.innerHTML = `
+                            <div style="text-align:center;padding:60px 20px;color:#8a7b6a;">
+                                <i class="fas fa-info-circle" style="font-size:2rem;display:block;margin-bottom:12px;"></i>
+                                <p>No preview pages available.</p>
+                            </div>
+                        `;
+                        return;
+                    }
+                    
+                    for (let i = renderStart; i <= renderEnd; i++) {
+                        console.log('📄 Rendering page:', i);
+                        
+                        const page = await pdf.getPage(i);
+                        const container = document.createElement('div');
+                        container.className = 'page-container';
+                        
+                        const canvas = document.createElement('canvas');
+                        const context = canvas.getContext('2d');
+                        
+                        const baseViewport = page.getViewport({ scale: 1 });
+                        const isPhone = window.innerWidth <= 600;
+                        const availableWidth = Math.max(1, viewer.clientWidth - (isPhone ? 8 : 32));
+                        const scale = isPhone
+                            ? Math.min(availableWidth / baseViewport.width, 2.5)
+                            : Math.max(2, availableWidth / baseViewport.width);
+                        const viewport = page.getViewport({ scale });
+                        const outputScale = window.devicePixelRatio || 1;
+                        canvas.width = Math.floor(viewport.width * outputScale);
+                        canvas.height = Math.floor(viewport.height * outputScale);
+                        canvas.style.width = `${viewport.width}px`;
+                        canvas.style.height = `${viewport.height}px`;
+                        canvas.style.maxWidth = isPhone ? '100%' : 'none';
+                        
+                        await page.render({
+                            canvasContext: context,
+                            viewport: viewport,
+                            transform: outputScale !== 1 ? [outputScale, 0, 0, outputScale, 0, 0] : null
+                        }).promise;
+                        
+                        container.appendChild(canvas);
+                        
+                        const pageNum = document.createElement('div');
+                        pageNum.className = 'page-number';
+                        
+                        let badge = '';
+                        if (i === renderStart && renderStart === 1) {
+                            badge = ' 📖 Start';
+                        }
+                        if (i === renderEnd && renderEnd < actualTotalPages) {
+                            badge += ' ⏹️ Preview ends';
+                        }
+                        if (renderEnd === actualTotalPages && actualTotalPages > 1) {
+                            badge += ' 📄 Full book';
+                        }
+                        
+                        pageNum.innerHTML = `${badge}`;
+                        container.appendChild(pageNum);
+                        
+                        viewer.appendChild(container);
+                    }
+                    
+                    // ===== SHOW "PREVIEW ENDS" MESSAGE =====
+                    if (renderEnd < actualTotalPages) {
+                        const endMessage = document.createElement('div');
+                        endMessage.className = 'preview-end-message';
+                        
+                        let buttonHTML = '';
+                        
+                        if (isFree) {
+                            if (isSignedIn) {
+                                buttonHTML = `
+                                    <div style="margin-top:12px;">
+                                        <button class="btn-read-preview" id="readFromPreview">
+                                            <i class="fas fa-book-open"></i> Read Online
+                                        </button>
+                                        <button class="btn-download-preview" id="downloadFromPreview">
+                                            <i class="fas fa-download"></i> Download
+                                        </button>
+                                    </div>
+                                `;
+                            } else {
+                                buttonHTML = `
+                                    <div class="signin-prompt-box">
+                                        <p>🔐 <strong>Sign in</strong> to read this book online or download it for free.</p>
+                                        <button class="btn-signin-preview" id="signInFromPreview">
+                                            <i class="fas fa-sign-in-alt"></i> Sign In
+                                        </button>
+                                    </div>
+                                `;
+                            }
+                        } else if (isPurchased) {
+                            buttonHTML = `
+                                <div style="margin-top:12px;">
+                                    <button class="btn-read-preview" id="readFromPreview">
+                                        <i class="fas fa-book-open"></i> Read Online
+                                    </button>
+                                    <button class="btn-download-preview" id="downloadFromPreview">
+                                        <i class="fas fa-download"></i> Download
+                                    </button>
+                                </div>
+                            `;
+                        } else {
+                            // ===== PAID BOOK - NOT PURCHASED =====
+                            buttonHTML = `
+                                <button class="btn-buy-now-preview" id="buyNowFromPreview">
+                                    <i class="fas fa-shopping-cart"></i> Buy Now — ${currency} ${amount.toFixed(2)}
+                                </button>
+                                <p style="font-size:0.7rem;color:#999;margin-top:8px;">
+                                    🔒 Secure payment via Paystack
+                                </p>
+                            `;
+                        }
+                        
+                        endMessage.innerHTML = `
+                            <h4>📖 Preview Ends Here</h4>
+                            <p>You've reached the end of the preview.</p>
+                            <p style="font-size:0.85rem;color:#999;margin-top:4px;">
+                                ${pageCount} of ${actualTotalPages} pages shown
+                                (${Math.round((pageCount/actualTotalPages)*100)}% of book)
+                            </p>
+                            ${buttonHTML}
+                        `;
+                        viewer.appendChild(endMessage);
+                        
+                        // ===== EVENT LISTENERS =====
+                        
+                        // 🔥 BUY NOW - Direct trigger to parent (same as floating button)
+                        document.getElementById('buyNowFromPreview')?.addEventListener('click', function() {
+                            console.log('🛒 Buy Now clicked - triggering payment');
+                            triggerParent('buyNow');
+                        });
+                        
+                        // Sign In - OPEN OVERLAY INSIDE PREVIEW
+                        document.getElementById('signInFromPreview')?.addEventListener('click', function() {
+                            console.log('🔐 Sign In clicked - opening overlay');
+                            openSigninOverlay();
+                        });
+                        
+                        // Read Online
+                        document.getElementById('readFromPreview')?.addEventListener('click', function() {
+                            console.log('📖 Read Online clicked');
+                            triggerParent('closePreview');
+                            setTimeout(function() {
+                                triggerParent('readOnline');
+                            }, 300);
+                        });
+                        
+                        // Download
+                        document.getElementById('downloadFromPreview')?.addEventListener('click', function() {
+                            console.log('⬇️ Download clicked');
+                            triggerParent('closePreview');
+                            setTimeout(function() {
+                                triggerParent('downloadBook');
+                            }, 300);
+                        });
+                    }
+                    
+                } catch (error) {
+                    console.error('❌ Error loading PDF:', error);
+                    loadingState.innerHTML = `
+                        <p>❌ Error loading preview</p>
+                        <p style="font-size:0.85rem;color:#999;margin-top:8px;">${error.message}</p>
+                    `;
+                }
+            }
+
+            renderPreview();
+        })();
+    </script>
+</body>
+</html>

@@ -1405,8 +1405,8 @@
             Current user: <span id="currentUserEmail">Unknown</span>
         </p>
         <div>
-            <a href="../admin/admin-login.html" class="btn"><i class="fas fa-sign-in-alt"></i> Admin Login</a>
-            <a href="https://volantpoetry.vercel.app/index.html" class="btn" style="background: #6f6252;"><i class="fas fa-arrow-left"></i> Return Home</a>
+            <a href="https://volantpoetry.vercel.app/admin/admin-login.html" class="btn"><i class="fas fa-sign-in-alt"></i> Admin Login</a>
+            <a href="https://volantpoetry.vercel.app/" class="btn" style="background: #6f6252;"><i class="fas fa-arrow-left"></i> Return Home</a>
         </div>
     </div>
 
@@ -1414,7 +1414,7 @@
         <i class="fas fa-lock"></i>
         <h2>Sign In Required</h2>
         <p>Please sign in to access the admin panel.</p>
-        <a href="../admin/admin-login.html" class="btn"><i class="fas fa-sign-in-alt"></i> Admin Login</a>
+        <a href="https://volantpoetry.vercel.app/admin/admin-login.html" class="btn"><i class="fas fa-sign-in-alt"></i> Admin Login</a>
     </div>
 </div>
 
@@ -2740,7 +2740,7 @@ ${msg.message || msg.content || ''}
     window.adminSignOut = async function() {
         try {
             await signOut(auth);
-            window.location.href = '../admin/admin-login.html';
+            window.location.href = 'https://volantpoetry.vercel.app/admin/admin-login.html';
         } catch (err) {
             // Silent fail
         }
@@ -2760,7 +2760,7 @@ ${msg.message || msg.content || ''}
                 <i class="fas fa-sync"></i> Retry
             </button>
             <br><br>
-            <a href="../admin/admin-login.html" class="btn" style="background: #6f6252;">
+            <a href="https://volantpoetry.vercel.app/admin/admin-login.html" class="btn" style="background: #6f6252;">
                 <i class="fas fa-sign-in-alt"></i> Go to Login
             </a>
         `;

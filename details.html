@@ -686,6 +686,37 @@ header {
       box-shadow: none;
     }
 
+    /* ===== READ ONLINE BUTTON ===== */
+    .btn-read-online {
+      background: #4b2aad;
+      color: white;
+      border: none;
+      padding: 0.9rem 2.5rem;
+      border-radius: 40px;
+      font-weight: 600;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: var(--transition);
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      flex: 1;
+      justify-content: center;
+      min-width: 200px;
+    }
+    .btn-read-online:hover {
+      background: #3a1f8a;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(75, 42, 173, 0.3);
+    }
+    .btn-read-online:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
     .btn-download {
       background: var(--primary);
       color: white;
@@ -1658,6 +1689,405 @@ header {
       margin: 0 auto 1.5rem;
     }
 
+    /* ===== LOOK INSIDE / PREVIEW BUTTON ===== */
+    .btn-preview {
+      background: transparent;
+      color: var(--primary);
+      border: 2px solid var(--primary);
+      padding: 0.6rem 1.8rem;
+      border-radius: 40px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: var(--transition);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+    .btn-preview:hover {
+      background: var(--primary);
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(75, 42, 173, 0.25);
+    }
+    .btn-preview i {
+      font-size: 1rem;
+    }
+
+    /* ===== PREVIEW MODAL ===== */
+    .preview-modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px);
+      z-index: 10002;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .preview-modal-overlay.show {
+      display: flex;
+    }
+    .preview-modal {
+      background: white;
+      border-radius: 20px;
+      max-width: 950px;
+      width: 100%;
+      max-height: 92vh;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+      animation: modalIn 0.3s ease;
+    }
+    .preview-modal .preview-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.2rem 1.8rem;
+      border-bottom: 1px solid var(--border-light);
+      background: #faf7f2;
+      flex-shrink: 0;
+    }
+    .preview-modal .preview-header h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem;
+      color: var(--text-dark);
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .preview-modal .preview-header h3 i {
+      color: var(--primary);
+      font-size: 1.1rem;
+    }
+    .preview-modal .preview-header .preview-close {
+      background: none;
+      border: none;
+      font-size: 1.8rem;
+      cursor: pointer;
+      color: #999;
+      transition: 0.3s;
+      padding: 0 0.5rem;
+    }
+    .preview-modal .preview-header .preview-close:hover {
+      color: var(--secondary);
+      transform: rotate(90deg);
+    }
+    .preview-modal .preview-body {
+      padding: 1.2rem 1.8rem 1.8rem;
+      max-height: calc(92vh - 160px);
+      overflow-y: auto;
+    }
+    .preview-modal .preview-body .preview-iframe-wrapper {
+      background: #f5f2ed;
+      border-radius: 12px;
+      overflow: hidden;
+      height: 70vh;
+      min-height: 400px;
+      position: relative;
+    }
+    .preview-modal .preview-body .preview-iframe-wrapper iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: white;
+    }
+    .preview-modal .preview-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 1.8rem;
+      border-top: 1px solid var(--border-light);
+      background: #faf7f2;
+      flex-shrink: 0;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .preview-modal .preview-footer .preview-info {
+      color: var(--text-light);
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .preview-modal .preview-footer .preview-info i {
+      color: var(--secondary);
+    }
+    .preview-modal .preview-footer .preview-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .preview-modal .preview-footer .preview-actions .btn-buy-preview {
+      background: #0a6b4d;
+      color: white;
+      border: none;
+      padding: 0.6rem 2rem;
+      border-radius: 30px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: var(--transition);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .preview-modal .preview-footer .preview-actions .btn-buy-preview:hover {
+      background: #08573e;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(10, 107, 77, 0.3);
+    }
+    .preview-modal .preview-footer .preview-actions .btn-preview-close {
+      background: var(--bg-cream);
+      color: var(--text-dark);
+      border: 1px solid var(--border-light);
+      padding: 0.6rem 1.5rem;
+      border-radius: 30px;
+      font-weight: 500;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .preview-modal .preview-footer .preview-actions .btn-preview-close:hover {
+      background: #e6dfd6;
+    }
+
+    /* ===== REVIEWS SECTION ===== */
+    .reviews-section {
+      margin-top: 2.5rem;
+      padding-top: 1.5rem;
+      border-top: 2px solid var(--border-light);
+    }
+    .reviews-section .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: var(--text-dark);
+      margin-bottom: 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .reviews-section .section-title i {
+      color: var(--secondary);
+    }
+    .reviews-summary {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+      padding: 1rem 1.5rem;
+      background: var(--bg-cream);
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-light);
+    }
+    .reviews-summary .rating-big {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--text-dark);
+    }
+    .reviews-summary .rating-big .stars-big {
+      color: #f5b342;
+      font-size: 1.2rem;
+      font-weight: 400;
+      display: block;
+      margin-top: -2px;
+    }
+    .reviews-summary .rating-count {
+      color: var(--text-light);
+      font-size: 0.95rem;
+    }
+    .reviews-summary .rating-count strong {
+      color: var(--text-dark);
+    }
+    .review-form {
+      background: var(--bg-cream);
+      padding: 1.5rem;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-light);
+      margin-bottom: 1.5rem;
+    }
+    .review-form h4 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-dark);
+      margin-bottom: 0.8rem;
+    }
+    .review-form .review-rating-select {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 0.8rem;
+    }
+    .review-form .review-rating-select .star-btn {
+      background: none;
+      border: none;
+      font-size: 1.8rem;
+      cursor: pointer;
+      color: #ddd;
+      transition: 0.2s;
+      padding: 0 2px;
+    }
+    .review-form .review-rating-select .star-btn.active {
+      color: #f5b342;
+    }
+    .review-form .review-rating-select .star-btn:hover {
+      color: #f5b342;
+      transform: scale(1.1);
+    }
+    .review-form textarea {
+      width: 100%;
+      padding: 0.8rem 1rem;
+      border: 1.5px solid var(--border-light);
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-family: 'Inter', sans-serif;
+      resize: vertical;
+      min-height: 80px;
+      transition: 0.3s;
+      background: white;
+    }
+    .review-form textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(75, 42, 173, 0.1);
+    }
+    .review-form .btn-submit-review {
+      margin-top: 0.8rem;
+      padding: 0.7rem 2rem;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 30px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: var(--transition);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .review-form .btn-submit-review:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+    }
+    .review-form .btn-submit-review:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .review-item {
+      padding: 1rem 0;
+      border-bottom: 1px solid var(--border-light);
+    }
+    .review-item:last-child {
+      border-bottom: none;
+    }
+    .review-item .review-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 4px;
+    }
+    .review-item .review-header .reviewer-name {
+      font-weight: 600;
+      color: var(--text-dark);
+      font-size: 0.95rem;
+    }
+    .review-item .review-header .review-stars {
+      color: #f5b342;
+      font-size: 0.9rem;
+      letter-spacing: 1px;
+    }
+    .review-item .review-header .review-date {
+      color: var(--text-light);
+      font-size: 0.75rem;
+      margin-left: auto;
+    }
+    .review-item .review-text {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      line-height: 1.6;
+      margin-top: 4px;
+    }
+    .review-item .review-helpful {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 6px;
+    }
+    .review-item .review-helpful button {
+      background: none;
+      border: none;
+      color: var(--text-light);
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: 0.2s;
+      padding: 2px 8px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .review-item .review-helpful button:hover {
+      background: var(--bg-cream);
+      color: var(--primary);
+    }
+    .review-item .review-helpful .helpful-count {
+      color: var(--text-light);
+      font-size: 0.75rem;
+    }
+    .review-item .review-helpful .helpful-count i {
+      color: var(--secondary);
+    }
+    .no-reviews {
+      color: var(--text-light);
+      text-align: center;
+      padding: 2rem;
+      font-size: 1rem;
+    }
+    .no-reviews i {
+      font-size: 2.5rem;
+      display: block;
+      margin-bottom: 0.5rem;
+      color: #ede7df;
+    }
+    .login-to-review {
+      text-align: center;
+      padding: 1.5rem;
+      background: var(--bg-cream);
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-light);
+      margin-bottom: 1.5rem;
+    }
+    .login-to-review p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+    .login-to-review .btn-login-review {
+      display: inline-block;
+      margin-top: 0.5rem;
+      padding: 0.5rem 1.5rem;
+      background: var(--secondary);
+      color: white;
+      border: none;
+      border-radius: 30px;
+      font-weight: 500;
+      cursor: pointer;
+      text-decoration: none;
+      transition: var(--transition);
+    }
+    .login-to-review .btn-login-review:hover {
+      background: #9f5e3f;
+      transform: scale(1.02);
+    }
+
     @media (min-width: 962px) {
       .book-details .book-header { flex-direction: row; align-items: flex-start; gap: 3rem; padding: 3rem; }
       .book-details .book-cover { width: 350px; }
@@ -1713,6 +2143,9 @@ header {
       .login-prompt .btn-login { align-self: center; }
       .more-by-author .author-books-grid { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
       .contact-author-section .contact-card { padding: 0.8rem 1.2rem; }
+      .preview-modal .preview-body .preview-iframe-wrapper { height: 55vh; min-height: 300px; }
+      .preview-modal .preview-footer { flex-direction: column; align-items: stretch; text-align: center; }
+      .preview-modal .preview-footer .preview-actions { justify-content: center; flex-wrap: wrap; }
     }
 
     @media (max-width: 728px) {
@@ -1722,6 +2155,7 @@ header {
       .book-details .book-info .price { font-size: 1.5rem; }
       .book-details .book-body .synopsis { font-size: 0.95rem; }
       .more-by-author .author-books-grid { gap: 0.8rem; }
+      .preview-modal .preview-body .preview-iframe-wrapper { height: 45vh; min-height: 250px; }
     }
 
     @media (max-width: 480px) {
@@ -1766,6 +2200,17 @@ header {
       .login-prompt .btn-login { padding: 0.4rem 1.2rem; font-size: 0.85rem; }
       .contact-author-section .contact-card { padding: 0.6rem 1rem; }
       .contact-author-section .contact-card a { font-size: 0.8rem; }
+      .preview-modal .preview-body .preview-iframe-wrapper { height: 40vh; min-height: 200px; }
+      .preview-modal .preview-header h3 { font-size: 1rem; }
+      .preview-modal .preview-header .preview-close { font-size: 1.4rem; }
+      .preview-modal .preview-body { padding: 0.8rem 1rem 1rem; }
+      .preview-modal .preview-footer { padding: 0.8rem 1rem; }
+      .preview-modal .preview-footer .preview-actions .btn-buy-preview { padding: 0.5rem 1.2rem; font-size: 0.85rem; }
+      .reviews-summary { flex-direction: column; align-items: center; text-align: center; padding: 1rem; }
+      .reviews-summary .rating-big { font-size: 2rem; }
+      .review-form { padding: 1rem; }
+      .review-form .review-rating-select .star-btn { font-size: 1.5rem; }
+      .review-item .review-header .review-date { margin-left: 0; width: 100%; }
     }
 
     @media (max-width: 380px) {
@@ -2914,6 +3359,236 @@ header .logo-header {
   }
 }
 
+/* ===== FULL SCREEN PREVIEW MODAL ===== */
+.preview-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.92);
+    backdrop-filter: blur(8px);
+    z-index: 10002;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    margin: 0;
+}
+
+.preview-modal-overlay.show {
+    display: flex;
+}
+
+.preview-modal-fullscreen {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    background: #1a1a1a;
+    overflow: hidden;
+}
+
+/* Close Button - Top Right */
+.preview-close-fullscreen {
+    position: fixed;
+    top: 20px;
+    right: 24px;
+    background: rgba(255, 255, 255, 0.15);
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 10005;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(10px);
+}
+
+.preview-close-fullscreen:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(90deg);
+}
+
+/* Title - Top Left */
+.preview-title-fullscreen {
+    position: fixed;
+    top: 20px;
+    left: 24px;
+    color: rgba(255, 255, 255, 0.85);
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    font-weight: 500;
+    z-index: 10005;
+    background: rgba(0, 0, 0, 0.5);
+    padding: 8px 18px;
+    border-radius: 30px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.preview-title-fullscreen i {
+    color: #6a45d1;
+    margin-right: 8px;
+}
+
+/* Buy Button - Bottom Right */
+.preview-buy-fullscreen {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background: #0a6b4d;
+    color: white;
+    border: none;
+    padding: 14px 32px;
+    border-radius: 40px;
+    font-weight: 600;
+    font-size: 1.05rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 10005;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 8px 30px rgba(10, 107, 77, 0.4);
+    backdrop-filter: blur(10px);
+}
+
+.preview-buy-fullscreen:hover {
+    background: #08573e;
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 12px 40px rgba(10, 107, 77, 0.5);
+}
+
+.preview-buy-fullscreen i {
+    font-size: 1.1rem;
+}
+
+/* Preview Info - Bottom Left */
+.preview-info-fullscreen {
+    position: fixed;
+    bottom: 30px;
+    left: 30px;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.85rem;
+    z-index: 10005;
+    background: rgba(0, 0, 0, 0.5);
+    padding: 8px 18px;
+    border-radius: 30px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.preview-info-fullscreen i {
+    color: #6a45d1;
+    margin-right: 6px;
+}
+
+/* PDF Viewer - Full Screen */
+.preview-iframe-wrapper-fullscreen {
+    width: 100%;
+    height: 100%;
+    background: #1a1a1a;
+    position: relative;
+}
+
+.preview-iframe-wrapper-fullscreen iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: white;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .preview-title-fullscreen {
+        font-size: 0.85rem;
+        top: 14px;
+        left: 14px;
+        padding: 6px 14px;
+        max-width: 55%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    .preview-close-fullscreen {
+        top: 12px;
+        right: 14px;
+        width: 40px;
+        height: 40px;
+        font-size: 1.2rem;
+    }
+    
+    .preview-buy-fullscreen {
+        bottom: 20px;
+        right: 20px;
+        padding: 10px 20px;
+        font-size: 0.9rem;
+    }
+    
+    .preview-buy-fullscreen i {
+        font-size: 0.9rem;
+    }
+    
+    .preview-info-fullscreen {
+        bottom: 80px;
+        left: 20px;
+        font-size: 0.7rem;
+        padding: 6px 14px;
+        max-width: 60%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+}
+
+@media (max-width: 480px) {
+    .preview-title-fullscreen {
+        font-size: 0.75rem;
+        top: 12px;
+        left: 12px;
+        padding: 4px 12px;
+        max-width: 50%;
+    }
+    
+    .preview-close-fullscreen {
+        top: 10px;
+        right: 12px;
+        width: 36px;
+        height: 36px;
+        font-size: 1rem;
+    }
+    
+    .preview-buy-fullscreen {
+        bottom: 16px;
+        right: 16px;
+        padding: 8px 16px;
+        font-size: 0.8rem;
+        border-radius: 30px;
+    }
+    
+    .preview-buy-fullscreen i {
+        font-size: 0.8rem;
+    }
+    
+    .preview-info-fullscreen {
+        bottom: 70px;
+        left: 16px;
+        font-size: 0.65rem;
+        padding: 4px 12px;
+        max-width: 55%;
+    }
+}
+
+/* ===== HIDE PREVIEW INFO (BOTTOM LEFT) ===== */
+.preview-info-fullscreen {
+    display: none !important;
+}
 /* ===== HIDE "converted from multiple currencies" TEXT IN CART ===== */
 .cart-total .total-conversion-info {
     display: none !important;
@@ -2924,7 +3599,7 @@ header .logo-header {
 // Helper function for login redirect
 function goToLogin() {
     const currentUrl = window.location.pathname + window.location.search;
-    window.location.href = 'https://volantpoetry.vercel.app/shared/universal-login.html?platform=reads&redirect=' + encodeURIComponent(currentUrl);
+    window.location.href = 'universal-login.html?platform=reads&redirect=' + encodeURIComponent(currentUrl);
 }
 </script>
 
@@ -3016,6 +3691,36 @@ function goToLogin() {
     </div>
   </div>
 
+<!-- ===== PREVIEW MODAL - FULL SCREEN ===== -->
+<div class="preview-modal-overlay" id="previewModal">
+  <div class="preview-modal-fullscreen">
+    <!-- Close Button - Top Right -->
+    <button class="preview-close-fullscreen" id="previewCloseBtn">
+      <i class="fas fa-times"></i>
+    </button>
+    
+    <!-- Book Title - Top Left -->
+    <div class="preview-title-fullscreen" id="previewTitle">
+      <i class="fas fa-eye"></i> Preview: <span id="previewBookTitle">Book Title</span>
+    </div>
+    
+    <!-- Buy Button - Bottom Right -->
+    <button class="preview-buy-fullscreen" id="previewBuyBtn">
+      <i class="fas fa-shopping-cart"></i> Buy Now — GHS <span id="previewPrice">0.00</span>
+    </button>
+    
+    <!-- Preview Info - Bottom Left -->
+    <div class="preview-info-fullscreen" id="previewInfo">
+      <i class="fas fa-info-circle"></i> <span id="previewInfoText">Scroll to preview</span>
+    </div>
+    
+    <!-- PDF Viewer -->
+    <div class="preview-iframe-wrapper-fullscreen">
+      <iframe id="previewFrame" src="" title="Book Preview"></iframe>
+    </div>
+  </div>
+</div>
+
   <!-- DETAILS -->
   <div class="details-container">
     <div id="loadingState" class="details-loading">
@@ -3069,6 +3774,14 @@ function goToLogin() {
             </div>
             <div class="sidebar-section">
               <div class="sidebar-title"><i class="fas fa-shopping-cart"></i> Actions</div>
+              
+              <!-- ===== LOOK INSIDE PREVIEW BUTTON ===== -->
+              <div style="margin-bottom:0.8rem;">
+                <button class="btn-preview" id="previewBtn">
+                  <i class="fas fa-eye"></i> Look Inside (Free Preview)
+                </button>
+              </div>
+              
               <div class="book-actions" id="bookActions">
                 <button class="btn-cart" id="addToCartBtn">
                   <i class="fas fa-cart-plus"></i> Add to Cart
@@ -3081,7 +3794,7 @@ function goToLogin() {
                   <div class="login-prompt" id="loginPrompt">
                     <i class="fas fa-lock"></i>
                     <p>Sign in to purchase and download this book.</p>
-                    <a href="javascript:void(0)" onclick="goToLogin()"" + encodeURIComponent(window.location.pathname + window.location.search) class="btn-login">Sign In</a>
+                    <a href="javascript:void(0)" onclick="goToLogin()" class="btn-login">Sign In</a>
                   </div>
 
                   <!-- Download Reminder -->
@@ -3102,6 +3815,11 @@ function goToLogin() {
                   <!-- Re-purchase button (shown when limit reached) -->
                   <button class="btn-repurchase" id="repurchaseBtn" style="display:none;">
                     <i class="fas fa-sync-alt"></i> <span>Buy Again (Pay with Paystack)</span>
+                  </button>
+
+                  <!-- ===== READ ONLINE BUTTON ===== -->
+                  <button class="btn-read-online" id="readOnlineBtn" style="display:none;">
+                    <i class="fas fa-book-open"></i> Read Online
                   </button>
 
                   <button class="btn-download owned" id="downloadBtn" style="display:none;">
@@ -3158,6 +3876,53 @@ function goToLogin() {
           </div>
         </div>
 
+        <!-- ===== REVIEWS SECTION ===== -->
+        <div class="reviews-section" id="reviewsSection">
+          <div class="section-title"><i class="fas fa-star" style="color:#f5b342;"></i> Reviews & Ratings</div>
+          
+          <!-- Reviews Summary -->
+          <div class="reviews-summary" id="reviewsSummary">
+            <div class="rating-big">
+              <span id="avgRating">0.0</span>
+              <span class="stars-big" id="avgStars">☆☆☆☆☆</span>
+            </div>
+            <div class="rating-count">
+              <strong id="reviewCount">0</strong> reviews
+            </div>
+          </div>
+
+          <!-- Review Form -->
+          <div id="reviewFormContainer">
+            <div class="review-form" id="reviewForm">
+              <h4><i class="fas fa-pen" style="color:var(--secondary);margin-right:6px;"></i> Write a Review</h4>
+              <div class="review-rating-select" id="ratingStars">
+                <button class="star-btn" data-rating="1">☆</button>
+                <button class="star-btn" data-rating="2">☆</button>
+                <button class="star-btn" data-rating="3">☆</button>
+                <button class="star-btn" data-rating="4">☆</button>
+                <button class="star-btn" data-rating="5">☆</button>
+              </div>
+              <textarea id="reviewText" placeholder="Share your thoughts about this book..." rows="3"></textarea>
+              <button class="btn-submit-review" id="submitReviewBtn">
+                <i class="fas fa-paper-plane"></i> Post Review
+              </button>
+            </div>
+          </div>
+
+          <!-- Login to review -->
+          <div class="login-to-review" id="loginToReview" style="display:none;">
+            <p>🔐 <a href="javascript:void(0)" onclick="goToLogin()" class="btn-login-review">Sign in</a> to leave a review.</p>
+          </div>
+
+          <!-- Reviews List -->
+          <div id="reviewsList">
+            <div class="no-reviews">
+              <i class="fas fa-comment"></i>
+              No reviews yet. Be the first to review this book!
+            </div>
+          </div>
+        </div>
+
         <div style="margin-top: 1.5rem;">
           <a href="index.html" class="btn-back"><i class="fas fa-arrow-left"></i> Back to Store</a>
         </div>
@@ -3176,7 +3941,8 @@ function goToLogin() {
         "firebase/auth": "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"
       }
     }
-  </script><script type="module">
+  </script>
+  <script type="module">
     import { initializeApp } from "firebase/app";
     import { 
       getFirestore, 
@@ -3192,7 +3958,9 @@ function goToLogin() {
       writeBatch,
       increment,
       addDoc,
-      serverTimestamp
+      serverTimestamp,
+      orderBy,
+      limit
     } from "firebase/firestore";
     import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 
@@ -3251,6 +4019,7 @@ function goToLogin() {
     const payBtn = document.getElementById('payBtn');
     const payBtnText = document.getElementById('payBtnText');
     const repurchaseBtn = document.getElementById('repurchaseBtn');
+    const readOnlineBtn = document.getElementById('readOnlineBtn');
     const paymentProcessing = document.getElementById('paymentProcessing');
     const paymentSuccess = document.getElementById('paymentSuccess');
     const paymentError = document.getElementById('paymentError');
@@ -3268,20 +4037,30 @@ function goToLogin() {
     const authorContactLink = document.getElementById('authorContactLink');
     const authorContactText = document.getElementById('authorContactText');
 
-    const cartOverlay = document.getElementById('cartOverlay');
-    const cartBackdrop = document.getElementById('cartBackdrop');
-    const cartBody = document.getElementById('cartBody');
-    const cartTotalAmount = document.getElementById('cartTotalAmount');
-    const checkoutBtn = document.getElementById('checkoutBtn');
-    const cartCloseBtn = document.getElementById('cartCloseBtn');
-    const cartPaymentProcessing = document.getElementById('cartPaymentProcessing');
+    // ===== PREVIEW DOM REFS =====
+    const previewModal = document.getElementById('previewModal');
+    const previewCloseBtn = document.getElementById('previewCloseBtn');
+    const previewCloseBtn2 = document.getElementById('previewCloseBtn2');
+    const previewFrame = document.getElementById('previewFrame');
+    const previewTitle = document.getElementById('previewTitle');
+    const previewPrice = document.getElementById('previewPrice');
+    const previewBuyBtn = document.getElementById('previewBuyBtn');
+    const previewBtn = document.getElementById('previewBtn');
 
-    const wishlistOverlay = document.getElementById('wishlistOverlay');
-    const wishlistBackdrop = document.getElementById('wishlistBackdrop');
-    const wishlistBody = document.getElementById('wishlistBody');
-    const wishlistCloseBtn = document.getElementById('wishlistCloseBtn');
-    const addAllWishlistToCartBtn = document.getElementById('addAllWishlistToCartBtn');
+    // ===== REVIEWS DOM REFS =====
+    const reviewsList = document.getElementById('reviewsList');
+    const reviewsSummary = document.getElementById('reviewsSummary');
+    const avgRating = document.getElementById('avgRating');
+    const avgStars = document.getElementById('avgStars');
+    const reviewCount = document.getElementById('reviewCount');
+    const reviewText = document.getElementById('reviewText');
+    const submitReviewBtn = document.getElementById('submitReviewBtn');
+    const ratingStars = document.getElementById('ratingStars');
+    const loginToReview = document.getElementById('loginToReview');
+    const reviewForm = document.getElementById('reviewForm');
+    const reviewFormContainer = document.getElementById('reviewFormContainer');
 
+    let selectedRating = 0;
     let currentUser = null;
     let currentBook = null;
     let toastTimeout = null;
@@ -3342,7 +4121,7 @@ function goToLogin() {
 
     function getLoginRedirectLink() {
         const currentPage = window.location.pathname + window.location.search;
-        return 'https://volantpoetry.vercel.app/shared/universal-login.html?platform=reads&redirect=' + encodeURIComponent(currentPage);
+        return 'universal-login.html?platform=reads&redirect=' + encodeURIComponent(currentPage);
     }
 
     window.addEventListener('storage', (e) => {
@@ -3531,7 +4310,7 @@ function goToLogin() {
     function openContactModal(book) {
       if (!currentUser) {
         showToast('🔐 Please sign in to contact the author.', 'error');
-        window.location.href = "https://volantpoetry.vercel.app/shared/universal-login.html?platform=reads&redirect=" + encodeURIComponent(window.location.pathname + window.location.search);
+        window.location.href = "universal-login.html?platform=reads&redirect=" + encodeURIComponent(window.location.pathname + window.location.search);
         return;
       }
       contactBookTitle.textContent = `About: ${book.title || 'Untitled'}`;
@@ -3855,7 +4634,7 @@ function goToLogin() {
             <i class="fas fa-shopping-cart"></i> <span class="cart-text">Cart</span>
             <span class="cart-count" id="cartCountBadge">${cartCount}</span>
           </button>
-          <a href="javascript:void(0)" onclick="goToLogin()"" + encodeURIComponent(window.location.pathname + window.location.search) class="btn-signin">Sign In</a>
+          <a href="javascript:void(0)" onclick="goToLogin()" class="btn-signin">Sign In</a>
         `;
         document.getElementById('cartHeaderBtn')?.addEventListener('click', openCart);
         document.getElementById('wishlistHeaderBtn')?.addEventListener('click', openWishlist);
@@ -3871,6 +4650,8 @@ function goToLogin() {
         await updateWishlistButton();
         updateContactButton();
         await updateUIForBook();
+        // Show/hide review form based on auth
+        updateReviewFormVisibility();
       }
     });
 
@@ -4014,6 +4795,7 @@ function goToLogin() {
             repurchaseBtn.style.display = 'none';
             downloadBtn.style.display = 'inline-flex';
             payBtn.style.display = 'none';
+            readOnlineBtn.style.display = 'inline-flex';
           } else if (canDownload) {
             purchaseStatusText.textContent = `✅ You own this book! ${remaining} downloads remaining.`;
             purchaseStatus.className = 'purchase-status owned';
@@ -4024,6 +4806,7 @@ function goToLogin() {
             repurchaseBtn.style.display = 'none';
             downloadBtn.style.display = 'inline-flex';
             payBtn.style.display = 'none';
+            readOnlineBtn.style.display = 'inline-flex';
           } else {
             purchaseStatusText.textContent = '⚠️ You\'ve reached the download limit. You can buy again or contact the author.';
             purchaseStatus.className = 'purchase-status limit-reached';
@@ -4034,6 +4817,7 @@ function goToLogin() {
             repurchaseBtn.style.display = 'inline-flex';
             downloadBtn.style.display = 'none';
             payBtn.style.display = 'none';
+            readOnlineBtn.style.display = 'inline-flex';
           }
         } else {
           downloadReminder.className = 'download-reminder';
@@ -4043,6 +4827,7 @@ function goToLogin() {
           payBtn.style.display = 'inline-flex';
           repurchaseBtn.style.display = 'none';
           downloadBtn.style.display = 'none';
+          readOnlineBtn.style.display = 'none';
         }
       } else {
         downloadReminder.className = 'download-reminder';
@@ -4052,6 +4837,7 @@ function goToLogin() {
         payBtn.style.display = 'none';
         repurchaseBtn.style.display = 'none';
         downloadBtn.style.display = 'none';
+        readOnlineBtn.style.display = 'none';
       }
       
       updatePaymentUIState();
@@ -4530,6 +5316,9 @@ function goToLogin() {
           downloadBtn.style.display = 'inline-flex';
           downloadBtnText.textContent = 'Download';
           
+          // ===== SHOW READ ONLINE BUTTON =====
+          readOnlineBtn.style.display = 'inline-flex';
+          
           purchaseStatus.style.display = 'flex';
           purchaseStatus.className = 'purchase-status owned';
           
@@ -4985,6 +5774,7 @@ function goToLogin() {
       payBtn.style.display = 'none';
       repurchaseBtn.style.display = 'none';
       downloadBtn.style.display = 'none';
+      readOnlineBtn.style.display = 'none';
       loginPrompt.style.display = 'none';
       
       switch(status) {
@@ -4995,6 +5785,7 @@ function goToLogin() {
           paymentSuccess.classList.add('active');
           downloadBtn.style.display = 'inline-flex';
           downloadBtnText.textContent = 'Download';
+          readOnlineBtn.style.display = 'inline-flex';
           purchaseStatus.style.display = 'flex';
           break;
         case 'error':
@@ -5006,6 +5797,7 @@ function goToLogin() {
           purchaseStatus.style.display = 'flex';
           downloadBtn.style.display = 'inline-flex';
           downloadBtnText.textContent = 'Download';
+          readOnlineBtn.style.display = 'inline-flex';
           break;
         case 'not_owned':
           payBtn.style.display = 'inline-flex';
@@ -5040,6 +5832,7 @@ function goToLogin() {
           repurchaseBtn.style.display = 'inline-flex';
           downloadBtn.style.display = 'none';
           payBtn.style.display = 'none';
+          readOnlineBtn.style.display = 'inline-flex';
         }
       } else {
         updatePaymentUI('not_owned');
@@ -5113,9 +5906,25 @@ function goToLogin() {
       }
     }
 
+    // ===== READ ONLINE BUTTON HANDLER =====
+    readOnlineBtn.addEventListener('click', function() {
+      if (!currentUser) {
+        showToast('🔐 Please sign in to read.', 'error');
+        return;
+      }
+      if (!currentBook) {
+        showToast('❌ Book not loaded.', 'error');
+        return;
+      }
+      
+      // Open the reader in a new tab
+      const readerUrl = `reader.html?id=${currentBook.id}`;
+      window.open(readerUrl, '_blank');
+    });
+
     // ===== PAY BUTTON =====
     payBtn.addEventListener('click', function() {
-      if (!currentUser) { showToast('🔐 Please sign in to purchase.', 'error'); window.location.href = "https://volantpoetry.vercel.app/shared/universal-login.html?platform=reads&redirect=" + encodeURIComponent(window.location.pathname + window.location.search); return; }
+      if (!currentUser) { showToast('🔐 Please sign in to purchase.', 'error'); window.location.href = "universal-login.html?platform=reads&redirect=" + encodeURIComponent(window.location.pathname + window.location.search); return; }
       if (!currentBook) { showToast('❌ Book not loaded.', 'error'); return; }
       if (hasPaidForBook) { showToast('✅ You already own this book!', 'success'); return; }
       const amount = currentBook.pricing?.amount || 0;
@@ -5133,7 +5942,7 @@ function goToLogin() {
 
     // ===== RE-PURCHASE BUTTON =====
     repurchaseBtn.addEventListener('click', function() {
-      if (!currentUser) { showToast('🔐 Please sign in to purchase.', 'error'); window.location.href = "https://volantpoetry.vercel.app/shared/universal-login.html?platform=reads&redirect=" + encodeURIComponent(window.location.pathname + window.location.search); return; }
+      if (!currentUser) { showToast('🔐 Please sign in to purchase.', 'error'); window.location.href = "universal-login.html?platform=reads&redirect=" + encodeURIComponent(window.location.pathname + window.location.search); return; }
       if (!currentBook) { showToast('❌ Book not loaded.', 'error'); return; }
       const amount = currentBook.pricing?.amount || 0;
       if (amount <= 0) {
@@ -5150,7 +5959,7 @@ function goToLogin() {
     checkoutBtn.addEventListener('click', async function() {
       if (!currentUser) {
         showToast('🔐 Please sign in to checkout.', 'error');
-        window.location.href = "https://volantpoetry.vercel.app/shared/universal-login.html?platform=reads&redirect=" + encodeURIComponent(window.location.pathname + window.location.search);
+        window.location.href = "universal-login.html?platform=reads&redirect=" + encodeURIComponent(window.location.pathname + window.location.search);
         return;
       }
 
@@ -5228,6 +6037,12 @@ function goToLogin() {
         await updateUIForBook();
         await updateWishlistButton();
         updateContactButton();
+        // Load reviews
+        await loadReviews(book.id);
+        // Update preview button
+        updatePreviewButton(book);
+        // Update review form visibility
+        updateReviewFormVisibility();
       } catch (err) {
         loadingState.style.display = 'none'; notFound.style.display = 'block';
       }
@@ -5365,6 +6180,544 @@ function goToLogin() {
       if (book.authorBio) { bookAuthorBio.textContent = book.authorBio; authorBioSection.style.display = 'block'; } else { authorBioSection.style.display = 'none'; }
     }
 
+    // ================================================================
+    // ===== PREVIEW FUNCTIONS =====
+    // ================================================================
+    function updatePreviewButton(book) {
+      if (book && book.pdfUrl) {
+        previewBtn.style.display = 'inline-flex';
+        previewBtn.disabled = false;
+      } else {
+        previewBtn.style.display = 'none';
+      }
+    }
+
+    async function openPreview() {
+      if (!currentBook || !currentBook.pdfUrl) {
+        showToast('❌ Preview not available for this book.', 'error');
+        return;
+      }
+
+      // ===== DETECT ACTUAL PDF PAGE COUNT =====
+      let totalPages = currentBook.pageCount || 0;
+      
+      try {
+        const pdf = await pdfjsLib.getDocument(currentBook.pdfUrl).promise;
+        const actualPages = pdf.numPages;
+        console.log('📄 Actual PDF pages:', actualPages, '| Metadata pages:', totalPages);
+        totalPages = actualPages;
+      } catch (error) {
+        console.warn('⚠️ Could not detect PDF page count, using metadata:', error);
+      }
+
+      let previewPages = 0;
+
+      console.log('📄 Book pages:', totalPages);
+      console.log('📄 Current user:', currentUser ? 'Signed in' : 'Not signed in');
+
+      // ===== CHECK IF SHORT BOOK (≤ 9 PAGES) =====
+      if (totalPages <= 9) {
+        if (currentUser) {
+          previewPages = Math.max(totalPages - 4, 1);
+        } else {
+          previewPages = Math.max(totalPages - 3, 1);
+        }
+        console.log('📄 Short book preview:', { totalPages, previewPages, type: currentUser ? 'paid' : 'free' });
+      } 
+      // ===== SPECIAL CASE: EXACTLY 10 PAGES =====
+      else if (totalPages === 10) {
+        if (currentUser) {
+          previewPages = 7;
+        } else {
+          previewPages = 8;
+        }
+        console.log('📄 10-page special:', { totalPages, previewPages, type: currentUser ? 'paid' : 'free' });
+      } 
+      // ===== BOOKS WITH 11+ PAGES =====
+      else {
+        let rawPreview = totalPages * 0.10;
+        let ceiledPreview = Math.ceil(rawPreview);
+        previewPages = Math.max(ceiledPreview, 10);
+        console.log('📄 10% rule:', { totalPages, rawPreview, ceiledPreview, previewPages });
+      }
+
+      previewPages = Math.min(previewPages, totalPages);
+      console.log('📄 Final preview pages:', previewPages);
+
+      // ===== BOOK STATUS PARAMETERS =====
+      const isFree = (currentBook.pricing?.amount || 0) <= 0;
+      const isPurchased = hasPaidForBook || false;
+      const isSignedIn = currentUser !== null;
+      const currency = currentBook.pricing?.currency || 'GHS';
+      const amount = currentBook.pricing?.amount || 0;
+
+      // ===== BUILD PREVIEW URL WITH STATUS =====
+      const previewUrl = `pdfjs/multi-page-viewer.html?viewerVersion=2&file=${encodeURIComponent(currentBook.pdfUrl)}&startPage=1&endPage=${previewPages}&totalPages=${totalPages}&isFree=${isFree}&isPurchased=${isPurchased}&isSignedIn=${isSignedIn}&currency=${currency}&amount=${amount}`;
+      
+      console.log('📄 Preview URL:', previewUrl);
+
+      // ===== SET IFRAME SOURCE =====
+      if (previewFrame) {
+        previewFrame.src = previewUrl;
+      }
+      
+      // ===== UPDATE TITLE =====
+      const previewTitle = document.getElementById('previewBookTitle');
+      if (previewTitle) {
+        previewTitle.textContent = currentBook.title || 'Book';
+      }
+      
+      // ===== UPDATE INFO TEXT =====
+      const previewInfoText = document.getElementById('previewInfoText');
+      if (previewInfoText) {
+        if (totalPages <= 9) {
+          const isPaid = currentUser !== null;
+          const deducted = isPaid ? 4 : 3;
+          previewInfoText.textContent = `Showing ${previewPages} of ${totalPages} pages (${deducted} pages deducted for ${isPaid ? 'paid' : 'free'} preview) — Scroll to preview`;
+        } else if (totalPages === 10) {
+          const isPaid = currentUser !== null;
+          const deducted = isPaid ? 3 : 2;
+          previewInfoText.textContent = `Showing ${previewPages} of ${totalPages} pages (${deducted} pages deducted — 10-page special rule) — Scroll to preview`;
+        } else {
+          const percent = Math.round((previewPages / totalPages) * 100);
+          previewInfoText.textContent = `Showing ${previewPages} of ${totalPages} pages (${percent}% of the book — 10% rule applied) — Scroll to preview`;
+        }
+      }
+
+      // ===== UPDATE PRICE & HIDE/SHOW BUY BUTTON =====
+      const previewPrice = document.getElementById('previewPrice');
+      const previewBuyBtn = document.getElementById('previewBuyBtn');
+      
+      // 🔥 HIDE BUY BUTTON IF FREE OR ALREADY PURCHASED
+      if (isFree || isPurchased) {
+        // Hide the floating Buy Now button
+        if (previewBuyBtn) {
+          previewBuyBtn.style.display = 'none';
+        }
+      } else {
+        // Show the floating Buy Now button with price
+        if (previewBuyBtn) {
+          previewBuyBtn.style.display = 'flex';
+          previewBuyBtn.innerHTML = `<i class="fas fa-shopping-cart"></i> Buy Now — ${currency} ${amount.toFixed(2)}`;
+        }
+      }
+      
+      if (previewPrice) {
+        previewPrice.textContent = amount.toFixed(2);
+      }
+      
+      // ===== SHOW MODAL =====
+      if (previewModal) {
+        previewModal.classList.add('show');
+      }
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closePreview() {
+      if (previewModal) {
+        previewModal.classList.remove('show');
+      }
+      document.body.style.overflow = '';
+      
+      // Stop loading the iframe to save resources
+      if (previewFrame) {
+        previewFrame.src = '';
+      }
+      
+      // 🔥 Reset the buy button visibility when preview closes
+      const previewBuyBtn = document.getElementById('previewBuyBtn');
+      if (previewBuyBtn) {
+        previewBuyBtn.style.display = 'flex'; // Reset to default
+      }
+    }
+
+    // ================================================================
+    // ===== PREVIEW EVENT LISTENERS =====
+    // ================================================================
+
+    // Preview button
+    if (previewBtn) {
+        previewBtn.addEventListener('click', openPreview);
+    }
+
+    // Close buttons
+    if (previewCloseBtn) {
+        previewCloseBtn.addEventListener('click', closePreview);
+    }
+
+    if (previewCloseBtn2) {
+        previewCloseBtn2.addEventListener('click', closePreview);
+    }
+
+    // Click outside modal to close
+    if (previewModal) {
+        previewModal.addEventListener('click', function(e) {
+            if (e.target === previewModal) closePreview();
+        });
+    }
+
+    // Escape key to close
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            if (previewModal && previewModal.classList.contains('show')) {
+                closePreview();
+            }
+        }
+    });
+
+    // Buy button inside preview (floating)
+    if (previewBuyBtn) {
+        previewBuyBtn.addEventListener('click', function() {
+            closePreview();
+            
+            // Scroll to payment section
+            const paymentSection = document.getElementById('paymentStatusContainer');
+            if (paymentSection) {
+                paymentSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            
+            // Check if user is signed in
+            if (!currentUser) {
+                showToast('🔐 Please sign in to purchase this book.', 'error');
+                goToLogin();
+                return;
+            }
+            
+            // Check if user already owns the book
+            if (hasPaidForBook) {
+                showToast('✅ You already own this book!', 'success');
+                return;
+            }
+            
+            // Trigger pay button
+            if (payBtn && payBtn.style.display !== 'none' && !payBtn.disabled) {
+                payBtn.click();
+            } else {
+                showToast('This book is already in your library!', 'success');
+            }
+        });
+    }
+
+    // ================================================================
+    // ===== LISTEN FOR MESSAGES FROM PREVIEW IFRAME =====
+    // ================================================================
+    window.addEventListener('message', function(e) {
+        console.log('📨 Message from preview:', e.data);
+        
+        // Close preview
+        if (e.data.action === 'closePreview') {
+            closePreview();
+        }
+        
+        // Buy Now - DIRECTLY TRIGGER PAYMENT (same as floating button)
+        if (e.data.action === 'buyNow') {
+            console.log('🛒 Buy Now triggered from preview');
+            // Close preview if not already closed
+            closePreview();
+
+          // Check if user is signed in
+          if (!currentUser) {
+            showToast('🔐 Please sign in to purchase this book.', 'error');
+            goToLogin();
+            return;
+          }
+            
+          // Check if user already owns the book
+          if (hasPaidForBook) {
+            showToast('✅ You already own this book!', 'success');
+            return;
+          }
+            
+          // Scroll to payment section
+          const paymentSection = document.getElementById('paymentStatusContainer');
+          if (paymentSection) {
+            paymentSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+            
+          // 🔥 DIRECTLY TRIGGER THE PAY BUTTON
+          if (payBtn && payBtn.style.display !== 'none' && !payBtn.disabled) {
+            payBtn.click();
+          } else {
+            // Fallback: if pay button is not visible, show message
+            showToast('This book is already in your library!', 'success');
+          }
+        }
+        
+        // Sign In
+        if (e.data.action === 'signIn') {
+            console.log('🔐 Sign In triggered from preview');
+            closePreview();
+            setTimeout(() => {
+                goToLogin();
+            }, 300);
+        }
+        
+        // Read Online
+        if (e.data.action === 'readOnline') {
+            console.log('📖 Read Online triggered from preview');
+            closePreview();
+            setTimeout(() => {
+                if (readOnlineBtn) {
+                    readOnlineBtn.click();
+                }
+            }, 300);
+        }
+        
+        // Download
+        if (e.data.action === 'downloadBook') {
+            console.log('⬇️ Download triggered from preview');
+            closePreview();
+            setTimeout(() => {
+                if (downloadBtn) {
+                    downloadBtn.click();
+                }
+            }, 300);
+        }
+    });
+
+    // ===== REVIEWS FUNCTIONS =====
+    function updateReviewFormVisibility() {
+      if (currentUser) {
+        reviewForm.style.display = 'block';
+        loginToReview.style.display = 'none';
+      } else {
+        reviewForm.style.display = 'none';
+        loginToReview.style.display = 'block';
+      }
+    }
+
+    // Rating stars logic
+    document.querySelectorAll('.star-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const rating = parseInt(this.dataset.rating);
+        selectedRating = rating;
+        document.querySelectorAll('.star-btn').forEach(b => {
+          const btnRating = parseInt(b.dataset.rating);
+          if (btnRating <= rating) {
+            b.classList.add('active');
+            b.textContent = '★';
+          } else {
+            b.classList.remove('active');
+            b.textContent = '☆';
+          }
+        });
+      });
+      
+      btn.addEventListener('mouseenter', function() {
+        const rating = parseInt(this.dataset.rating);
+        document.querySelectorAll('.star-btn').forEach(b => {
+          const btnRating = parseInt(b.dataset.rating);
+          if (btnRating <= rating) {
+            b.textContent = '★';
+            b.style.color = '#f5b342';
+          } else {
+            b.textContent = '☆';
+            b.style.color = '#ddd';
+          }
+        });
+      });
+      
+      btn.addEventListener('mouseleave', function() {
+        document.querySelectorAll('.star-btn').forEach(b => {
+          const btnRating = parseInt(b.dataset.rating);
+          if (btnRating <= selectedRating) {
+            b.textContent = '★';
+            b.style.color = '#f5b342';
+          } else {
+            b.textContent = '☆';
+            b.style.color = '#ddd';
+          }
+        });
+      });
+    });
+
+    async function loadReviews(bookId) {
+      try {
+        const reviewsRef = collection(db, "reviews");
+        const q = query(reviewsRef, where("bookId", "==", bookId));
+        const snapshot = await getDocs(q);
+        
+        let reviews = [];
+        snapshot.forEach(doc => {
+          reviews.push({ id: doc.id, ...doc.data() });
+        });
+        reviews.sort((a, b) => {
+          const dateA = a.createdAt?.toDate?.() || new Date(a.createdAt) || new Date(0);
+          const dateB = b.createdAt?.toDate?.() || new Date(b.createdAt) || new Date(0);
+          return dateB - dateA;
+        });
+        
+        let reviewHTML = '';
+        let totalRating = 0;
+        
+        reviews.forEach(review => {
+          totalRating += review.rating;
+          const stars = '★'.repeat(Math.round(review.rating)) + '☆'.repeat(5 - Math.round(review.rating));
+          const date = review.createdAt?.toDate?.() || new Date(review.createdAt) || new Date();
+          
+          // Use stored snapshot (fastest, no extra reads)
+          const reviewerName = review.userSnapshot?.username || 
+                              review.userName || 
+                              review.userSnapshot?.displayName || 
+                              'Anonymous';
+          
+          const photoURL = review.userSnapshot?.photoURL || '';
+          const avatarHtml = photoURL ? 
+            `<img src="${photoURL}" style="width:24px;height:24px;border-radius:50%;object-fit:cover;margin-right:6px;" />` : 
+            '';
+          
+          reviewHTML += `
+            <div class="review-item">
+              <div class="review-header">
+                <span class="reviewer-name">
+                  ${avatarHtml}${reviewerName}
+                </span>
+                <span class="review-stars">${stars}</span>
+                <span class="review-date">${date.toLocaleDateString()}</span>
+              </div>
+              <div class="review-text">${review.review}</div>
+              <div class="review-helpful">
+                <button class="helpful-btn" data-review-id="${review.id}" data-helpful="${review.helpfulCount || 0}">
+                  <i class="fas fa-thumbs-up"></i> Helpful (<span class="helpful-count">${review.helpfulCount || 0}</span>)
+                </button>
+              </div>
+            </div>
+          `;
+        });
+        
+        // Update summary
+        const count = reviews.length;
+        const avg = count > 0 ? (totalRating / count) : 0;
+        avgRating.textContent = avg.toFixed(1);
+        reviewCount.textContent = count;
+        
+        const fullStars = Math.round(avg);
+        const emptyStars = 5 - fullStars;
+        avgStars.textContent = '★'.repeat(fullStars) + '☆'.repeat(emptyStars);
+        
+        reviewsList.innerHTML = reviewHTML || `
+          <div class="no-reviews">
+            <i class="fas fa-comment"></i>
+            No reviews yet. Be the first to review this book!
+          </div>
+        `;
+        
+        // Add helpful button listeners
+        document.querySelectorAll('.helpful-btn').forEach(btn => {
+          btn.addEventListener('click', async function() {
+            if (!currentUser) {
+              showToast('🔐 Please sign in to mark reviews as helpful.', 'error');
+              return;
+            }
+            const reviewId = this.dataset.reviewId;
+            const helpfulCount = parseInt(this.dataset.helpful) || 0;
+            try {
+              const reviewRef = doc(db, "reviews", reviewId);
+              await updateDoc(reviewRef, {
+                helpfulCount: increment(1)
+              });
+              this.dataset.helpful = helpfulCount + 1;
+              this.querySelector('.helpful-count').textContent = helpfulCount + 1;
+              showToast('✅ Thanks for your feedback!', 'success');
+            } catch (err) {
+              console.error('Error marking helpful:', err);
+              showToast('❌ Error. Please try again.', 'error');
+            }
+          });
+        });
+        
+      } catch (err) {
+        console.warn('Error loading reviews:', err);
+      }
+    }
+
+    async function submitReview() {
+      if (!currentUser) {
+        showToast('🔐 Please sign in to leave a review.', 'error');
+        goToLogin();
+        return;
+      }
+      
+      if (selectedRating === 0) {
+        showToast('⭐ Please select a rating.', 'error');
+        return;
+      }
+      
+      const review = reviewText.value.trim();
+      if (!review || review.length < 5) {
+        showToast(' Please write a review (at least 5 characters).', 'error');
+        return;
+      }
+      
+      submitReviewBtn.disabled = true;
+      submitReviewBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Posting...';
+      
+      try {
+        // Fetch user data ONCE at review time (snapshot)
+        let userSnapshot = {
+          username: currentUser.displayName || currentUser.email?.split('@')[0] || 'Anonymous',
+          displayName: currentUser.displayName || '',
+          photoURL: currentUser.photoURL || ''
+        };
+        
+        try {
+          const userDoc = await getDoc(doc(db, "users", currentUser.uid));
+          if (userDoc.exists()) {
+            const data = userDoc.data();
+            userSnapshot = {
+              username: data.username || data.displayName || currentUser.displayName || currentUser.email?.split('@')[0] || 'Anonymous',
+              displayName: data.displayName || currentUser.displayName || '',
+              photoURL: data.photoURL || data.cachedAvatarURL || currentUser.photoURL || ''
+            };
+          }
+        } catch (err) {
+          console.warn('Error fetching user data:', err);
+        }
+        
+        const reviewData = {
+          userId: currentUser.uid,
+          userName: userSnapshot.username,
+          userSnapshot: userSnapshot,
+          userEmail: currentUser.email || '',
+          bookId: currentBook.id,
+          bookTitle: currentBook.title || 'Untitled',
+          rating: selectedRating,
+          review: review,
+          helpfulCount: 0,
+          createdAt: serverTimestamp()
+        };
+        
+        await addDoc(collection(db, "reviews"), reviewData);
+        
+        // Update book average rating
+        const bookRef = doc(db, "books", currentBook.id);
+        await updateDoc(bookRef, {
+          averageRating: increment(selectedRating),
+          reviewCount: increment(1)
+        });
+        
+        showToast('✅ Review posted successfully!', 'success');
+        reviewText.value = '';
+        selectedRating = 0;
+        document.querySelectorAll('.star-btn').forEach(b => {
+          b.classList.remove('active');
+          b.textContent = '☆';
+          b.style.color = '#ddd';
+        });
+        
+        await loadReviews(currentBook.id);
+        
+      } catch (err) {
+        console.error('Error posting review:', err);
+        showToast('❌ Error posting review. Please try again.', 'error');
+      } finally {
+        submitReviewBtn.disabled = false;
+        submitReviewBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Post Review';
+      }
+    }
+
+    submitReviewBtn.addEventListener('click', submitReview);
+
     // ===== ADD TO CART =====
     addToCartBtn.addEventListener('click', function() {
       if (!currentBook) { showToast('❌ Book not loaded.', 'error'); return; }
@@ -5387,7 +6740,7 @@ function goToLogin() {
 
     // ===== WISHLIST BUTTON =====
     wishlistBtn.addEventListener('click', async function() {
-      if (!currentUser) { showToast('🔐 Please sign in to use wishlist.', 'error'); window.location.href = "https://volantpoetry.vercel.app/shared/universal-login.html?platform=reads&redirect=" + encodeURIComponent(window.location.pathname + window.location.search); return; }
+      if (!currentUser) { showToast('🔐 Please sign in to use wishlist.', 'error'); window.location.href = "universal-login.html?platform=reads&redirect=" + encodeURIComponent(window.location.pathname + window.location.search); return; }
       if (!currentBook) { showToast('❌ Book not loaded.', 'error'); return; }
       wishlistBtn.disabled = true;
       const inWishlist = await isBookInWishlist(currentUser.uid, currentBook.id);
@@ -5414,7 +6767,7 @@ function goToLogin() {
 
     // ===== INIT =====
     loadBook();
-  </script>
+</script>
   <script>
     (function() {
       function setupDynamicAuthLinks() {

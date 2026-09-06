@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Reset Password | Volant</title>
+<!-- Favicons -->
+<link rel="icon" type="image/png" href="https://volantpoetry.vercel.app/images/volant-favicon.png">
+<link rel="apple-touch-icon" href="https://volantpoetry.vercel.app/images/volant-favicon.png">
+  <!-- base styling (your original CSS structure) -->
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #f3f5fa;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 1rem;
+    }
+
+    .container {
+      background: #ffffff;
+      padding: 2rem 2rem 2.2rem;
+      border-radius: 24px;
+      box-shadow: 0 20px 40px -12px rgba(0, 20, 40, 0.25);
+      width: 100%;
+      max-width: 440px;
+      transition: all 0.2s;
+    }
+
+    h2 {
+      text-align: center;
+      font-weight: 600;
+      font-size: 1.9rem;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.3rem;
+      color: #1a1e2b;
+    }
+
+    .poetry-brand {
+      text-align: center;
+      font-size: 0.9rem;
+      color: #6b47b3;
+      margin-bottom: 1.5rem;
+      border-bottom: 1px dashed #ddd9f0;
+      padding-bottom: 0.7rem;
+    }
+
+    .info-text {
+      font-size: 0.95rem;
+      color: #3e405b;
+      text-align: center;
+      background: #f1effa;
+      padding: 0.8rem 1rem;
+      border-radius: 40px;
+      margin: 0 0 1.8rem 0;
+    }
+
+    form label {
+      display: block;
+      margin: 0 0 0.3rem 0.2rem;
+      font-weight: 500;
+      font-size: 0.95rem;
+      color: #2a2d3e;
+    }
+
+    input[type="email"] {
+      width: 100%;
+      padding: 0.9rem 1.2rem;
+      border-radius: 50px;
+      border: 1.5px solid #dcd4f0;
+      background: white;
+      font-size: 1rem;
+      transition: 0.15s;
+      outline: none;
+    }
+
+    input[type="email"]:focus {
+      border-color: #4b2aad;
+      box-shadow: 0 0 0 4px rgba(75, 42, 173, 0.1);
+    }
+
+    .btn-primary {
+      width: 100%;
+      padding: 0.9rem;
+      margin: 1.5rem 0 0.8rem;
+      border: none;
+      border-radius: 60px;
+      background-color: #4b2aad;
+      color: white;
+      font-weight: 600;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+      box-shadow: 0 8px 18px -6px #4b2aad80;
+    }
+
+    .btn-primary:hover {
+      background-color: #3a1f8a;
+      transform: scale(1.01);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.6;
+      box-shadow: none;
+      pointer-events: none;
+    }
+
+    .status {
+      margin: 0.8rem 0 0.2rem;
+      padding: 0.9rem 1rem;
+      border-radius: 40px;
+      text-align: center;
+      font-size: 0.95rem;
+      background-color: #fee9e7;
+      color: #b3261e;
+      border-left: 4px solid #b3261e;
+      font-weight: 500;
+      display: none;
+    }
+
+    .status.show {
+      display: block;
+    }
+
+    .status.success {
+      background-color: #e3f3e9;
+      color: #1e6f3f;
+      border-left-color: #1e6f3f;
+    }
+
+    /* simple success message (no username exposed) */
+    .reset-confirm-message {
+      background: #e5f0ff;
+      border-radius: 40px;
+      padding: 1rem 1.5rem;
+      margin: 1.2rem 0 0.5rem;
+      font-size: 1rem;
+      font-weight: 450;
+      color: #113355;
+      text-align: center;
+      border-left: 5px solid #2e6a9e;
+    }
+
+    .tip-box {
+      background-color: #fff1db;
+      border-radius: 20px;
+      padding: 1rem 1.3rem;
+      margin: 1.2rem 0 0.5rem;
+      font-size: 0.9rem;
+      color: #6d4c2b;
+      border-left: 5px solid #f29c33;
+    }
+
+    .tip-box p {
+      margin: 0.3rem 0;
+    }
+
+    .links {
+      text-align: center;
+      margin-top: 1.8rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+
+    .links a {
+      color: #4b2aad;
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.95rem;
+    }
+
+    .links a:hover {
+      text-decoration: underline;
+    }
+
+    hr {
+      border: 0.5px solid #eceaf5;
+      margin: 1.3rem 0 0.8rem;
+    }
+
+    .try-now-link {
+      background: none;
+      border: none;
+      color: #4b2aad;
+      font-weight: 600;
+      text-decoration: underline;
+      cursor: pointer;
+      padding: 0;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Reset Your Password</h2>
+    <div class="poetry-brand" id="platformBrandName">Volant Poetry</div>
+
+    <!-- reset form -->
+    <form id="reset-form">
+      <label for="reset-email">📧 your Gmail address</label>
+      <input type="email" id="reset-email" placeholder="yourgmail@gmail.com" required autocomplete="off">
+
+      <button type="submit" class="btn-primary" id="send-btn">Continue</button>
+    </form>
+
+    <!-- dynamic status area (error / success) -->
+    <div id="reset-status" class="status"></div>
+
+    <!-- simple confirmation (no username shown, only generic message) -->
+    <div id="confirmMessage" class="reset-confirm-message" style="display: none;">
+      ✅ reset link sent to the email on your account.
+    </div>
+
+    <!-- Spam guidance (appears after success) -->
+    <div id="spam-tip" class="tip-box" style="display: none;">
+      <p>📬 <strong>Check spam & promotions</strong></p>
+      <p>✓ add <code>noreply@silent-depth.firebaseapp.com</code> to contacts</p>
+      <p>✓ <button class="try-now-link" id="tryAgainBtn">click here to retry</button> if you don't see it</p>
+    </div>
+
+    <hr>
+
+    <div class="links">
+      <p><a href="#" id="backToLoginLink">Back to login</a></p>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    // Firestore to check existing credentials (storage verification)
+    import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyC4DHI8aBVY4JjTvJ-r-TGIDPsewtEWxzU",
+      authDomain: "silent-depth.firebaseapp.com",
+      projectId: "silent-depth",
+      storageBucket: "silent-depth.firebasestorage.app",
+      messagingSenderId: "78008755450",
+      appId: "1:78008755450:web:3fd0f0f298a08820935543",
+      measurementId: "G-WSWDCB7KD8"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app); // for storage lookup
+
+    // ==================== PLATFORM DETECTION ====================
+    const urlParams = new URLSearchParams(window.location.search);
+    const platform = urlParams.get('platform') || 'reads';
+    const redirectUrl = urlParams.get('redirect');
+
+    const platformConfig = {
+      poetry: {
+        name: 'Volant Poetry',
+        homeUrl: 'index.html'
+      },
+      reads: {
+        name: 'Volant Reads',
+        homeUrl: 'index.html'
+      },
+      foundry: {
+        name: 'Volant Foundry',
+        homeUrl: 'parent-house.html'
+      }
+    };
+
+    const currentPlatform = platformConfig[platform] || platformConfig.poetry;
+
+    // Update brand name
+    document.getElementById('platformBrandName').textContent = currentPlatform.name;
+
+    // Update back to login link
+    const backToLoginLink = document.getElementById('backToLoginLink');
+    const loginParams = new URLSearchParams();
+    loginParams.append('platform', platform);
+    if (redirectUrl) loginParams.append('redirect', redirectUrl);
+    backToLoginLink.href = `universal-login.html?${loginParams.toString()}`;
+
+    // DOM elements
+    const resetForm = document.getElementById("reset-form");
+    const emailInput = document.getElementById("reset-email");
+    const statusDiv = document.getElementById("reset-status");
+    const spamTip = document.getElementById("spam-tip");
+    const confirmMessage = document.getElementById("confirmMessage");
+    const tryAgainBtn = document.getElementById("tryAgainBtn");
+    const sendBtn = document.getElementById("send-btn");
+
+    // Hide extras initially
+    statusDiv.classList.remove("show");
+    spamTip.style.display = "none";
+    confirmMessage.style.display = "none";
+
+    // Try again button: reset UI
+    tryAgainBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      spamTip.style.display = "none";
+      confirmMessage.style.display = "none";
+      statusDiv.textContent = "";
+      statusDiv.classList.remove("show", "success");
+      emailInput.focus();
+    });
+
+    function setStatus(message, isSuccess = false) {
+      statusDiv.textContent = message;
+      statusDiv.classList.add("show");
+      if (isSuccess) {
+        statusDiv.classList.add("success");
+      } else {
+        statusDiv.classList.remove("success");
+      }
+    }
+
+    resetForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = emailInput.value.trim();
+
+      // Reset UI
+      statusDiv.textContent = "";
+      statusDiv.classList.remove("show", "success");
+      spamTip.style.display = "none";
+      confirmMessage.style.display = "none";
+
+      if (!email || !email.includes('@')) {
+        setStatus("⚠ please enter a valid email address", false);
+        emailInput.focus();
+        return;
+      }
+
+      // Disable button
+      sendBtn.disabled = true;
+      sendBtn.textContent = "account verification";
+
+      try {
+        // --- STEP 1: check if email exists in Firestore (storage) ---
+        // "users" collection must contain a document with field 'email'
+        // adjust collection name if needed (e.g., "accounts", "profiles")
+        const usersRef = collection(db, "users");
+        const q = query(usersRef, where("email", "==", email));
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+          // No matching document -> email not registered
+          setStatus("❌ email not found. please sign up first.", false);
+          sendBtn.disabled = false;
+          sendBtn.textContent = "Continue";
+          return;
+        }
+
+        // --- email EXISTS in storage --- we do NOT expose username, just silently proceed
+
+        // --- STEP 2: send Firebase password reset email ---
+        await sendPasswordResetEmail(auth, email);
+
+        // Show simple confirmation (no username revealed)
+        confirmMessage.style.display = "block";
+        
+        // Also show spam tips
+        spamTip.style.display = "block";
+
+        // Clear email field for security/cleanliness
+        emailInput.value = "";
+
+        // Optional: also show a success status (but confirmMessage already visible)
+        setStatus("✅ reset link on the way", true); // brief, then confirmMessage is primary
+
+      } catch (err) {
+        console.error("reset error:", err);
+        let errorMsg = "⚠ unable to send reset email.";
+        switch (err.code) {
+          case 'auth/user-not-found':
+            // This can happen if Firebase Auth doesn't have the user even though Firestore had it
+            errorMsg = "account inconsistency (auth missing). contact support.";
+            break;
+          case 'auth/invalid-email':
+            errorMsg = "invalid email format.";
+            break;
+          case 'auth/too-many-requests':
+            errorMsg = "too many attempts. please wait.";
+            break;
+          default:
+            errorMsg = err.message || errorMsg;
+        }
+        setStatus(`⚠ ${errorMsg}`, false);
+        confirmMessage.style.display = "none";
+      } finally {
+        // Re-enable button
+        sendBtn.disabled = false;
+        sendBtn.textContent = "Continue";
+      }
+    });
+  </script>
+  <!-- The Firestore query uses the "users" collection with an 'email' field.
+       No username is shown to the user – only silent verification. -->
+</body>
+</html>

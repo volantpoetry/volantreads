@@ -1,0 +1,2189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Volant Reads · Reader</title>
+
+  <script>
+    // Simple console blocker - production only
+    (function() {
+        if (window.location.hostname.includes('localhost') || 
+            window.location.hostname.includes('127.0.0.1')) {
+            return; // Allow in development
+        }
+        
+        // Block all console methods
+        var methods = ['log', 'info', 'warn', 'error', 'debug', 'trace', 'table', 'group', 'groupEnd', 'dir'];
+        methods.forEach(function(m) {
+            console[m] = function() {};
+            try {
+                Object.defineProperty(console, m, { configurable: false, writable: false });
+            } catch(e) {}
+        });
+        
+        window.onerror = function() { return true; };
+        window.onunhandledrejection = function() { return true; };
+    })();
+</script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet" />
+    
+    <link rel="icon" type="image/png" href="https://volantpoetry.vercel.app/images/volant-reads-favicon.png" />
+    <link rel="apple-touch-icon" href="https://volantpoetry.vercel.app/images/volant-reads-favicon.png" />
+    
+    <script>
+    // Simple console blocker - production only
+    (function() {
+        if (window.location.hostname.includes('localhost') || 
+            window.location.hostname.includes('127.0.0.1')) {
+            return;
+        }
+        var methods = ['log', 'info', 'warn', 'error', 'debug', 'trace', 'table', 'group', 'groupEnd', 'dir'];
+        methods.forEach(function(m) {
+            console[m] = function() {};
+            try {
+                Object.defineProperty(console, m, { configurable: false, writable: false });
+            } catch(e) {}
+        });
+        window.onerror = function() { return true; };
+        window.onunhandledrejection = function() { return true; };
+    })();
+    </script>
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Inter', sans-serif;
+            background: #f5f2ed;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .reader-header {
+            background: white;
+            padding: 0.8rem 2rem;
+            border-bottom: 1px solid #ede7df;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+            min-height: 60px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        
+        .reader-header .book-info h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #2d2a24;
+            max-width: 300px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .reader-header .book-info p {
+            font-size: 1rem;
+            color: #6f6252;
+        }
+        
+        .reader-header .controls {
+            display: flex;
+            gap: 0.6rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .reader-header .controls button {
+            padding: 0.4rem 1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: 0.2s;
+            background: #f0ebe4;
+            color: #2d2a24;
+            font-size: 0.85rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .reader-header .controls button:hover {
+            background: #e6dfd6;
+            transform: translateY(-1px);
+        }
+        
+        .reader-header .controls button.primary {
+            background: #4b2aad;
+            color: white;
+        }
+        
+        .reader-header .controls button.primary:hover {
+            background: #3a1f8a;
+        }
+        
+        .reader-header .controls button.refresh-btn {
+            background: #e8f0fe;
+            color: #1a56db;
+            border: 1px solid #d2e3fc;
+        }
+        
+        .reader-header .controls button.refresh-btn:hover {
+            background: #d2e3fc;
+        }
+        
+        .reader-header .controls button.refresh-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .reader-header .controls button.share-btn {
+            background: #25D366;
+            color: white;
+            border: 1px solid #128C7E;
+        }
+        
+        .reader-header .controls button.share-btn:hover {
+            background: #128C7E;
+        }
+        
+        #readerStatus {
+            display: none !important;
+        }
+        
+        #readerStatus.offline-available {
+            display: inline-flex !important;
+            background: #e8f0fe !important;
+            color: #1a56db !important;
+            border-color: #d2e3fc !important;
+            padding: 0.2rem 0.8rem !important;
+            border-radius: 20px !important;
+            font-size: 0.8rem !important;
+            align-items: center !important;
+            gap: 4px !important;
+        }
+        
+        #readerStatus.offline-available i {
+            display: inline-block !important;
+        }
+        
+        .offline-status {
+            font-size: 0.7rem;
+            padding: 0.2rem 0.8rem;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-weight: 500;
+        }
+        
+        .offline-status.online {
+            background: #dff7e5;
+            color: #15723d;
+            border: 1px solid #a8d5b5;
+        }
+        
+        .offline-status.offline {
+            background: #fde8e8;
+            color: #b33;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .offline-status i { font-size: 0.65rem; }
+        
+        .btn-save-offline {
+            background: #4b2aad !important;
+            color: white !important;
+        }
+        
+        .btn-save-offline:hover { background: #3a1f8a !important; }
+        .btn-save-offline.saved { background: #2d7d46 !important; }
+        .btn-save-offline.saved:hover { background: #1f5f33 !important; }
+        
+        #readerDownloadBtn.btn-download-disabled {
+            opacity: 0.5 !important;
+            cursor: not-allowed !important;
+            background: #ccc !important;
+            color: #666 !important;
+            pointer-events: none !important;
+        }
+        
+        #readerDownloadBtn.btn-download-disabled:hover {
+            transform: none !important;
+            background: #ccc !important;
+        }
+        
+        /* ===== SHARE DROPDOWN ===== */
+        .share-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .share-dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 100%;
+            background: white;
+            min-width: 200px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+            border-radius: 12px;
+            padding: 8px 0;
+            z-index: 1000;
+            margin-top: 4px;
+            border: 1px solid #ede7df;
+        }
+        
+        .share-dropdown-content.show {
+            display: block;
+        }
+        
+        .share-dropdown-content .share-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 16px;
+            cursor: pointer;
+            transition: 0.2s;
+            text-decoration: none;
+            color: #2d2a24;
+            font-size: 0.85rem;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .share-dropdown-content .share-item:hover {
+            background: #f8f5f0;
+        }
+        
+        .share-dropdown-content .share-item i {
+            width: 20px;
+            font-size: 1.1rem;
+            text-align: center;
+        }
+        
+        .share-dropdown-content .share-item .fa-whatsapp { color: #25D366; }
+        .share-dropdown-content .share-item .fa-twitter { color: #1DA1F2; }
+        .share-dropdown-content .share-item .fa-facebook { color: #1877F2; }
+        .share-dropdown-content .share-item .fa-envelope { color: #D44638; }
+        .share-dropdown-content .share-item .fa-copy { color: #4b2aad; }
+        .share-dropdown-content .share-item .fa-link { color: #6f6252; }
+        
+        .reader-content {
+            flex: 1;
+            padding: 1.5rem 2rem;
+            max-width: 1100px;
+            margin: 0 auto;
+            width: 100%;
+            background: #f5f2ed;
+            min-height: calc(100vh - 110px);
+            box-shadow: none;
+        }
+        
+        .reader-content .pdf-viewer-wrapper {
+            position: relative;
+            width: 100%;
+            height: 85vh;
+            min-height: 500px;
+            background: #f5f2ed;
+            border-radius: 0;
+            overflow: hidden;
+            box-shadow: none;
+        }
+        
+        .reader-content .pdf-viewer-wrapper iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: #fff;
+            image-rendering: auto;
+            transform: translateZ(0);
+            -webkit-transform: translateZ(0);
+        }
+
+        .loading-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 60vh;
+            gap: 1.2rem;
+        }
+        
+        .loading-state .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #ede7df;
+            border-top: 4px solid #4b2aad;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loading-state p { color: #8a7b6a; font-weight: 500; }
+        
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            padding: 0.8rem 1.5rem;
+            border-radius: 12px;
+            color: white;
+            font-weight: 500;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.4s ease;
+            z-index: 1000;
+            background: #4b2aad;
+            font-size: 0.9rem;
+        }
+        .toast.show { transform: translateY(0); opacity: 1; }
+        .toast.success { background: #2d7d46; }
+        .toast.error { background: #b76e4b; }
+        .toast.info { background: #4b2aad; }
+        
+        .not-owned-state,
+        .signin-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 60vh;
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .not-owned-state i,
+        .signin-state i {
+            font-size: 4rem;
+            color: #cbb9a8;
+            margin-bottom: 1rem;
+        }
+        
+        .not-owned-state h3,
+        .signin-state h3 {
+            font-size: 1.5rem;
+            color: #2d2a24;
+            margin-bottom: 0.5rem;
+        }
+        
+        .not-owned-state p,
+        .signin-state p {
+            color: #6f6252;
+            max-width: 400px;
+            margin-bottom: 1.5rem;
+        }
+        
+        .btn-back {
+            display: inline-block;
+            padding: 0.8rem 2rem;
+            background: #4b2aad;
+            color: white;
+            text-decoration: none;
+            border-radius: 40px;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+        
+        .btn-back:hover {
+            background: #3a1f8a;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(75,42,173,0.3);
+        }
+        
+        .btn-back i { margin-right: 8px; }
+        
+        /* ===== READING PROGRESS INDICATOR ===== */
+        .reading-progress-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: #ede7df;
+            z-index: 999;
+        }
+        
+        .reading-progress-bar .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4b2aad, #7b5ad0);
+            width: 0%;
+            transition: width 0.5s ease;
+            border-radius: 0 2px 2px 0;
+        }
+        
+        /* ===== READING STATS MINI ===== */
+        .reading-stats-mini {
+            position: fixed;
+            bottom: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255,255,255,0.92);
+            backdrop-filter: blur(8px);
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            color: #6f6252;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            z-index: 998;
+            border: 1px solid rgba(237,231,223,0.5);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        
+        .reading-stats-mini.visible {
+            opacity: 1;
+        }
+        
+        .reading-stats-mini .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .reading-stats-mini .stat-item i {
+            font-size: 11px;
+            color: #4b2aad;
+        }
+        
+        .reading-stats-mini .stat-item .stat-value {
+            font-weight: 600;
+            color: #2d2a24;
+        }
+
+        /* Keep reading progress working, but hide the visible bottom status UI from readers */
+        #readingStatsMini {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+        }
+
+        @media (max-width: 480px) {
+            .reading-stats-mini {
+                font-size: 10px;
+                padding: 4px 12px;
+                gap: 10px;
+                bottom: 8px;
+            }
+            .reading-stats-mini .stat-item i {
+                font-size: 9px;
+            }
+        }
+
+        /* ===== MOBILE RESPONSIVE ===== */
+        @media (max-width: 1024px) {
+            .reader-header .book-info {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                width: 100%;
+            }
+            .reader-content { padding: 1.2rem 1.5rem; max-width: 98%; }
+            .reader-content .pdf-viewer-wrapper { height: 78vh; min-height: 420px; }
+        }
+        
+        @media (max-width: 765px) {
+            .reader-header {
+                padding: 0.6rem 1rem;
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.5rem;
+                min-height: auto;
+            }
+            .reader-header .book-info {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                width: 100%;
+            }
+            .reader-header .book-info h2 {
+                font-size: 1.2rem;
+                max-width: 100%;
+                white-space: normal;
+                overflow: visible;
+                text-overflow: unset;
+            }
+            .reader-header .book-info p { font-size: 1.01rem; }
+            .reader-header .controls { justify-content: flex-start; gap: 0.4rem; flex-wrap: wrap; }
+            .reader-header .controls button { padding: 0.35rem 0.8rem; font-size: 0.75rem; }
+            .reader-header .controls #readerStatus { font-size: 0.7rem; padding: 0.15rem 0.6rem; }
+            .reader-content { padding: 0.8rem 0.8rem; max-width: 100%; min-height: calc(100vh - 130px); }
+            .reader-content .pdf-viewer-wrapper { height: 75vh; min-height: 380px; border-radius: 4px; }
+            .not-owned-state, .signin-state { height: 55vh; padding: 1.5rem; }
+            .not-owned-state i, .signin-state i { font-size: 3rem; }
+            .not-owned-state h3, .signin-state h3 { font-size: 1.2rem; }
+            .btn-back { padding: 0.6rem 1.5rem; font-size: 0.9rem; }
+            .toast { bottom: 1rem; right: 1rem; padding: 0.6rem 1rem; font-size: 0.8rem; max-width: 90%; }
+        }
+        
+        @media (max-width: 480px) {
+            .reader-header { 
+                padding: 0.35rem 0.65rem;
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.35rem;
+                min-height: auto;
+            }
+            .reader-header .book-info {
+                display: flex;
+                align-items: center;
+                gap: 0.45rem;
+                width: 100%;
+            }
+            .reader-header .book-info h2 { 
+                font-size: 1.1rem;
+                max-width: 200px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .reader-header .book-info p {
+                font-size: 0.85rem;
+                color: #6f6252;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .reader-header .controls {
+                display: flex;
+                gap: 0.3rem;
+                align-items: center;
+                flex-wrap: wrap;
+                width: 100%;
+                justify-content: flex-start;
+            }
+            .reader-header .controls button { 
+                padding: 0.25rem 0.5rem; 
+                font-size: 0.66rem; 
+                border-radius: 6px;
+                flex-shrink: 0;
+            }
+            .reader-header .controls .offline-status {
+                font-size: 0.56rem;
+                padding: 0.1rem 0.4rem;
+            }
+            .reader-header .controls #readerStatus {
+                font-size: 0.56rem;
+                padding: 0.1rem 0.4rem;
+            }
+            .reader-content { 
+                padding: 0.2rem 0.15rem; 
+                min-height: calc(100vh - 106px); 
+            }
+            .reader-content .pdf-viewer-wrapper { 
+                height: 94vh; 
+                min-height: 340px; 
+                border-radius: 4px; 
+            }
+            .not-owned-state, .signin-state { 
+                height: 50vh; 
+                padding: 1.5rem 1rem; 
+            }
+            .not-owned-state i, .signin-state i { 
+                font-size: 2.5rem; 
+            }
+            .not-owned-state h3, .signin-state h3 { 
+                font-size: 1.1rem; 
+            }
+            .not-owned-state p, .signin-state p { 
+                font-size: 0.85rem; 
+            }
+            .btn-back { 
+                padding: 0.5rem 1.2rem; 
+                font-size: 0.8rem; 
+                border-radius: 30px; 
+            }
+            .loading-state .spinner { 
+                width: 35px; 
+                height: 35px; 
+                border-width: 3px; 
+            }
+            .loading-state p { 
+                font-size: 0.85rem; 
+            }
+            .share-dropdown-content {
+                right: auto;
+                left: 50%;
+                transform: translateX(-50%);
+                min-width: 180px;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .reader-header {
+                padding: 0.3rem 0.45rem;
+                gap: 0.3rem;
+            }
+            .reader-header .book-info h2 {
+                font-size: 0.9rem;
+                max-width: 145px;
+            }
+            .reader-header .book-info p {
+                font-size: 0.72rem;
+            }
+            .reader-header .controls button {
+                padding: 0.2rem 0.38rem;
+                font-size: 0.7rem;
+            }
+            .reader-header .controls .offline-status {
+                font-size: 0.55rem;
+                padding: 0.08rem 0.3rem;
+            }
+            .reader-header .controls #readerStatus {
+                font-size: 0.52rem;
+                padding: 0.08rem 0.3rem;
+            }
+            .reader-content {
+                padding: 0;
+                min-height: calc(100vh - 92px);
+            }
+            .reader-content .pdf-viewer-wrapper {
+                height: 96vh;
+                min-height: 420px;
+                max-height: 96vh;
+                width: 100%;
+                border-radius: 0;
+            }
+        }
+
+        @media (max-width: 337px) {
+            .reader-header .book-info h2 {
+                max-width: 110px;
+                font-size: 0.82rem;
+            }
+            .reader-header .book-info p {
+                font-size: 0.68rem;
+                max-width: 72px;
+            }
+            .reader-header .controls {
+                gap: 0.25rem;
+            }
+            .reader-header .controls button {
+                padding: 0.18rem 0.32rem;
+                font-size: 0.66rem;
+            }
+            .reader-header .controls button i {
+                font-size: 0.55rem;
+            }
+            .reader-header .controls .offline-status {
+                font-size: 0.48rem;
+                padding: 0.08rem 0.25rem;
+            }
+            .reader-header .controls #readerStatus {
+                font-size: 0.46rem;
+                padding: 0.08rem 0.25rem;
+            }
+            .reader-content { 
+                padding: 0.08rem; 
+                min-height: calc(100vh - 88px); 
+            }
+            .reader-content .pdf-viewer-wrapper { 
+                height: 73vh; 
+                min-height: 270px; 
+                max-height: 73vh;
+            }
+            .share-dropdown-content {
+                right: 0;
+                left: auto;
+                transform: none;
+                min-width: 130px;
+            }
+            .share-dropdown-content .share-item {
+                padding: 4px 7px;
+                font-size: 0.62rem;
+                gap: 5px;
+            }
+            .share-dropdown-content .share-item i {
+                font-size: 0.65rem;
+                width: 12px;
+            }
+        }
+
+        #readerStatus,
+        #saveOfflineBtn,
+        #readerDownloadBtn {
+            display: none !important;
+        }
+
+        #readerStatus.offline-available {
+            display: none !important;
+        }
+
+        .reader-mobile-hint {
+            display: none;
+        }
+
+        @media (max-width: 1024px) {
+            .reader-mobile-hint {
+                display: inline-flex;
+                align-items: center;
+                gap: 4px;
+                margin-right: 8px;
+                color: #6f6252;
+                font-size: 0.75rem;
+                white-space: nowrap;
+            }
+            .reader-mobile-hint + .offline-status {
+                margin-left: auto;
+            }
+            .reader-mobile-hint .mobile-pinch-label {
+                display: none;
+            }
+            .reader-mobile-hint a {
+                margin-left: 8px;
+                color: #4b2aad;
+                text-decoration: none;
+                font-weight: 500;
+            }
+            .share-dropdown-content {
+                left: auto;
+                right: 0;
+                transform: none;
+                width: min(240px, calc(100vw - 16px));
+            }
+        }
+
+        .share-dropdown-content {
+            width: min(240px, calc(100vw - 16px));
+            min-width: 0;
+        }
+
+        .share-dropdown-content .share-item {
+            min-height: 44px;
+            padding: 10px 16px;
+            font-size: 0.9rem;
+            gap: 12px;
+        }
+
+        .share-dropdown-content .share-item i {
+            width: 20px;
+            font-size: 1rem;
+        }
+
+        .share-dropdown-content {
+            background: #f0ebe4;
+            border-color: #f0ebe4;
+        }
+
+        .share-dropdown-content .share-item {
+            background: #f0ebe4;
+        }
+
+        .reader-header .book-info h2 {
+            color: #2d3130;
+        }
+
+        .reader-header .book-info p {
+            color: #68706d;
+        }
+
+        .reader-main-nav {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            margin: 0 auto;
+        }
+
+        .reader-main-nav button,
+        .reader-main-nav a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 34px;
+            padding: 0.35rem 0.65rem;
+            border: 0;
+            border-radius: 7px;
+            background: #f0ebe4;
+            color: #2d3130;
+            font: 600 0.8rem 'Inter', sans-serif;
+            text-decoration: none;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .reader-main-nav button:hover,
+        .reader-main-nav a:hover {
+            background: #e6dfd6;
+        }
+
+        .reader-main-nav a {
+            color: #4b2aad;
+        }
+
+        .reader-main-nav .reader-main-status {
+            min-width: 88px;
+            color: #68706d;
+            background: transparent;
+            cursor: default;
+        }
+
+        @media (min-width: 1025px) {
+            .reader-main-nav {
+                display: flex;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .reader-main-nav {
+                display: none !important;
+            }
+        }
+
+
+        /* ===== ENLARGE CLOSE, SHARE, REFRESH ICONS ON MOBILE ===== */
+@media (max-width: 765px) {
+    .reader-header .controls button.refresh-btn i,
+    .reader-header .controls button.share-btn i,
+    .reader-header .controls button.primary i {
+        font-size: 1.1rem !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .reader-header .controls button.refresh-btn i,
+    .reader-header .controls button.share-btn i,
+    .reader-header .controls button.primary i {
+        font-size: 1.1rem !important;
+    }
+}
+
+@media (max-width: 380px) {
+    .reader-header .controls button.refresh-btn i,
+    .reader-header .controls button.share-btn i,
+    .reader-header .controls button.primary i {
+        font-size: 1.1rem !important;
+    }
+}
+
+@media (max-width: 337px) {
+    .reader-header .controls button.refresh-btn i,
+    .reader-header .controls button.share-btn i,
+    .reader-header .controls button.primary i {
+        font-size: 1.1rem !important;
+    }
+}
+
+
+/* ===== ENLARGE MY LIBRARY LINK ON MOBILE ===== */
+@media (max-width: 765px) {
+    .reader-mobile-hint a i,
+    .reader-mobile-hint a {
+        font-size: 1.1rem !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .reader-mobile-hint a i,
+    .reader-mobile-hint a {
+        font-size: 1.1rem !important;
+    }
+}
+
+@media (max-width: 380px) {
+    .reader-mobile-hint a i,
+    .reader-mobile-hint a {
+        font-size: 1.05rem !important;
+    }
+}
+
+@media (max-width: 337px) {
+    .reader-mobile-hint a i,
+    .reader-mobile-hint a {
+        font-size: 1.05rem !important;
+    }
+}
+
+/* ===== ENLARGE BOOK TITLE & AUTHOR ON MOBILE ===== */
+@media (max-width: 765px) {
+    .reader-header .book-info h2 {
+        font-size: 1.4rem !important;
+    }
+    .reader-header .book-info p {
+        font-size: 1.1rem !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .reader-header .book-info h2 {
+        font-size: 1.2rem !important;
+    }
+    .reader-header .book-info p {
+        font-size: 1.1rem !important;
+    }
+}
+
+@media (max-width: 380px) {
+    .reader-header .book-info h2 {
+        font-size: 1.2rem !important;
+    }
+    .reader-header .book-info p {
+        font-size: 1.1rem !important;
+    }
+}
+
+@media (max-width: 337px) {
+    .reader-header .book-info h2 {
+        font-size: 1.2rem !important;
+    }
+    .reader-header .book-info p {
+        font-size: 1.1rem !important;
+    }
+}
+    </style>
+</head>
+<body>
+    <div class="reader-header">
+        <div class="book-info">
+            <h2 id="readerBookTitle">Loading book...</h2>
+            <p id="readerBookAuthor">Author</p>
+        </div>
+        <nav class="reader-main-nav" aria-label="Reader navigation">
+            <button type="button" id="mainZoomOut" aria-label="Zoom out">−</button>
+            <button type="button" id="mainZoomIn" aria-label="Zoom in">+</button>
+            <button type="button" id="mainPrevPage">Prev</button>
+            <span class="reader-main-status" id="mainPageStatus">Page 1 / 1</span>
+            <button type="button" id="mainNextPage">Next</button>
+            <a href="dashboard.html#library">My Library</a>
+        </nav>
+        <div class="controls">
+            <span class="reader-mobile-hint">
+                <span class="mobile-pinch-label"><i class="fas fa-hand-pinch"></i> Pinch</span>
+                <a href="dashboard.html#library">
+                    <i class="fas fa-book-open"></i> My Library
+                </a>
+            </span>
+            <span class="offline-status online" id="offlineStatus">
+                <i class="fas fa-wifi"></i> Online
+            </span>
+            <span id="readerStatus">
+                <i class="fas fa-check-circle"></i> Owned
+            </span>
+            <button onclick="refreshBook()" class="refresh-btn" id="refreshBtn" title="Refresh book data from server">
+                <i class="fas fa-sync-alt"></i>
+            </button>
+            
+            <div class="share-dropdown">
+                <button onclick="toggleShareDropdown()" class="share-btn" id="shareBtn" title="Share this book">
+                    <i class="fas fa-share-alt"></i>
+                </button>
+                <div class="share-dropdown-content" id="shareDropdown">
+                    <button class="share-item" onclick="shareBook('whatsapp')">
+                        <i class="fab fa-whatsapp"></i> WhatsApp
+                    </button>
+                    <button class="share-item" onclick="shareBook('twitter')">
+                        <i class="fab fa-twitter"></i> Twitter
+                    </button>
+                    <button class="share-item" onclick="shareBook('facebook')">
+                        <i class="fab fa-facebook"></i> Facebook
+                    </button>
+                    <button class="share-item" onclick="shareBook('email')">
+                        <i class="fas fa-envelope"></i> Email
+                    </button>
+                    <button class="share-item" onclick="shareBook('copy')">
+                        <i class="fas fa-copy"></i> Copy Link
+                    </button>
+                    <button class="share-item" onclick="shareBook('native')">
+                        <i class="fas fa-share-alt"></i> Share via...
+                    </button>
+                </div>
+            </div>
+            
+            <button onclick="saveForOffline()" id="saveOfflineBtn" class="btn-save-offline">
+                <i class="fas fa-download"></i>
+            </button>
+            <button onclick="downloadBook()" id="readerDownloadBtn">
+                <i class="fas fa-download"></i>
+            </button>
+            <button onclick="window.close()" class="primary">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Reading Progress Bar -->
+    <div class="reading-progress-bar">
+        <div class="progress-fill" id="readingProgressFill"></div>
+    </div>
+    
+    <!-- Reading Stats Mini -->
+    <div class="reading-stats-mini" id="readingStatsMini">
+        <span class="stat-item">
+            <i class="fas fa-book"></i>
+            <span class="stat-value" id="miniPageCount">Page 0</span>
+        </span>
+        <span class="stat-item">
+            <i class="fas fa-percent"></i>
+            <span class="stat-value" id="miniProgress">0%</span>
+        </span>
+        <span class="stat-item" id="miniStreak" style="display:none;">
+            <i class="fas fa-fire" style="color:#ff6b35;"></i>
+            <span class="stat-value" id="miniStreakCount">0</span><span style="font-size:9px;">d</span>
+        </span>
+    </div>
+    
+    <div class="reader-content" id="readerContent">
+        <div class="loading-state">
+            <div class="spinner"></div>
+            <p>Loading book content...</p>
+        </div>
+    </div>
+    
+    <div class="toast" id="toast"></div>
+    
+    <script type="importmap">
+    {
+        "imports": {
+            "firebase/app": "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js",
+            "firebase/firestore": "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js",
+            "firebase/auth": "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"
+        }
+    }
+    </script>
+    <script type="module">
+        import { initializeApp } from "firebase/app";
+        import { 
+            getFirestore, 
+            doc, 
+            getDoc, 
+            updateDoc, 
+            increment, 
+            serverTimestamp,
+            setDoc,
+            collection,
+            query,
+            where,
+            getDocs
+        } from "firebase/firestore";
+        import { getAuth, onAuthStateChanged } from "firebase/auth";
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyC4DHI8aBVY4JjTvJ-r-TGIDPsewtEWxzU",
+            authDomain: "silent-depth.firebaseapp.com",
+            projectId: "silent-depth",
+            storageBucket: "silent-depth.appspot.com",
+            messagingSenderId: "78008755450",
+            appId: "1:78008755450:web:3fd0f0f298a08820935543"
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        
+        let currentUser = null;
+        let currentBook = null;
+        let downloadLimit = 5;
+        let isOffline = false;
+        let isLoading = false;
+        let progressInterval = null;
+        let currentPage = 1;
+        let totalPages = 1;
+        let readingStreak = 0;
+        let saveTimeout = null;
+        let lastSavedPage = 0;
+        let lastSavedPercentage = 0;
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        const bookId = urlParams.get('id');
+        
+        // ================================================================
+        // ===== READING PROGRESS TRACKING - REAL-TIME =====
+        // ================================================================
+        
+        // Debounced save function - saves immediately but prevents duplicate rapid saves
+        async function saveReadingProgress(page, percentage) {
+            if (!currentUser || !currentBook || !bookId) return;
+            
+            // Prevent duplicate saves for the same page
+            if (page === lastSavedPage && percentage === lastSavedPercentage) {
+                return;
+            }
+            
+            // Clear any pending save timeout
+            if (saveTimeout) {
+                clearTimeout(saveTimeout);
+                saveTimeout = null;
+            }
+            
+            // Save immediately
+            try {
+                const progressRef = doc(db, "readingProgress", `${currentUser.uid}_${bookId}`);
+                await setDoc(progressRef, {
+                    userId: currentUser.uid,
+                    bookId: bookId,
+                    page: page || 1,
+                    percentage: percentage || 0,
+                    lastReadAt: serverTimestamp(),
+                    bookTitle: currentBook.title || 'Untitled',
+                    bookAuthor: currentBook.authorName || 'Anonymous',
+                    totalPages: totalPages || 1,
+                    readCount: increment(1)
+                }, { merge: true });
+                
+                // Update last saved values
+                lastSavedPage = page;
+                lastSavedPercentage = percentage;
+                
+                // Update UI
+                updateProgressUI(page, percentage);
+                
+                // Track reading streak
+                trackReadingStreak();
+                
+                console.log(`✅ Progress saved: Page ${page} (${percentage}%)`);
+                
+            } catch (err) {
+                console.warn('Could not save progress:', err);
+                // Retry after 2 seconds if failed
+                saveTimeout = setTimeout(() => {
+                    saveReadingProgress(page, percentage);
+                }, 2000);
+            }
+        }
+        
+        function updateProgressUI(page, percentage) {
+            const fill = document.getElementById('readingProgressFill');
+            const miniPage = document.getElementById('miniPageCount');
+            const miniProgress = document.getElementById('miniProgress');
+            const statsMini = document.getElementById('readingStatsMini');
+            
+            if (fill) fill.style.width = Math.min(percentage || 0, 100) + '%';
+            if (miniPage) miniPage.textContent = page ? `Page ${page}` : 'Page 0';
+            if (miniProgress) miniProgress.textContent = (percentage || 0) + '%';
+            
+            // Show stats mini after first progress save
+            if (statsMini && percentage > 0) {
+                statsMini.classList.add('visible');
+            }
+        }
+        
+        // ================================================================
+        // ===== READING STREAK =====
+        // ================================================================
+        
+        function trackReadingStreak() {
+            const today = new Date().toDateString();
+            const lastRead = localStorage.getItem('volant_last_read');
+            
+            if (lastRead !== today) {
+                let streak = parseInt(localStorage.getItem('volant_streak') || '0');
+                const yesterday = new Date();
+                yesterday.setDate(yesterday.getDate() - 1);
+                
+                if (lastRead === yesterday.toDateString()) {
+                    streak++;
+                } else {
+                    streak = 1;
+                }
+                
+                localStorage.setItem('volant_streak', streak);
+                localStorage.setItem('volant_last_read', today);
+                readingStreak = streak;
+                
+                // Update UI
+                updateStreakUI(streak);
+                
+                // Check for badge milestones
+                checkStreakBadges(streak);
+            } else {
+                readingStreak = parseInt(localStorage.getItem('volant_streak') || '0');
+                updateStreakUI(readingStreak);
+            }
+        }
+        
+        function updateStreakUI(streak) {
+            const miniStreak = document.getElementById('miniStreak');
+            const miniStreakCount = document.getElementById('miniStreakCount');
+            
+            if (streak > 0 && miniStreak) {
+                miniStreak.style.display = 'flex';
+                if (miniStreakCount) miniStreakCount.textContent = streak;
+            }
+        }
+        
+        function checkStreakBadges(streak) {
+            const badges = JSON.parse(localStorage.getItem('volant_badges') || '[]');
+            const badgeMap = {
+                7: { name: 'Week Warrior', icon: '🔥' },
+                14: { name: 'Fortnight Reader', icon: '📚' },
+                30: { name: 'Monthly Master', icon: '🏆' },
+                100: { name: 'Century Club', icon: '👑' }
+            };
+            
+            if (badgeMap[streak] && !badges.includes(streak)) {
+                badges.push(streak);
+                localStorage.setItem('volant_badges', JSON.stringify(badges));
+                showToast(`🎉 New Badge: ${badgeMap[streak].name}!`, 'success');
+            }
+        }
+        
+        // ================================================================
+        // ===== LOAD READING PROGRESS =====
+        // ================================================================
+        
+        async function loadReadingProgress() {
+            if (!currentUser || !bookId) return;
+            
+            try {
+                const progressRef = doc(db, "readingProgress", `${currentUser.uid}_${bookId}`);
+                const progressSnap = await getDoc(progressRef);
+                
+                if (progressSnap.exists()) {
+                    const data = progressSnap.data();
+                    currentPage = data.page || 1;
+                    totalPages = data.totalPages || 1;
+                    
+                    // Update last saved values
+                    lastSavedPage = currentPage;
+                    lastSavedPercentage = data.percentage || 0;
+                    
+                    // Update UI with saved progress
+                    updateProgressUI(currentPage, data.percentage || 0);
+                    
+                    // Restore reading streak
+                    readingStreak = parseInt(localStorage.getItem('volant_streak') || '0');
+                    updateStreakUI(readingStreak);
+                    
+                    console.log(`📖 Resumed at page ${currentPage} (${data.percentage}%)`);
+                    return data;
+                }
+            } catch (err) {
+                console.warn('Could not load progress:', err);
+            }
+            return null;
+        }
+        
+        // ================================================================
+        // ===== SHARE FUNCTIONS =====
+        // ================================================================
+        
+        function getBookUrl() {
+            const baseUrl = window.location.origin + window.location.pathname.replace('reader.html', 'details.html');
+            return `${baseUrl}?id=${bookId}`;
+        }
+        
+        function getShareText() {
+            const title = currentBook?.title || 'a book';
+            const author = currentBook?.authorName || 'an author';
+            const progress = document.getElementById('miniProgress')?.textContent || '0%';
+            return `📖 Reading "${title}" by ${author} on Volant Reads! (${progress} complete)`;
+        }
+        
+        window.toggleShareDropdown = function() {
+            const dropdown = document.getElementById('shareDropdown');
+            dropdown.classList.toggle('show');
+        };
+        
+        document.addEventListener('click', function(e) {
+            const dropdown = document.getElementById('shareDropdown');
+            const shareBtn = document.getElementById('shareBtn');
+            if (!dropdown.contains(e.target) && !shareBtn.contains(e.target)) {
+                dropdown.classList.remove('show');
+            }
+        });
+        
+        window.shareBook = function(platform) {
+            const url = getBookUrl();
+            const text = getShareText();
+            const encodedUrl = encodeURIComponent(url);
+            const encodedText = encodeURIComponent(text);
+            
+            let shareUrl = '';
+            
+            switch(platform) {
+                case 'whatsapp':
+                    shareUrl = `https://api.whatsapp.com/send?text=${encodedText}%20${encodedUrl}`;
+                    break;
+                case 'twitter':
+                    shareUrl = `https://twitter.com/intent/tweet?text=${encodedText}&url=${encodedUrl}`;
+                    break;
+                case 'facebook':
+                    shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}&quote=${encodedText}`;
+                    break;
+                case 'email':
+                    shareUrl = `mailto:?subject=${encodedText}&body=Check%20out%20this%20book%3A%20${encodedUrl}`;
+                    break;
+                case 'copy':
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        navigator.clipboard.writeText(url).then(() => {
+                            showToast('✅ Link copied to clipboard!', 'success');
+                        }).catch(() => {
+                            fallbackCopy(url);
+                        });
+                    } else {
+                        fallbackCopy(url);
+                    }
+                    document.getElementById('shareDropdown').classList.remove('show');
+                    return;
+                case 'native':
+                    if (navigator.share) {
+                        navigator.share({
+                            title: currentBook?.title || 'Volant Reads Book',
+                            text: text,
+                            url: url
+                        }).then(() => {
+                            console.log('✅ Shared successfully');
+                        }).catch((err) => {
+                            if (err.name !== 'AbortError') {
+                                console.warn('Share cancelled or failed:', err);
+                            }
+                        });
+                    } else {
+                        showToast('📱 Native sharing not supported on this device. Try copying the link.', 'info');
+                        fallbackCopy(url);
+                    }
+                    document.getElementById('shareDropdown').classList.remove('show');
+                    return;
+                default:
+                    showToast('❌ Invalid share option', 'error');
+                    return;
+            }
+            
+            if (shareUrl) {
+                window.open(shareUrl, '_blank', 'width=600,height=500');
+            }
+            
+            document.getElementById('shareDropdown').classList.remove('show');
+        };
+        
+        function fallbackCopy(text) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            textarea.style.left = '-9999px';
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                showToast('✅ Link copied to clipboard!', 'success');
+            } catch (err) {
+                showToast('❌ Could not copy link. Please copy manually.', 'error');
+            }
+            document.body.removeChild(textarea);
+        }
+        
+        // ================================================================
+        // ===== OFFLINE STORAGE FUNCTIONS =====
+        // ================================================================
+        
+        function saveBookToLocalStorage(bookData) {
+            try {
+                const offlineBooks = JSON.parse(localStorage.getItem('volant_offline_books_data') || '{}');
+                offlineBooks[bookData.id] = {
+                    title: bookData.title,
+                    authorName: bookData.authorName,
+                    pdfUrl: bookData.pdfUrl,
+                    content: bookData.content || '',
+                    downloadLimit: bookData.downloadLimit,
+                    savedAt: new Date().toISOString()
+                };
+                localStorage.setItem('volant_offline_books_data', JSON.stringify(offlineBooks));
+                console.log('✅ Book saved to localStorage');
+                return true;
+            } catch (err) {
+                console.warn('Could not save to localStorage:', err);
+                return false;
+            }
+        }
+        
+        function getBookFromLocalStorage(bookId) {
+            try {
+                const offlineBooks = JSON.parse(localStorage.getItem('volant_offline_books_data') || '{}');
+                return offlineBooks[bookId] || null;
+            } catch {
+                return null;
+            }
+        }
+        
+        function clearBookFromLocalStorage(bookId) {
+            try {
+                const offlineBooks = JSON.parse(localStorage.getItem('volant_offline_books_data') || '{}');
+                delete offlineBooks[bookId];
+                localStorage.setItem('volant_offline_books_data', JSON.stringify(offlineBooks));
+                console.log('🗑️ Book removed from localStorage cache');
+                return true;
+            } catch (err) {
+                console.warn('Could not clear localStorage:', err);
+                return false;
+            }
+        }
+        
+        function isBookInLocalStorage(bookId) {
+            return getBookFromLocalStorage(bookId) !== null;
+        }
+        
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${type}`;
+            void toast.offsetWidth;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 4000);
+        }
+        
+        async function checkPurchaseStatus(userId, bookId) {
+            const offlinePurchases = JSON.parse(localStorage.getItem('volant_offline_purchases') || '{}');
+            if (offlinePurchases[bookId] === true) {
+                return true;
+            }
+            
+            if (navigator.onLine) {
+                try {
+                    const purchaseRef = doc(db, "purchases", `${userId}_${bookId}`);
+                    const purchaseSnap = await getDoc(purchaseRef);
+                    if (purchaseSnap.exists()) {
+                        const isPurchased = purchaseSnap.data().status === 'completed' && purchaseSnap.data().verified === true;
+                        if (isPurchased) {
+                            offlinePurchases[bookId] = true;
+                            localStorage.setItem('volant_offline_purchases', JSON.stringify(offlinePurchases));
+                        }
+                        return isPurchased;
+                    }
+                } catch (err) {
+                    console.warn('Error checking purchase status:', err);
+                }
+            }
+            
+            return false;
+        }
+        
+        function updateConnectionStatus() {
+            const statusEl = document.getElementById('offlineStatus');
+            if (navigator.onLine) {
+                isOffline = false;
+                statusEl.className = 'offline-status online';
+                statusEl.innerHTML = '<i class="fas fa-wifi"></i> Online';
+            } else {
+                isOffline = true;
+                statusEl.className = 'offline-status offline';
+                statusEl.innerHTML = '<i class="fas fa-wifi-slash"></i> Offline';
+            }
+            
+            const refreshBtn = document.getElementById('refreshBtn');
+            if (refreshBtn) {
+                refreshBtn.disabled = isOffline;
+                refreshBtn.title = isOffline ? 'Cannot refresh while offline' : 'Refresh book data from server';
+            }
+        }
+        
+        window.addEventListener('online', () => {
+            updateConnectionStatus();
+            showToast('📶 Back online!', 'success');
+            if (currentUser && currentBook) {
+                updateDownloadButton();
+            }
+        });
+        
+        window.addEventListener('offline', () => {
+            updateConnectionStatus();
+            showToast('📶 You are offline. Reading cached content.', 'info');
+        });
+        
+        // ================================================================
+        // ===== REFRESH BOOK =====
+        // ================================================================
+        
+        window.refreshBook = async function() {
+            if (isLoading) return;
+            if (isOffline) {
+                showToast('📶 Cannot refresh while offline. Please connect to the internet.', 'error');
+                return;
+            }
+            
+            const refreshBtn = document.getElementById('refreshBtn');
+            refreshBtn.disabled = true;
+            refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            
+            showToast('🔄 Refreshing book data...', 'info');
+            
+            try {
+                clearBookFromLocalStorage(bookId);
+                
+                const bookRef = doc(db, "books", bookId);
+                const bookSnap = await getDoc(bookRef);
+                
+                if (!bookSnap.exists()) {
+                    showToast('❌ Book not found on server.', 'error');
+                    refreshBtn.disabled = false;
+                    refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i>';
+                    return;
+                }
+                
+                const freshData = { id: bookSnap.id, ...bookSnap.data() };
+                
+                saveBookToLocalStorage({
+                    id: freshData.id,
+                    title: freshData.title,
+                    authorName: freshData.authorName,
+                    pdfUrl: freshData.pdfUrl,
+                    content: freshData.content || '',
+                    downloadLimit: freshData.downloadLimit || 5
+                });
+                
+                currentBook = {
+                    id: freshData.id,
+                    title: freshData.title,
+                    authorName: freshData.authorName,
+                    pdfUrl: freshData.pdfUrl,
+                    content: freshData.content || '',
+                    downloadLimit: freshData.downloadLimit || 5
+                };
+                
+                document.getElementById('readerBookTitle').textContent = currentBook.title || 'Untitled';
+                document.getElementById('readerBookAuthor').textContent = currentBook.authorName || 'Anonymous';
+                
+                displayBook();
+                await checkOfflineAvailability(currentBook.pdfUrl);
+                await updateDownloadButton();
+                
+                showToast('✅ Book data refreshed!', 'success');
+                
+            } catch (err) {
+                console.error('Refresh error:', err);
+                showToast('❌ Error refreshing book data', 'error');
+            } finally {
+                refreshBtn.disabled = false;
+                refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i>';
+            }
+        };
+        
+        // ================================================================
+        // ===== SAVE FOR OFFLINE =====
+        // ================================================================
+        
+        window.saveForOffline = async function() {
+            if (!currentBook) {
+                showToast('❌ No content to save.', 'error');
+                return;
+            }
+            
+            const btn = document.getElementById('saveOfflineBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            
+            try {
+                saveBookToLocalStorage({
+                    id: currentBook.id,
+                    title: currentBook.title || 'Untitled',
+                    authorName: currentBook.authorName || 'Anonymous',
+                    pdfUrl: currentBook.pdfUrl || '',
+                    content: currentBook.content || '',
+                    downloadLimit: currentBook.downloadLimit || 5
+                });
+                
+                if (currentBook.pdfUrl && 'caches' in window) {
+                    try {
+                        const response = await fetch(currentBook.pdfUrl);
+                        if (response.ok) {
+                            const cache = await caches.open('volant-reads-pdfs');
+                            await cache.put(currentBook.pdfUrl, response.clone());
+                            console.log('✅ PDF cached');
+                        }
+                    } catch (cacheErr) {
+                        console.warn('Could not cache PDF:', cacheErr);
+                    }
+                }
+                
+                showToast('✅ Book saved for offline reading! 📖', 'success');
+                btn.innerHTML = '<i class="fas fa-check-circle"></i>';
+                btn.className = 'btn-save-offline saved';
+                btn.disabled = true;
+                
+                const statusEl = document.getElementById('readerStatus');
+                statusEl.innerHTML = '<i class="fas fa-check-circle"></i> Offline Available';
+                statusEl.className = 'offline-available';
+                statusEl.style.color = '#1a56db';
+                statusEl.style.background = '#e8f0fe';
+                statusEl.style.borderColor = '#d2e3fc';
+                
+            } catch (err) {
+                console.error('Error saving for offline:', err);
+                showToast('❌ Error saving for offline', 'error');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-download"></i>';
+            }
+        };
+        
+        // ================================================================
+        // ===== DOWNLOAD BOOK WITH LIMIT ENFORCEMENT =====
+        // ================================================================
+        
+        window.downloadBook = async function() {
+            if (!currentUser) {
+                showToast('🔐 Please sign in to download.', 'error');
+                return;
+            }
+            
+            if (!currentBook || !currentBook.pdfUrl) {
+                showToast('❌ No PDF available to download.', 'error');
+                return;
+            }
+            
+            const purchased = await checkPurchaseStatus(currentUser.uid, bookId);
+            if (!purchased) {
+                showToast('❌ You don\'t own this book. Please purchase it first.', 'error');
+                return;
+            }
+            
+            const canDownload = await canUserDownload(currentUser.uid, bookId, downloadLimit);
+            if (!canDownload) {
+                showToast('❌ Download limit reached. Please contact the author for more downloads.', 'error');
+                return;
+            }
+            
+            const btn = document.getElementById('readerDownloadBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            
+            let fileName = '';
+            const title = currentBook.title ? currentBook.title.trim() : 'Untitled';
+            const subtitle = currentBook.subtitle ? currentBook.subtitle.trim() : '';
+            const author = currentBook.authorName ? currentBook.authorName.trim() : 'Unknown';
+            
+            if (subtitle) {
+                fileName = `${title}, ${subtitle} - ${author}`;
+            } else {
+                fileName = `${title} - ${author}`;
+            }
+            
+            fileName = fileName.replace(/[^a-z0-9 _\-,\.]/gi, '_').replace(/\s+/g, ' ').trim() + '.pdf';
+            
+            try {
+                await recordUserDownload(currentUser.uid, bookId);
+                
+                const bookRef = doc(db, "books", bookId);
+                await updateDoc(bookRef, {
+                    downloads: increment(1)
+                });
+                
+                await trackDailyDownload(bookId);
+                
+                const response = await fetch(currentBook.pdfUrl);
+                if (!response.ok) throw new Error(`Download failed with status ${response.status}`);
+                const blob = await response.blob();
+                
+                const downloadUrl = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = downloadUrl;
+                link.download = fileName;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(downloadUrl);
+                
+                await updateDownloadButton();
+                
+                showToast(`📄 Downloaded "${currentBook.title}"!`, 'success');
+                
+            } catch (err) {
+                console.error('Download error:', err);
+                showToast('⚠️ Unable to download PDF. Please try again.', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-download"></i>';
+            }
+        };
+        
+        async function getUserDownloadCount(userId, bookId) {
+            try {
+                const purchaseRef = doc(db, "purchases", `${userId}_${bookId}`);
+                const purchaseSnap = await getDoc(purchaseRef);
+                if (purchaseSnap.exists()) {
+                    return purchaseSnap.data().downloadCount || 0;
+                }
+                return 0;
+            } catch (err) {
+                console.error('Error getting user download count:', err);
+                return 0;
+            }
+        }
+        
+        async function recordUserDownload(userId, bookId) {
+            try {
+                const purchaseRef = doc(db, "purchases", `${userId}_${bookId}`);
+                const purchaseSnap = await getDoc(purchaseRef);
+                
+                if (purchaseSnap.exists()) {
+                    await updateDoc(purchaseRef, {
+                        downloadCount: increment(1),
+                        lastDownloadedAt: serverTimestamp()
+                    });
+                } else {
+                    await setDoc(purchaseRef, {
+                        userId: userId,
+                        bookId: bookId,
+                        status: 'completed',
+                        verified: true,
+                        purchasedAt: serverTimestamp(),
+                        downloadCount: 1,
+                        lastDownloadedAt: serverTimestamp(),
+                        transactionRef: 'free_book',
+                        amount: 0,
+                        currency: currentBook?.pricing?.currency || 'GHS',
+                        customerEmail: currentUser?.email || '',
+                        paymentMethod: 'free'
+                    }, { merge: true });
+                }
+                return true;
+            } catch (err) {
+                console.error('Error recording user download:', err);
+                return false;
+            }
+        }
+        
+        async function canUserDownload(userId, bookId, limit) {
+            if (limit === 'unlimited' || limit === 'Unlimited') return true;
+            const maxLimit = parseInt(limit);
+            if (isNaN(maxLimit) || maxLimit < 1) return true;
+            const count = await getUserDownloadCount(userId, bookId);
+            return count < maxLimit;
+        }
+        
+        async function trackDailyDownload(bookId) {
+            if (!bookId) return;
+            try {
+                const today = new Date().toISOString().split('T')[0];
+                const docId = `${bookId}_${today}`;
+                const dailyRef = doc(db, "dailyDownloads", docId);
+                await setDoc(dailyRef, {
+                    bookId: bookId,
+                    date: today,
+                    downloads: increment(1),
+                    lastUpdated: serverTimestamp()
+                }, { merge: true });
+            } catch (err) {
+                console.error('Error tracking daily download:', err);
+            }
+        }
+        
+        async function updateDownloadButton() {
+            if (!currentUser || !currentBook) {
+                const downloadBtn = document.getElementById('readerDownloadBtn');
+                downloadBtn.disabled = true;
+                downloadBtn.classList.add('btn-download-disabled');
+                return;
+            }
+            
+            const downloadBtn = document.getElementById('readerDownloadBtn');
+            
+            const purchased = await checkPurchaseStatus(currentUser.uid, bookId);
+            if (!purchased) {
+                downloadBtn.disabled = true;
+                downloadBtn.classList.add('btn-download-disabled');
+                return;
+            }
+            
+            const limit = currentBook.downloadLimit || currentBook.downloads || 5;
+            downloadLimit = limit;
+            
+            const canDownload = await canUserDownload(currentUser.uid, bookId, limit);
+            
+            if (canDownload || limit === 'unlimited' || limit === 'Unlimited') {
+                downloadBtn.disabled = false;
+                downloadBtn.classList.remove('btn-download-disabled');
+                downloadBtn.title = 'Download';
+                downloadBtn.innerHTML = '<i class="fas fa-download"></i>';
+            } else {
+                downloadBtn.disabled = true;
+                downloadBtn.classList.add('btn-download-disabled');
+                downloadBtn.title = 'Download limit reached';
+                downloadBtn.innerHTML = '<i class="fas fa-download"></i>';
+            }
+        }
+        
+        // ================================================================
+        // ===== CHECK OFFLINE AVAILABILITY =====
+        // ================================================================
+        
+        async function checkOfflineAvailability(pdfUrl) {
+            const statusEl = document.getElementById('readerStatus');
+            
+            if (isBookInLocalStorage(bookId)) {
+                const btn = document.getElementById('saveOfflineBtn');
+                btn.innerHTML = '<i class="fas fa-check-circle"></i>';
+                btn.className = 'btn-save-offline saved';
+                btn.disabled = true;
+                
+                statusEl.innerHTML = '<i class="fas fa-check-circle"></i> Offline Available';
+                statusEl.className = 'offline-available';
+                statusEl.style.color = '#1a56db';
+                statusEl.style.background = '#e8f0fe';
+                statusEl.style.borderColor = '#d2e3fc';
+                
+                return true;
+            }
+            
+            if (pdfUrl && 'caches' in window) {
+                try {
+                    const cache = await caches.open('volant-reads-pdfs');
+                    const response = await cache.match(pdfUrl);
+                    if (response) {
+                        const btn = document.getElementById('saveOfflineBtn');
+                        btn.innerHTML = '<i class="fas fa-check-circle"></i>';
+                        btn.className = 'btn-save-offline saved';
+                        btn.disabled = true;
+                        
+                        statusEl.innerHTML = '<i class="fas fa-check-circle"></i> Offline Available';
+                        statusEl.className = 'offline-available';
+                        statusEl.style.color = '#1a56db';
+                        statusEl.style.background = '#e8f0fe';
+                        statusEl.style.borderColor = '#d2e3fc';
+                        
+                        return true;
+                    }
+                } catch (err) {
+                    console.warn('Error checking cache:', err);
+                }
+            }
+            
+            statusEl.className = '';
+            statusEl.style.display = 'none';
+            
+            return false;
+        }
+        
+        function registerServiceWorker() {
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(registration => {
+                        console.log('✅ Service Worker registered successfully');
+                    })
+                    .catch(err => {
+                        console.warn('⚠️ Service Worker registration failed:', err);
+                    });
+            }
+        }
+        
+        // ================================================================
+        // ===== PDF VIEWER FUNCTIONS =====
+        // ================================================================
+        
+        function isPhoneDevice() {
+            const userAgent = navigator.userAgent || '';
+            const mobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
+            const smallScreen = window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
+            return mobileRegex.test(userAgent) || smallScreen;
+        }
+        
+        function getPdfJsViewerUrl(pdfUrl, embedded) {
+            if (!pdfUrl) return '';
+            return `/store/pdfjs/local-viewer.html?embedded=${embedded ? '1' : '0'}&file=${encodeURIComponent(pdfUrl)}`;
+        }
+        
+        function clickEmbeddedReaderControl(controlId) {
+            const iframe = document.getElementById('pdfViewer');
+            if (iframe && iframe.contentDocument) {
+                const control = iframe.contentDocument.getElementById(controlId);
+                if (control) control.click();
+            }
+        }
+        
+        // Setup PDF viewer controls
+        document.addEventListener('DOMContentLoaded', () => {
+            const zoomOut = document.getElementById('mainZoomOut');
+            const zoomIn = document.getElementById('mainZoomIn');
+            const prevPage = document.getElementById('mainPrevPage');
+            const nextPage = document.getElementById('mainNextPage');
+            
+            if (zoomOut) zoomOut.addEventListener('click', () => clickEmbeddedReaderControl('zoomOut'));
+            if (zoomIn) zoomIn.addEventListener('click', () => clickEmbeddedReaderControl('zoomIn'));
+            if (prevPage) prevPage.addEventListener('click', () => clickEmbeddedReaderControl('prevPage'));
+            if (nextPage) nextPage.addEventListener('click', () => clickEmbeddedReaderControl('nextPage'));
+        });
+        
+        window.addEventListener('message', (event) => {
+            const iframe = document.getElementById('pdfViewer');
+            if (event.source !== iframe?.contentWindow || event.data?.type !== 'pdf-page-status') return;
+            
+            const pageNum = event.data.pageNum || 1;
+            const pageCount = event.data.pageCount || 1;
+            const percentage = Math.round((pageNum / pageCount) * 100);
+            
+            currentPage = pageNum;
+            totalPages = pageCount;
+            
+            document.getElementById('mainPageStatus').textContent = `Page ${pageNum} / ${pageCount}`;
+            
+            // ===== REAL-TIME SAVE ON EVERY PAGE CHANGE =====
+            if (currentUser && currentBook) {
+                saveReadingProgress(pageNum, percentage);
+            }
+        });
+        
+        // ================================================================
+        // ===== DISPLAY BOOK =====
+        // ================================================================
+        
+        function displayBook() {
+            const content = document.getElementById('readerContent');
+            
+            if (currentBook.pdfUrl) {
+                const isMobile = isPhoneDevice();
+                const embeddedUrl = getPdfJsViewerUrl(currentBook.pdfUrl, !isMobile);
+                
+                content.innerHTML = `
+                    <div class="pdf-viewer-wrapper" style="${isMobile ? 'height:96vh; min-height:420px;' : ''}">
+                        <iframe src="${embeddedUrl}" 
+                                class="pdf-viewer" 
+                                allow="autoplay; fullscreen"
+                                id="pdfViewer"
+                                loading="${isMobile ? 'eager' : 'lazy'}"
+                                title="${isMobile ? 'Mobile PDF reader' : 'PDF reader'}"
+                                referrerpolicy="no-referrer-when-downgrade">
+                        </iframe>
+                    </div>
+                `;
+                return;
+            } else if (currentBook.content) {
+                content.innerHTML = `
+                    <div class="text-content-wrapper">
+                        <div class="text-content">${currentBook.content}</div>
+                    </div>
+                `;
+            } else {
+                content.innerHTML = `
+                    <div style="text-align:center;padding:4rem 2rem;">
+                        <i class="fas fa-book-open" style="font-size:3rem;color:#cbb9a8;margin-bottom:1rem;"></i>
+                        <h3>No content available</h3>
+                        <p style="color:#6f6252;margin-top:0.5rem;">This book doesn't have readable content.</p>
+                        <a href="index.html" class="btn-back" style="display:inline-block;margin-top:1.5rem;">
+                            <i class="fas fa-arrow-left"></i> Back to Store
+                        </a>
+                    </div>
+                `;
+            }
+        }
+        
+        // ================================================================
+        // ===== LOAD BOOK =====
+        // ================================================================
+        
+        async function loadBook() {
+            if (!bookId) {
+                document.getElementById('readerContent').innerHTML = '<p style="padding:2rem;text-align:center;">No book specified.</p>';
+                return;
+            }
+            
+            if (isLoading) return;
+            isLoading = true;
+            
+            const cachedBook = getBookFromLocalStorage(bookId);
+            let bookData = null;
+            
+            if (navigator.onLine && !urlParams.get('refresh')) {
+                try {
+                    const bookRef = doc(db, "books", bookId);
+                    const bookSnap = await getDoc(bookRef);
+                    
+                    if (bookSnap.exists()) {
+                        const freshData = { id: bookSnap.id, ...bookSnap.data() };
+                        bookData = {
+                            id: freshData.id,
+                            title: freshData.title || 'Untitled',
+                            authorName: freshData.authorName || 'Anonymous',
+                            subtitle: freshData.subtitle || '',
+                            pdfUrl: freshData.pdfUrl || '',
+                            content: freshData.content || '',
+                            downloadLimit: freshData.downloadLimit || 5,
+                            price: freshData.pricing?.amount || 0,
+                            currency: freshData.pricing?.currency || 'GHS'
+                        };
+                        saveBookToLocalStorage(bookData);
+                        console.log('✅ Fresh data fetched and cached');
+                    }
+                } catch (err) {
+                    console.warn('Could not fetch fresh data, using cache:', err);
+                }
+            }
+            
+            if (!bookData && cachedBook) {
+                bookData = {
+                    id: bookId,
+                    title: cachedBook.title || 'Untitled',
+                    authorName: cachedBook.authorName || 'Anonymous',
+                    subtitle: cachedBook.subtitle || '',
+                    pdfUrl: cachedBook.pdfUrl || '',
+                    content: cachedBook.content || '',
+                    downloadLimit: cachedBook.downloadLimit || 5,
+                    price: cachedBook.price || 0,
+                    currency: cachedBook.currency || 'GHS'
+                };
+                console.log('📖 Using cached book data from localStorage');
+            }
+            
+            if (!bookData && navigator.onLine) {
+                try {
+                    const bookRef = doc(db, "books", bookId);
+                    const bookSnap = await getDoc(bookRef);
+                    
+                    if (bookSnap.exists()) {
+                        const freshData = { id: bookSnap.id, ...bookSnap.data() };
+                        bookData = {
+                            id: freshData.id,
+                            title: freshData.title || 'Untitled',
+                            authorName: freshData.authorName || 'Anonymous',
+                            subtitle: freshData.subtitle || '',
+                            pdfUrl: freshData.pdfUrl || '',
+                            content: freshData.content || '',
+                            downloadLimit: freshData.downloadLimit || 5,
+                            price: freshData.pricing?.amount || 0,
+                            currency: freshData.pricing?.currency || 'GHS'
+                        };
+                        saveBookToLocalStorage(bookData);
+                        console.log('✅ Book fetched from Firestore and cached');
+                    }
+                } catch (err) {
+                    console.warn('Could not fetch from Firestore:', err);
+                }
+            }
+            
+            if (!bookData) {
+                document.getElementById('readerContent').innerHTML = `
+                    <div class="not-owned-state">
+                        <i class="fas fa-book-open"></i>
+                        <h3>Book Not Available</h3>
+                        <p>${isOffline ? 'You are offline. This book has not been saved for offline reading.' : 'The book you\'re looking for doesn\'t exist.'}</p>
+                        <a href="index.html" class="btn-back" style="margin-top:1rem;"><i class="fas fa-arrow-left"></i> Back to Store</a>
+                    </div>
+                `;
+                isLoading = false;
+                return;
+            }
+            
+            currentBook = bookData;
+            downloadLimit = currentBook.downloadLimit || currentBook.downloads || 5;
+            const bookPrice = currentBook.price || 0;
+            
+            document.getElementById('readerBookTitle').textContent = currentBook.title || 'Untitled';
+            document.getElementById('readerBookAuthor').textContent = currentBook.authorName || 'Anonymous';
+            
+            const isFreeBook = bookPrice <= 0;
+            let purchased = false;
+            
+            if (isFreeBook) {
+                purchased = true;
+                if (currentUser) {
+                    try {
+                        const purchaseRef = doc(db, "purchases", `${currentUser.uid}_${bookId}`);
+                        const purchaseSnap = await getDoc(purchaseRef);
+                        if (!purchaseSnap.exists()) {
+                            await setDoc(purchaseRef, {
+                                userId: currentUser.uid,
+                                bookId: bookId,
+                                status: 'completed',
+                                verified: true,
+                                purchasedAt: serverTimestamp(),
+                                transactionRef: 'free_book',
+                                amount: 0,
+                                currency: currentBook.currency || 'GHS',
+                                customerEmail: currentUser.email || '',
+                                paymentMethod: 'free',
+                                downloadCount: 0,
+                                lastDownloadedAt: null
+                            });
+                        }
+                    } catch (err) {
+                        console.warn('Could not record free book purchase:', err);
+                    }
+                }
+            } else {
+                if (!purchased && currentUser) {
+                    purchased = await checkPurchaseStatus(currentUser.uid, bookId);
+                }
+                if (!purchased) {
+                    const offlinePurchases = JSON.parse(localStorage.getItem('volant_offline_purchases') || '{}');
+                    purchased = offlinePurchases[bookId] === true;
+                }
+            }
+            
+            if (purchased) {
+                await checkOfflineAvailability(currentBook.pdfUrl);
+                await updateDownloadButton();
+                
+                // Load saved reading progress
+                const savedProgress = await loadReadingProgress();
+                
+                displayBook();
+                
+                // Save progress every 10 seconds as a fallback (in case page changes aren't caught)
+                if (progressInterval) clearInterval(progressInterval);
+                progressInterval = setInterval(() => {
+                    if (currentUser && currentBook && currentPage > 0) {
+                        const percentage = Math.round((currentPage / (totalPages || 1)) * 100);
+                        saveReadingProgress(currentPage, percentage);
+                    }
+                }, 10000); // Every 10 seconds - less frequent since page changes trigger saves
+                
+                // Save on page unload
+                window.addEventListener('beforeunload', () => {
+                    if (progressInterval) clearInterval(progressInterval);
+                    if (saveTimeout) clearTimeout(saveTimeout);
+                    if (currentUser && currentBook && currentPage > 0) {
+                        const percentage = Math.round((currentPage / (totalPages || 1)) * 100);
+                        saveReadingProgress(currentPage, percentage);
+                    }
+                });
+                
+            } else {
+                document.getElementById('readerContent').innerHTML = `
+                    <div class="not-owned-state">
+                        <i class="fas fa-lock"></i>
+                        <h3>You don't own this book</h3>
+                        <p>Please purchase the book to read it online.</p>
+                        <a href="details.html?id=${bookId}" class="btn-back">
+                            <i class="fas fa-shopping-cart"></i> Buy Now
+                        </a>
+                    </div>
+                `;
+                
+                const downloadBtn = document.getElementById('readerDownloadBtn');
+                downloadBtn.disabled = true;
+                downloadBtn.classList.add('btn-download-disabled');
+                
+                const statusEl = document.getElementById('readerStatus');
+                statusEl.className = '';
+                statusEl.style.display = 'none';
+            }
+            
+            isLoading = false;
+        }
+        
+        // ================================================================
+        // ===== INIT =====
+        // ================================================================
+        
+        registerServiceWorker();
+        updateConnectionStatus();
+        
+        if (!navigator.onLine) {
+            showToast('📶 You are offline. Loading from cache...', 'info');
+        }
+        
+        onAuthStateChanged(auth, async (user) => {
+            currentUser = user;
+            await loadBook();
+        });
+    </script>
+</body>
+</html>

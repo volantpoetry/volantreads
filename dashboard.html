@@ -17,7 +17,7 @@
         if (!sessionStorage.getItem('auth_redirect_attempted')) {
             sessionStorage.setItem('auth_redirect_attempted', 'true');
             const currentPage = window.location.pathname + window.location.search;
-            window.location.href = 'https://volantpoetry.vercel.app/shared/universal-login.html?platform=reads&redirect=' + 
+            window.location.href = 'universal-login.html?platform=reads&redirect=' + 
                                   encodeURIComponent(currentPage);
         }
     } else {
@@ -2220,6 +2220,569 @@ header .logo-header {
   -webkit-overflow-scrolling: touch !important;
   scroll-behavior: smooth !important;
 }
+
+/* ===== MY LIBRARY SPECIFIC STYLES ===== */
+.library-filter-bar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.library-filter-bar input,
+.library-filter-bar select {
+  padding: 10px 16px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  background: white;
+  font-family: 'Inter', sans-serif;
+  transition: 0.3s;
+}
+
+.library-filter-bar input:focus,
+.library-filter-bar select:focus {
+  outline: none;
+  border-color: #6a34ff;
+  box-shadow: 0 0 0 3px rgba(106,52,255,0.1);
+}
+
+.library-filter-bar input {
+  flex: 1;
+  min-width: 150px;
+}
+
+.library-filter-bar select {
+  min-width: 130px;
+}
+
+.library-count-badge {
+  background: #f0eaff;
+  color: #4b2aad;
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-left: 8px;
+}
+
+.library-empty-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 60px 20px;
+  background: white;
+  border-radius: 24px;
+  border: 1px solid #eee;
+}
+
+.library-empty-state i {
+  font-size: 3.5rem;
+  color: #cbb9a8;
+  margin-bottom: 16px;
+}
+
+.library-empty-state h3 {
+  font-size: 1.4rem;
+  color: #2d2a24;
+  margin-bottom: 8px;
+}
+
+.library-empty-state p {
+  color: #6f6252;
+  max-width: 400px;
+  margin: 0 auto 20px;
+}
+
+.library-empty-state .btn-browse {
+  display: inline-block;
+  padding: 12px 32px;
+  background: #6a34ff;
+  color: white;
+  text-decoration: none;
+  border-radius: 40px;
+  font-weight: 600;
+  transition: 0.3s;
+}
+
+.library-empty-state .btn-browse:hover {
+  background: #5428d9;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(106,52,255,0.3);
+}
+
+/* ===== MOBILE LIBRARY FIXES ===== */
+@media (max-width: 480px) {
+  .library-filter-bar {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .library-filter-bar input,
+  .library-filter-bar select {
+    width: 100%;
+    font-size: 0.85rem;
+    padding: 8px 12px;
+  }
+  
+  .library-count-badge {
+    font-size: 0.75rem;
+    padding: 3px 10px;
+  }
+}
+
+/* ===== HIDE SETUP ALERT BANNER ON MY LIBRARY PAGE ===== */
+#page-mylibrary.active + #setupAlertBanner {
+    display: none !important;
+}
+
+/* Alternative - hide when mylibrary page is active */
+#page-mylibrary.active ~ #setupAlertBanner {
+    display: none !important;
+}
+
+/* Most reliable - hide by checking if mylibrary is active */
+body:has(#page-mylibrary.active) #setupAlertBanner {
+    display: none !important;
+}
+
+/* ===== READING STATS STYLES ===== */
+.reading-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.reading-stat-card {
+  background: white;
+  padding: 18px 16px;
+  border-radius: 16px;
+  border: 1px solid #eee;
+  text-align: center;
+  transition: 0.3s;
+}
+.reading-stat-card:hover {
+  border-color: #d9d0f0;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+}
+.reading-stat-card .stat-icon {
+  font-size: 1.6rem;
+  margin-bottom: 4px;
+}
+.reading-stat-card .stat-number {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #1d1833;
+}
+.reading-stat-card .stat-label {
+  font-size: 0.75rem;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 2px;
+}
+.reading-stat-card .stat-sub {
+  font-size: 0.7rem;
+  color: #aaa;
+  margin-top: 2px;
+}
+
+/* ===== CONTINUE READING GRID ===== */
+.continue-reading-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.continue-book-card {
+  background: white;
+  border-radius: 0;
+  overflow: hidden;
+  border: 1px solid #eee;
+  transition: 0.3s;
+  cursor: pointer;
+}
+.continue-book-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+  border-color: #d9d0f0;
+}
+.continue-book-card .continue-cover {
+  width: 100%;
+  padding-top: 56.25%;
+  background: #f0ebe4;
+  position: relative;
+  overflow: hidden;
+  border-radius: 0;
+}
+.continue-book-card .continue-cover img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.continue-book-card .continue-cover .no-image {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 2.5rem;
+  color: #cbb9a8;
+}
+.continue-book-card .continue-body {
+  padding: 12px 14px;
+}
+.continue-book-card .continue-body .book-title {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #1d1833;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.continue-book-card .continue-body .book-author {
+  font-size: 0.8rem;
+  color: #888;
+}
+.continue-book-card .continue-body .progress-wrapper {
+  margin-top: 8px;
+}
+.continue-book-card .continue-body .progress-wrapper .progress-bar {
+  height: 4px;
+  background: #eee;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.continue-book-card .continue-body .progress-wrapper .progress-bar .progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #6a34ff, #8e6cff);
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+.continue-book-card .continue-body .progress-wrapper .progress-text {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.7rem;
+  color: #888;
+  margin-top: 3px;
+}
+.continue-book-card .continue-body .continue-btn {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 4px 14px;
+  background: #6a34ff;
+  color: white;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: 0.3s;
+}
+.continue-book-card .continue-body .continue-btn:hover {
+  background: #5428d9;
+}
+
+/* ===== RECOMMENDATIONS GRID ===== */
+.recommendations-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.recommend-book-card {
+  background: white;
+  border-radius: 0;
+  overflow: hidden;
+  border: 1px solid #eee;
+  transition: 0.3s;
+  cursor: pointer;
+}
+.recommend-book-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+  border-color: #d9d0f0;
+}
+.recommend-book-card .recommend-cover {
+  width: 100%;
+  padding-top: 120%;
+  background: #f0ebe4;
+  position: relative;
+  overflow: hidden;
+  border-radius: 0;
+}
+.recommend-book-card .recommend-cover img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.recommend-book-card .recommend-cover .no-image {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 2rem;
+  color: #cbb9a8;
+}
+.recommend-book-card .recommend-body {
+  padding: 10px 12px;
+}
+.recommend-book-card .recommend-body .book-title {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #1d1833;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.recommend-book-card .recommend-body .book-author {
+  font-size: 0.75rem;
+  color: #888;
+}
+.recommend-book-card .recommend-body .book-price {
+  font-weight: 600;
+  font-size: 0.8rem;
+  color: #6a34ff;
+  margin-top: 4px;
+}
+
+/* ===== BADGES DISPLAY ===== */
+.badges-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.badge-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: white;
+  padding: 8px 16px 8px 12px;
+  border-radius: 30px;
+  border: 1px solid #eee;
+  transition: 0.3s;
+}
+.badge-item:hover {
+  border-color: #d9d0f0;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+}
+.badge-item .badge-icon {
+  font-size: 1.5rem;
+}
+.badge-item .badge-info .badge-name {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #1d1833;
+}
+.badge-item .badge-info .badge-desc {
+  font-size: 0.7rem;
+  color: #888;
+}
+.badge-item .badge-check {
+  color: #2d7d46;
+  font-size: 0.9rem;
+}
+.badge-item.badge-locked {
+  opacity: 0.5;
+}
+.badge-item.badge-locked .badge-check {
+  color: #b33;
+}
+
+/* ===== SECTION DIVIDERS ===== */
+.section-divider {
+  border: none;
+  border-top: 1px solid #ede7df;
+  margin: 24px 0;
+}
+
+/* ===== RESPONSIVE TWEAKS ===== */
+@media (max-width: 600px) {
+  .reading-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .continue-reading-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .recommendations-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 400px) {
+  .reading-stats-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .continue-reading-grid {
+    grid-template-columns: 1fr;
+  }
+  .recommendations-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+
+/* ===== BADGES - ALWAYS VISIBLE, FADED UNTIL EARNED ===== */
+.badge-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: white;
+    padding: 8px 16px 8px 12px;
+    border-radius: 30px;
+    border: 1px solid #eee;
+    transition: all 0.3s ease;
+    min-width: 180px;
+    flex: 0 1 auto;
+}
+
+.badge-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+}
+
+/* Locked badges - faded */
+.badge-item.badge-locked {
+    opacity: 0.5;
+    border-color: #eee;
+    background: #fafafa;
+}
+
+.badge-item.badge-locked .badge-icon {
+    filter: grayscale(1);
+    opacity: 0.4;
+}
+
+.badge-item.badge-locked .badge-name {
+    color: #999 !important;
+}
+
+.badge-item.badge-locked .badge-check {
+    color: #ccc;
+}
+
+/* Earned badges - highlighted */
+.badge-item.badge-earned {
+    opacity: 1;
+    border-color: #d9d0f0;
+    background: white;
+    box-shadow: 0 2px 12px rgba(75, 42, 173, 0.08);
+}
+
+.badge-item.badge-earned .badge-icon {
+    filter: none;
+    opacity: 1;
+}
+
+.badge-item.badge-earned .badge-check {
+    color: #2d7d46;
+}
+
+.badge-item .badge-icon {
+    font-size: 1.8rem;
+    transition: all 0.3s ease;
+    min-width: 30px;
+    text-align: center;
+}
+
+.badge-item .badge-info {
+    flex: 1;
+}
+
+.badge-item .badge-info .badge-name {
+    font-weight: 600;
+    font-size: 0.85rem;
+    transition: color 0.3s ease;
+}
+
+.badge-item .badge-info .badge-desc {
+    font-size: 0.7rem;
+    color: #888;
+}
+
+.badge-item .badge-info .badge-earned-date {
+    font-size: 0.65rem;
+    color: #2d7d46;
+    font-weight: 600;
+    margin-top: 2px;
+}
+
+.badge-item .badge-info .badge-requirement {
+    font-size: 0.65rem;
+    color: #aaa;
+    margin-top: 2px;
+}
+
+.badge-item .badge-check {
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+}
+
+/* Lock icon for locked badges */
+.badge-item.badge-locked .badge-check i {
+    color: #ccc;
+}
+
+/* Earned checkmark */
+.badge-item.badge-earned .badge-check i {
+    color: #2d7d46;
+}
+
+/* Badges container - responsive */
+.badges-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 8px;
+    align-items: center;
+}
+
+/* ===== RESPONSIVE BADGES ===== */
+@media (max-width: 600px) {
+    .badge-item {
+        min-width: 140px;
+        padding: 6px 12px 6px 10px;
+        flex: 1 1 auto;
+    }
+    .badge-item .badge-icon {
+        font-size: 1.4rem;
+        min-width: 24px;
+    }
+    .badge-item .badge-info .badge-name {
+        font-size: 0.75rem;
+    }
+    .badge-item .badge-info .badge-desc {
+        font-size: 0.6rem;
+    }
+    .badge-item .badge-info .badge-earned-date,
+    .badge-item .badge-info .badge-requirement {
+        font-size: 0.55rem;
+    }
+    .badge-item .badge-check {
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 400px) {
+    .badge-item {
+        min-width: 100%;
+        flex: 1 1 100%;
+    }
+}
+
+
   </style>
 </head>
 <body>
@@ -2253,8 +2816,10 @@ header .logo-header {
       <h2>VOLANT</h2>
     </div>
     <nav class="nav">
-      <a class="active" data-page="dashboard"><i class="fas fa-th-large"></i> Dashboard</a>
-      <a data-page="mybooks"><i class="fas fa-book-open"></i> My Books</a>
+      <!-- MY LIBRARY - NOW FIRST -->
+      <a class="active" data-page="mylibrary"><i class="fas fa-book-open"></i> My Library</a>
+      <a data-page="dashboard"><i class="fas fa-th-large"></i> Dashboard</a>
+      <a data-page="mybooks"><i class="fas fa-edit"></i> My Books</a>
       <a data-page="sales"><i class="fas fa-chart-simple"></i> Sales</a>
       <a data-page="analytics"><i class="fas fa-chart-line"></i> Analytics</a>
       <a data-page="wishlist"><i class="fas fa-heart"></i> Wishlist <span class="wishlist-badge" id="wishlistNavBadge">0</span></a>
@@ -2308,7 +2873,7 @@ header .logo-header {
           </div>
         </div>
         <div class="banner-actions">
-          <a href="#" class="btn-go-settings" onclick="event.preventDefault(); showPage('settings');">
+          <a class="btn-go-settings" onclick="event.preventDefault(); showPage('settings');">
             <i class="fas fa-cog"></i> Go to Settings
           </a>
           <span class="banner-time">
@@ -2321,8 +2886,104 @@ header .logo-header {
 
   <!-- ===== PAGE SECTIONS ===== -->
 
+ <!-- ===== MY LIBRARY PAGE (PROFESSIONAL ORDER) ===== -->
+<div class="page-section active" id="page-mylibrary">
+  <div class="page-header">
+    <h2>📚 My Library</h2>
+    <p>All the books you've purchased and own. Read, download, and manage your collection.</p>
+  </div>
+
+  <!-- 1. QUICK READING STATS (High-level dashboard summary) -->
+  <div class="reading-stats-grid" id="readingStatsGrid">
+    <div class="reading-stat-card">
+      <div class="stat-icon">🔥</div>
+      <div class="stat-number" id="libraryStreak">0</div>
+      <div class="stat-label">Day Streak</div>
+      <div class="stat-sub" id="libraryLongestStreak">Longest: 0</div>
+    </div>
+    <div class="reading-stat-card">
+      <div class="stat-icon">📖</div>
+      <div class="stat-number" id="libraryBooksRead">0</div>
+      <div class="stat-label">Books Read</div>
+      <div class="stat-sub" id="libraryReadingTime">0 min</div>
+    </div>
+    <div class="reading-stat-card">
+      <div class="stat-icon">🏆</div>
+      <div class="stat-number" id="libraryBadges">0</div>
+      <div class="stat-label">Badges Earned</div>
+      <div class="stat-sub" id="libraryNextBadge">Next: 7 days</div>
+    </div>
+    <div class="reading-stat-card">
+      <div class="stat-icon">📚</div>
+      <div class="stat-number" id="libraryTotalBooks">0</div>
+      <div class="stat-label">Total Books</div>
+      <div class="stat-sub" id="libraryOwnedBooks">0 owned</div>
+    </div>
+  </div>
+
+  <!-- 2. CONTINUE READING (Immediate primary action item) -->
+  <div style="background:white; border-radius:16px; padding:16px 20px; border:1px solid #eee; margin-bottom:20px;">
+    <div style="display:none; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
+      <h4 style="font-size:1rem; font-weight:600; color:#1d1833;">
+        <i class="fas fa-book-open" style="color:#6a34ff;"></i> Continue Reading
+      </h4>
+      <a href="javascript:void(0)" onclick="loadContinueReading()" style="font-size:0.75rem; color:#6a34ff; text-decoration:none;">
+        <i class="fas fa-sync-alt"></i> Refresh
+      </a>
+    </div>
+    <div class="continue-reading-grid" id="continueReadingGrid">
+      <p style="color:#6f6252; grid-column:1/-1; text-align:center; padding:20px;">No books in progress. Start reading today!</p>
+    </div>
+  </div>
+
+  <!-- 3. OWNED BOOKS & SEARCH (The core purpose of this specific screen) -->
+  <div class="library-filter-bar">
+    <input type="text" id="librarySearchInput" placeholder="🔍 Search your library..." />
+    <select id="librarySortSelect">
+      <option value="recent">Most Recent</option>
+      <option value="title">Alphabetical (A-Z)</option>
+      <option value="title-desc">Alphabetical (Z-A)</option>
+      <option value="author">By Author</option>
+    </select>
+    <span class="library-count-badge" id="libraryCountBadge">0 books</span>
+  </div>
+
+  <div class="page-grid" id="libraryGrid" style="margin-bottom: 30px;">
+    <!-- populated by JS -->
+  </div>
+
+  <hr class="section-divider">
+
+  <!-- 4. BADGES DISPLAY (Moved down so it does not crowd or delay access to books) -->
+  <div style="background:white; border-radius:16px; padding:16px 20px; border:1px solid #eee; margin-bottom:20px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:8px;">
+      <h4 style="font-size:1rem; font-weight:600; color:#1d1833;">
+        <i class="fas fa-trophy" style="color:#f5b342;"></i> Your Badges
+      </h4>
+      <span style="font-size:0.75rem; color:#888;" id="badgeProgressText">0/4 badges earned</span>
+    </div>
+    <div class="badges-container" id="badgesContainer">
+      <p style="color:#6f6252; font-size:0.85rem; padding:8px 0;">No badges yet. Keep reading to earn them!</p>
+    </div>
+  </div>
+
+  <!-- 5. RECOMMENDATIONS (Secondary discovery content at the absolute footer position) -->
+  <div style="background:white; border-radius:16px; padding:16px 20px; border:1px solid #eee; margin-bottom:20px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
+      <h4 style="font-size:1rem; font-weight:600; color:#1d1833;">
+        <i class="fas fa-lightbulb" style="color:#f5b342;"></i> Recommended for You
+      </h4>
+      <span style="font-size:0.7rem; color:#888;">Based on your reading history</span>
+    </div>
+    <div class="recommendations-grid" id="recommendationsGrid">
+      <p style="color:#6f6252; grid-column:1/-1; text-align:center; padding:20px;">Read more books to get personalized recommendations!</p>
+    </div>
+  </div>
+</div>
+
+
   <!-- DASHBOARD PAGE -->
-  <div class="page-section active" id="page-dashboard">
+  <div class="page-section" id="page-dashboard">
     <!-- TOPBAR inside dashboard only -->
     <div class="topbar">
       <div class="topbar-left">
@@ -2996,7 +3657,6 @@ header .logo-header {
     }
   }
 </script>
-
 <script type="module">
   import { initializeApp } from "firebase/app";
   import { 
@@ -3154,6 +3814,9 @@ header .logo-header {
   let originalUsername = '';
   let originalEmail = '';
 
+  // ===== LIBRARY DATA =====
+  let purchasedBooks = [];
+  
   // ===== OPTIMIZED BATCH USER FETCHING (50 AT A TIME) =====
   const userBatchCache = {};
   let userBatchCacheTime = 0;
@@ -4084,6 +4747,15 @@ header .logo-header {
       refreshSettings();
     }
     
+    // Load library when switching to library page
+    if (pageId === 'mylibrary') {
+      loadLibrary();
+      loadContinueReading();
+      loadRecommendations();
+      loadBadges();
+      loadReadingStats();
+    }
+    
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -4417,9 +5089,9 @@ async function updateBook() {
       authorBooks[bookIndex] = {
         ...authorBooks[bookIndex],
         ...updateData,
-        price: price,                         // ✅ Explicitly set price
-        currency: currency,                   // ✅ Explicitly set currency
-        pricing: { currency, amount: price }, // ✅ Explicitly set pricing
+        price: price,
+        currency: currency,
+        pricing: { currency, amount: price },
         title: title,
         authorName: authorName,
         subtitle: updateBookSubtitle.value.trim() || '',
@@ -4429,7 +5101,7 @@ async function updateBook() {
     }
 
     closeModal();
-    renderAll(); // ✅ This will now show updated stats
+    renderAll();
     showToast('✅ Book updated successfully!', 'success');
 
   } catch (err) {
@@ -4589,6 +5261,548 @@ async function updateBook() {
   }
 
   // ============================================================
+  // ====== LIBRARY FUNCTIONS - INCLUDES READS ======
+  // ============================================================
+
+  async function loadLibrary() {
+    if (!currentUser) return;
+    
+    try {
+        // Get all purchases for this user
+        const purchasesRef = collection(db, "purchases");
+        const purchasesQuery = query(purchasesRef, where("userId", "==", currentUser.uid));
+        const purchasesSnapshot = await getDocs(purchasesQuery);
+        
+        // Get all reads for this user (from reader.html tracking)
+        const readsRef = collection(db, "readingProgress");
+        const readsQuery = query(readsRef, where("userId", "==", currentUser.uid));
+        const readsSnapshot = await getDocs(readsQuery);
+        
+        // Use Map to deduplicate by bookId (purchases take priority)
+        const bookMap = new Map();
+        
+        // Add purchases first (these take priority)
+        purchasesSnapshot.forEach((doc) => {
+            const data = doc.data();
+            if (data.status === 'completed' && data.verified === true) {
+                bookMap.set(data.bookId, {
+                    bookId: data.bookId,
+                    source: 'purchase',
+                    purchaseData: data
+                });
+            }
+        });
+        
+        // Add reads (only if not already purchased)
+        readsSnapshot.forEach((doc) => {
+            const data = doc.data();
+            if (!bookMap.has(data.bookId)) {
+                bookMap.set(data.bookId, {
+                    bookId: data.bookId,
+                    source: 'read',
+                    readData: data
+                });
+            }
+        });
+        
+        // Fetch book details for each entry
+        const bookPromises = Array.from(bookMap.entries()).map(async ([bookId, entry]) => {
+            try {
+                const bookRef = doc(db, "books", bookId);
+                const bookSnap = await getDoc(bookRef);
+                
+                if (bookSnap.exists()) {
+                    const bookData = bookSnap.data();
+                    const isPurchased = entry.source === 'purchase';
+                    const purchaseData = entry.purchaseData || {};
+                    const readData = entry.readData || {};
+                    
+                    return {
+                        id: bookId,
+                        title: bookData.title || 'Untitled',
+                        subtitle: bookData.subtitle || '',
+                        authorName: bookData.authorName || 'Anonymous',
+                        imageUrl: bookData.imageUrl || '',
+                        price: bookData.pricing?.amount || 0,
+                        currency: bookData.pricing?.currency || 'GHS',
+                        downloadLimit: bookData.downloadLimit || bookData.downloads || 5,
+                        addedAt: isPurchased 
+                            ? (purchaseData.purchasedAt?.toDate?.() || new Date(purchaseData.purchasedAt) || new Date())
+                            : (readData.lastReadAt?.toDate?.() || new Date(readData.lastReadAt) || new Date()),
+                        downloadCount: purchaseData.downloadCount || 0,
+                        pdfUrl: bookData.pdfUrl || '',
+                        status: isPurchased ? 'owned' : 'read',
+                        readCount: readData.readCount || 0,
+                        lastReadAt: readData.lastReadAt?.toDate?.() || null,
+                        percentage: readData.percentage || 0,
+                        page: readData.page || 0
+                    };
+                }
+                return null;
+            } catch (err) {
+                console.warn('Error fetching book:', bookId, err);
+                return null;
+            }
+        });
+        
+        const results = await Promise.all(bookPromises);
+        purchasedBooks = results.filter(book => book !== null);
+        
+        // Sort: Purchased first, then by date added
+        purchasedBooks.sort((a, b) => {
+            if (a.status === 'owned' && b.status !== 'owned') return -1;
+            if (a.status !== 'owned' && b.status === 'owned') return 1;
+            return b.addedAt - a.addedAt;
+        });
+        
+        renderLibrary();
+        
+        // Update total books count in stats
+        document.getElementById('libraryTotalBooks').textContent = purchasedBooks.length;
+        document.getElementById('libraryOwnedBooks').textContent = purchasedBooks.filter(b => b.status === 'owned').length + ' owned';
+        
+    } catch (err) {
+        console.warn('Error loading library:', err);
+        showToast('Error loading your library', 'error');
+    }
+  }
+
+  function renderLibrary() {
+    const grid = document.getElementById('libraryGrid');
+    const countBadge = document.getElementById('libraryCountBadge');
+    
+    countBadge.textContent = `${purchasedBooks.length} book${purchasedBooks.length !== 1 ? 's' : ''}`;
+    
+    if (purchasedBooks.length === 0) {
+      grid.innerHTML = `
+        <div class="library-empty-state">
+          <i class="fas fa-book-open"></i>
+          <h3>Your library is empty</h3>
+          <p>Start building your collection by purchasing books from the store.</p>
+          <a href="index.html" class="btn-browse"><i class="fas fa-store"></i> Browse Store</a>
+        </div>
+      `;
+      return;
+    }
+    
+    grid.innerHTML = '';
+    purchasedBooks.forEach(book => {
+      const card = createLibraryBookCard(book);
+      grid.appendChild(card);
+    });
+  }
+
+  function createLibraryBookCard(book) {
+    const card = document.createElement('div');
+    card.className = 'page-card';
+
+    const coverWrapper = document.createElement('div');
+    coverWrapper.className = 'cover-wrapper';
+    coverWrapper.onclick = () => {
+      window.location.href = `details.html?id=${book.id}`;
+    };
+    
+    if (book.imageUrl) {
+      const img = document.createElement('img');
+      img.src = book.imageUrl;
+      img.alt = book.title || 'Book cover';
+      img.loading = 'lazy';
+      img.onerror = function() {
+        this.style.display = 'none';
+        this.parentElement.innerHTML = `<div class="no-image"><i class="fas fa-book-open"></i></div>`;
+      };
+      coverWrapper.appendChild(img);
+    } else {
+      coverWrapper.innerHTML = `<div class="no-image"><i class="fas fa-book-open"></i></div>`;
+    }
+    card.appendChild(coverWrapper);
+
+    const body = document.createElement('div');
+    body.className = 'book-body';
+
+    const title = document.createElement('div');
+    title.className = 'book-title';
+    title.textContent = book.title || 'Untitled';
+    body.appendChild(title);
+
+    if (book.subtitle && book.subtitle.trim() !== '') {
+      const subtitle = document.createElement('div');
+      subtitle.className = 'book-subtitle';
+      subtitle.textContent = book.subtitle;
+      body.appendChild(subtitle);
+    }
+
+    const author = document.createElement('div');
+    author.className = 'book-author';
+    author.textContent = book.authorName || 'Anonymous';
+    body.appendChild(author);
+
+    // Show status badge
+    const statusBadge = document.createElement('span');
+    if (book.status === 'owned') {
+      statusBadge.className = 'badge-status approved';
+      statusBadge.innerHTML = '<i class="fas fa-check-circle"></i> Owned';
+    } else if (book.status === 'read') {
+      statusBadge.className = 'badge-status pending';
+      statusBadge.innerHTML = `<i class="fas fa-book-open"></i> Reading ${book.percentage || 0}%`;
+    }
+    body.appendChild(statusBadge);
+
+    // Show download info (only if owned)
+    if (book.status === 'owned') {
+      const limitDisplay = book.downloadLimit === 'unlimited' ? '♾️ Unlimited' : `${book.downloadLimit}`;
+      const used = book.downloadCount || 0;
+      const remaining = book.downloadLimit === 'unlimited' ? '♾️' : Math.max(0, book.downloadLimit - used);
+      
+      const infoBadge = document.createElement('span');
+      infoBadge.className = 'sales-badge';
+      infoBadge.innerHTML = `
+        <i class="fas fa-download"></i> ${used}/${limitDisplay} · 
+        <i class="fas fa-clock"></i> ${remaining} remaining
+      `;
+      body.appendChild(infoBadge);
+    }
+
+    // Show reading progress if available
+    if (book.percentage > 0 && book.status === 'read') {
+      const progressWrapper = document.createElement('div');
+      progressWrapper.style.cssText = 'margin-top:6px; width:100%;';
+      progressWrapper.innerHTML = `
+        <div style="display:flex; justify-content:space-between; font-size:0.65rem; color:#888;">
+          <span>Progress</span>
+          <span>${Math.round(book.percentage || 0)}%</span>
+        </div>
+        <div style="background:#eee; border-radius:4px; height:3px; overflow:hidden; margin-top:2px;">
+          <div style="background:#6a34ff; height:100%; width:${Math.round(book.percentage || 0)}%; border-radius:4px;"></div>
+        </div>
+      `;
+      body.appendChild(progressWrapper);
+    }
+
+    // Action buttons for library
+    const btnGroup = document.createElement('div');
+    btnGroup.className = 'btn-group';
+
+    if (book.pdfUrl) {
+      const readBtn = document.createElement('button');
+      readBtn.className = 'update-book-btn';
+      readBtn.innerHTML = '<i class="fas fa-book-open"></i> Read Online';
+      readBtn.style.background = '#4b2aad';
+      readBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        window.open(`reader.html?id=${book.id}`, '_blank');
+      });
+      btnGroup.appendChild(readBtn);
+    }
+
+    const shareBtn = document.createElement('button');
+    shareBtn.className = 'share-book-btn';
+    shareBtn.innerHTML = '<i class="fas fa-link"></i> Share';
+    shareBtn.title = 'Copy book link to share';
+    shareBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      shareBook(book.id, book.title || 'Untitled');
+    });
+    btnGroup.appendChild(shareBtn);
+
+    body.appendChild(btnGroup);
+    card.appendChild(body);
+    return card;
+  }
+
+  // ============================================================
+  // ====== READING STATS ======
+  // ============================================================
+
+  function loadReadingStats() {
+    // Load streak from localStorage
+    const streak = parseInt(localStorage.getItem('volant_streak') || '0');
+    const longest = parseInt(localStorage.getItem('volant_longest_streak') || '0');
+    
+    document.getElementById('libraryStreak').textContent = streak;
+    document.getElementById('libraryLongestStreak').textContent = `Longest: ${longest}`;
+    
+    // Count books read (from library)
+    const totalBooks = purchasedBooks.length;
+    const ownedBooks = purchasedBooks.filter(b => b.status === 'owned').length;
+    const readBooks = purchasedBooks.filter(b => b.status === 'read' && b.percentage >= 100).length;
+    const totalRead = ownedBooks + readBooks;
+    
+    document.getElementById('libraryBooksRead').textContent = totalRead;
+    
+    // Estimate reading time (2 min per page)
+    let totalMinutes = 0;
+    purchasedBooks.forEach(book => {
+      if (book.page && book.page > 0) {
+        totalMinutes += book.page * 2;
+      }
+    });
+    const displayTime = totalMinutes > 60 ? 
+      `${Math.round(totalMinutes/60)}h ${totalMinutes%60}m` : 
+      `${totalMinutes}m`;
+    document.getElementById('libraryReadingTime').textContent = displayTime;
+    
+    // Load badges
+    loadBadges();
+  }
+// ============================================================
+// ====== BADGES - ALWAYS VISIBLE, FADED UNTIL EARNED ======
+// ============================================================
+
+function loadBadges() {
+    const badges = JSON.parse(localStorage.getItem('volant_badges') || '[]');
+    
+    // Define ALL badges with their requirements
+    const badgeDefinitions = [
+        { id: 7, name: 'Week Warrior', icon: '🔥', description: 'Read for 7 days in a row', color: '#ff6b35' },
+        { id: 14, name: 'Fortnight Reader', icon: '📚', description: 'Read for 14 days in a row', color: '#4b2aad' },
+        { id: 30, name: 'Monthly Master', icon: '🏆', description: 'Read for 30 days in a row', color: '#f5b342' },
+        { id: 100, name: 'Century Club', icon: '👑', description: 'Read for 100 days in a row', color: '#9b59b6' }
+    ];
+    
+    const container = document.getElementById('badgesContainer');
+    const progressText = document.getElementById('badgeProgressText');
+    
+    // Calculate earned count
+    const earnedCount = badgeDefinitions.filter(b => badges.includes(b.id)).length;
+    const totalBadges = badgeDefinitions.length;
+    
+    // Check current streak for "Next" badge
+    const streak = parseInt(localStorage.getItem('volant_streak') || '0');
+    let nextBadge = null;
+    for (const badge of badgeDefinitions) {
+        if (streak < badge.id) {
+            nextBadge = badge.id - streak;
+            break;
+        }
+    }
+    
+    // Update progress text
+    if (progressText) {
+        const nextText = nextBadge !== null ? `Next: ${nextBadge} days` : 'All badges earned! 🎉';
+        progressText.textContent = `${earnedCount}/${totalBadges} badges earned — ${nextText}`;
+    }
+    
+    // Update badge count in stats
+    document.getElementById('libraryBadges').textContent = earnedCount;
+    
+    // Build badge display
+    let html = '';
+    badgeDefinitions.forEach(badge => {
+        const isEarned = badges.includes(badge.id);
+        
+        html += `
+            <div class="badge-item ${isEarned ? 'badge-earned' : 'badge-locked'}">
+                <span class="badge-icon" style="${isEarned ? '' : 'filter: grayscale(1); opacity: 0.4;'}">${badge.icon}</span>
+                <div class="badge-info">
+                    <div class="badge-name" style="${isEarned ? 'color: ' + badge.color + ';' : 'color: #999;'}">
+                        ${isEarned ? badge.name : badge.name}
+                        ${isEarned ? ' ' : ' 🔒'}
+                    </div>
+                    <div class="badge-desc">${badge.description}</div>
+                    ${isEarned ? '<div class="badge-earned-date">🏅 Earned!</div>' : `<div class="badge-requirement">Required: ${badge.id} day streak</div>`}
+                </div>
+                <span class="badge-check">
+                    <i class="fas ${isEarned ? 'fa-check-circle' : 'fa-clock'}" style="${isEarned ? 'color: #2d7d46;' : 'color: #ccc;'}"></i>
+                </span>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+}
+
+  // ============================================================
+  // ====== CONTINUE READING ======
+  // ============================================================
+
+  async function loadContinueReading() {
+    if (!currentUser) return;
+    
+    try {
+      const progressRef = collection(db, "readingProgress");
+      const q = query(
+        progressRef,
+        where("userId", "==", currentUser.uid),
+        where("percentage", ">", 0),
+        where("percentage", "<", 100)
+      );
+      const snapshot = await getDocs(q);
+      
+      const grid = document.getElementById('continueReadingGrid');
+      
+      if (snapshot.empty) {
+        grid.innerHTML = `<p style="color:#6f6252; grid-column:1/-1; text-align:center; padding:20px;">No books in progress. Start reading today!</p>`;
+        return;
+      }
+      
+      const progressItems = [];
+      for (const progressDoc of snapshot.docs) {
+        const data = progressDoc.data();
+        const bookRef = doc(db, "books", data.bookId);
+        const bookSnap = await getDoc(bookRef);
+        if (bookSnap.exists()) {
+          const book = { id: bookSnap.id, ...bookSnap.data() };
+          progressItems.push({
+            book: book,
+            percentage: data.percentage || 0,
+            page: data.page || 1,
+            lastReadAt: data.lastReadAt?.toDate?.() || new Date(data.lastReadAt) || new Date()
+          });
+        }
+      }
+      
+      // Sort by last read
+      progressItems.sort((a, b) => b.lastReadAt - a.lastReadAt);
+      
+      grid.innerHTML = '';
+      progressItems.slice(0, 4).forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'continue-book-card';
+        card.onclick = () => window.location.href = `reader.html?id=${item.book.id}`;
+        
+        const coverHtml = item.book.imageUrl 
+          ? `<img src="${item.book.imageUrl}" alt="${item.book.title || 'Book cover'}" loading="lazy" onerror="this.style.display='none'">`
+          : `<div class="no-image"><i class="fas fa-book-open"></i></div>`;
+        
+        card.innerHTML = `
+          <div class="continue-cover">${coverHtml}</div>
+          <div class="continue-body">
+            <div class="book-title" title="${item.book.title || 'Untitled'}">${item.book.title || 'Untitled'}</div>
+            <div class="book-author">${item.book.authorName || 'Anonymous'}</div>
+            <div class="progress-wrapper">
+              <div class="progress-bar">
+                <div class="progress-fill" style="width:${Math.round(item.percentage)}%;"></div>
+              </div>
+              <div class="progress-text">
+                <span>${Math.round(item.percentage)}% complete</span>
+                <span>Page ${item.page}</span>
+              </div>
+            </div>
+            <a href="reader.html?id=${item.book.id}" class="continue-btn" onclick="event.stopPropagation();">
+              <i class="fas fa-book-open"></i> Continue
+            </a>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+      
+    } catch (err) {
+      console.warn('Error loading continue reading:', err);
+    }
+  }
+
+  window.loadContinueReading = loadContinueReading;
+
+  // ============================================================
+  // ====== RECOMMENDATIONS ======
+  // ============================================================
+
+  async function loadRecommendations() {
+    if (!currentUser) return;
+    
+    try {
+      // Get user's reading history from purchases and reading progress
+      const [purchasesSnap, progressSnap] = await Promise.all([
+        getDocs(query(collection(db, "purchases"), where("userId", "==", currentUser.uid), where("status", "==", "completed"))),
+        getDocs(query(collection(db, "readingProgress"), where("userId", "==", currentUser.uid)))
+      ]);
+      
+      // Collect book IDs the user has interacted with
+      const userBookIds = new Set();
+      purchasesSnap.forEach(doc => userBookIds.add(doc.data().bookId));
+      progressSnap.forEach(doc => userBookIds.add(doc.data().bookId));
+      
+      if (userBookIds.size === 0) {
+        document.getElementById('recommendationsGrid').innerHTML = `
+          <p style="color:#6f6252; grid-column:1/-1; text-align:center; padding:20px;">
+            <i class="fas fa-lightbulb" style="font-size:1.5rem; display:block; margin-bottom:8px;"></i>
+            Read more books to get personalized recommendations!
+          </p>
+        `;
+        return;
+      }
+      
+      // Get genres from user's books
+      const genres = [];
+      for (const bookId of userBookIds) {
+        try {
+          const bookSnap = await getDoc(doc(db, "books", bookId));
+          if (bookSnap.exists()) {
+            const data = bookSnap.data();
+            if (data.genre && !genres.includes(data.genre)) {
+              genres.push(data.genre);
+            }
+          }
+        } catch (err) { /* skip */ }
+      }
+      
+      if (genres.length === 0) {
+        document.getElementById('recommendationsGrid').innerHTML = `
+          <p style="color:#6f6252; grid-column:1/-1; text-align:center; padding:20px;">
+            <i class="fas fa-search" style="font-size:1.5rem; display:block; margin-bottom:8px;"></i>
+            No recommendations yet. Keep exploring books!
+          </p>
+        `;
+        return;
+      }
+      
+      // Find books in same genres (excluding already interacted)
+      const booksRef = collection(db, "books");
+      const bookQuery = query(booksRef, where("genre", "in", genres.slice(0, 5)), where("status", "==", "approved"));
+      const bookSnapshot = await getDocs(bookQuery);
+      
+      const recommendations = [];
+      for (const doc of bookSnapshot.docs) {
+        const book = { id: doc.id, ...doc.data() };
+        if (!userBookIds.has(book.id)) {
+          recommendations.push(book);
+        }
+        if (recommendations.length >= 6) break;
+      }
+      
+      const grid = document.getElementById('recommendationsGrid');
+      
+      if (recommendations.length === 0) {
+        grid.innerHTML = `
+          <p style="color:#6f6252; grid-column:1/-1; text-align:center; padding:20px;">
+            <i class="fas fa-search" style="font-size:1.5rem; display:block; margin-bottom:8px;"></i>
+            No new recommendations yet. Check back soon!
+          </p>
+        `;
+        return;
+      }
+      
+      grid.innerHTML = '';
+      recommendations.forEach(book => {
+        const card = document.createElement('div');
+        card.className = 'recommend-book-card';
+        card.onclick = () => window.location.href = `details.html?id=${book.id}`;
+        
+        const coverHtml = book.imageUrl 
+          ? `<img src="${book.imageUrl}" alt="${book.title || 'Book cover'}" loading="lazy" onerror="this.style.display='none'">`
+          : `<div class="no-image"><i class="fas fa-book-open"></i></div>`;
+        
+        const price = book.pricing?.amount || book.price || 0;
+        const currency = book.pricing?.currency || book.currency || 'GHS';
+        
+        card.innerHTML = `
+          <div class="recommend-cover">${coverHtml}</div>
+          <div class="recommend-body">
+            <div class="book-title" title="${book.title || 'Untitled'}">${book.title || 'Untitled'}</div>
+            <div class="book-author">${book.authorName || 'Anonymous'}</div>
+            <div class="book-price">${currency} ${Number(price).toFixed(2)}</div>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+      
+    } catch (err) {
+      console.warn('Error loading recommendations:', err);
+    }
+  }
+
+  // ============================================================
   // ====== EXPORT DATA (GDPR) ======
   // ============================================================
   async function exportUserData() {
@@ -4636,6 +5850,14 @@ async function updateBook() {
         })),
         messages: userMessages,
         wishlist: wishlistItems,
+        library: purchasedBooks.map(book => ({
+          title: book.title || 'Untitled',
+          author: book.authorName || 'Anonymous',
+          status: book.status || 'read',
+          addedAt: book.addedAt,
+          downloadCount: book.downloadCount || 0,
+          readCount: book.readCount || 0
+        })),
         exportDate: new Date().toISOString(),
         platform: 'reads'
       };
@@ -4831,7 +6053,6 @@ async function updateBook() {
 
       authorBooks = [];
 allBooksData.forEach(data => {
-  // ✅ FIX: Get price from pricing.amount OR direct price
   let bookPrice = 0;
   let bookCurrency = 'GHS';
   if (data.pricing) {
@@ -4849,9 +6070,9 @@ allBooksData.forEach(data => {
     authorName: data.authorName || 'Anonymous',
     imageUrl: data.imageUrl || '',
     pdfUrl: data.pdfUrl || '',
-    price: bookPrice,                       // ✅ Set price
-    currency: bookCurrency,                 // ✅ Set currency
-    pricing: data.pricing || { currency: bookCurrency, amount: bookPrice }, // ✅ Set pricing
+    price: bookPrice,
+    currency: bookCurrency,
+    pricing: data.pricing || { currency: bookCurrency, amount: bookPrice },
     status: data.status || 'draft',
     sales: data.sales || 0,
     downloads: data.downloads || 0,
@@ -4892,7 +6113,6 @@ function renderStats(books) {
   const totalSales = published.reduce((sum, b) => sum + (b.sales || 0), 0);
   const totalDownloads = published.reduce((sum, b) => sum + (b.downloads || 0), 0);
   
-  // ✅ Helper to get price from pricing.amount OR direct price
   const getPrice = (book) => {
     if (book.pricing && book.pricing.amount !== undefined) {
       return book.pricing.amount;
@@ -5136,6 +6356,14 @@ function renderStats(books) {
     renderAnalyticsPage(authorBooks);
     renderWishlistPage();
     renderMessages();
+    // Load library if on library page
+    if (document.getElementById('page-mylibrary').classList.contains('active')) {
+      await loadLibrary();
+      loadContinueReading();
+      loadRecommendations();
+      loadBadges();
+      loadReadingStats();
+    }
   }
 
 
@@ -5369,7 +6597,7 @@ window.addEventListener('storage', function(e) {
 
   // Restore last visited page on load
   document.addEventListener('DOMContentLoaded', function() {
-    const lastPage = sessionStorage.getItem('volant_reads_current_page') || 'dashboard';
+    const lastPage = sessionStorage.getItem('volant_reads_current_page') || 'mylibrary';
     showPage(lastPage, false);
   });
 
@@ -5384,6 +6612,51 @@ window.addEventListener('storage', function(e) {
   document.getElementById('exploreBtn')?.addEventListener('click', () => {
     window.location.href = 'dashboard.html';
   });
+
+  // ===== LIBRARY FILTER & SEARCH =====
+  document.getElementById('librarySearchInput')?.addEventListener('input', function() {
+    const searchTerm = this.value.toLowerCase().trim();
+    filterLibrary(searchTerm);
+  });
+
+  document.getElementById('librarySortSelect')?.addEventListener('change', function() {
+    sortLibrary(this.value);
+  });
+
+  function filterLibrary(searchTerm) {
+    const cards = document.querySelectorAll('#libraryGrid .page-card');
+    cards.forEach(card => {
+      const title = card.querySelector('.book-title')?.textContent?.toLowerCase() || '';
+      const author = card.querySelector('.book-author')?.textContent?.toLowerCase() || '';
+      const match = title.includes(searchTerm) || author.includes(searchTerm);
+      card.style.display = match ? '' : 'none';
+    });
+  }
+
+  function sortLibrary(sortBy) {
+    const grid = document.getElementById('libraryGrid');
+    const cards = Array.from(grid.querySelectorAll('.page-card'));
+    
+    cards.sort((a, b) => {
+      const titleA = a.querySelector('.book-title')?.textContent || '';
+      const titleB = b.querySelector('.book-title')?.textContent || '';
+      const authorA = a.querySelector('.book-author')?.textContent || '';
+      const authorB = b.querySelector('.book-author')?.textContent || '';
+      
+      switch(sortBy) {
+        case 'title':
+          return titleA.localeCompare(titleB);
+        case 'title-desc':
+          return titleB.localeCompare(titleA);
+        case 'author':
+          return authorA.localeCompare(authorB);
+        default: // 'recent'
+          return 0;
+      }
+    });
+    
+    cards.forEach(card => grid.appendChild(card));
+  }
 
   // ===== SAVE PROFILE SETTINGS =====
   document.getElementById('saveSettingsBtn')?.addEventListener('click', async () => {
@@ -5603,7 +6876,7 @@ window.addEventListener('storage', function(e) {
       await loadAuthorData(user);
       
       // ✅ Restore last visited page
-      const lastPage = sessionStorage.getItem('volant_reads_current_page') || 'dashboard';
+      const lastPage = sessionStorage.getItem('volant_reads_current_page') || 'mylibrary';
       showPage(lastPage, false);
       
       sessionStorage.removeItem('auth_redirect_attempted');
@@ -5611,7 +6884,7 @@ window.addEventListener('storage', function(e) {
       if (!window.location.pathname.includes('universal-login') && 
           !window.location.pathname.includes('verify-email')) {
         const currentPage = window.location.pathname + window.location.search;
-        window.location.href = 'https://volantpoetry.vercel.app/shared/universal-login.html?platform=reads&redirect=' + 
+        window.location.href = 'universal-login.html?platform=reads&redirect=' + 
                               encodeURIComponent(currentPage);
       }
     }

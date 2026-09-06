@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Verify Email | Volant</title>
+<!-- Favicons -->
+<link rel="icon" type="image/png" href="https://volantpoetry.vercel.app/images/volant-favicon.png">
+<link rel="apple-touch-icon" href="https://volantpoetry.vercel.app/images/volant-favicon.png">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(135deg, #f6f5fc 0%, #f0eef9 100%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 1rem;
+    }
+
+    .container {
+      background: #ffffff;
+      padding: 2.5rem 2rem;
+      border-radius: 32px;
+      box-shadow: 0 25px 50px -12px rgba(75, 42, 173, 0.25);
+      width: 100%;
+      max-width: 480px;
+      text-align: center;
+      border: 1px solid rgba(75, 42, 173, 0.1);
+    }
+
+    h2 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #1a1e2b;
+      margin-bottom: 0.5rem;
+    }
+
+    .brand {
+      color: #4b2aad;
+      font-weight: 600;
+      font-size: 1.1rem;
+      margin-bottom: 1.5rem;
+      letter-spacing: -0.01em;
+    }
+
+    .platform-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, #4b2aad, #6f3fd9);
+      color: white;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-bottom: 15px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .platform-badge.poetry {
+      background: linear-gradient(135deg, #4b2aad, #6f3fd9);
+    }
+
+    .platform-badge.reads {
+      background: linear-gradient(135deg, #d4a574, #c9944d);
+    }
+
+    .platform-badge.foundry {
+      background: linear-gradient(135deg, #2c3e50, #34495e);
+    }
+
+    .email-icon {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+    }
+
+    .email-display {
+      background: #f5f0ff;
+      padding: 1rem 1.5rem;
+      border-radius: 60px;
+      font-weight: 600;
+      font-size: 1.1rem;
+      color: #4b2aad;
+      margin: 1.5rem 0;
+      word-break: break-all;
+      border: 2px dashed #d0c0ff;
+    }
+
+    .message-box {
+      background: #e8f4fd;
+      padding: 1.2rem;
+      border-radius: 20px;
+      margin: 1.5rem 0;
+      border-left: 6px solid #4b2aad;
+      text-align: left;
+    }
+
+    .message-box p {
+      margin: 0.5rem 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 12px;
+      margin: 2rem 0 1rem;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 1rem;
+      border: none;
+      border-radius: 60px;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+      display: inline-block;
+      text-align: center;
+    }
+
+    .btn-primary {
+      background-color: #4b2aad;
+      color: white;
+      box-shadow: 0 8px 18px -6px #4b2aad80;
+    }
+
+    .btn-primary:hover {
+      background-color: #3a1f8a;
+      transform: scale(1.02);
+    }
+
+    .btn-secondary {
+      background-color: #ffffff;
+      color: #4b2aad;
+      border: 2px solid #4b2aad;
+    }
+
+    .btn-secondary:hover {
+      background-color: #f5f0ff;
+    }
+
+    .btn-outline {
+      background-color: #f0f0f0;
+      color: #333;
+      border: 1px solid #ccc;
+    }
+
+    .btn-outline:hover {
+      background-color: #e5e5e5;
+    }
+
+    .status {
+      margin: 1rem 0;
+      padding: 1rem;
+      border-radius: 40px;
+      font-weight: 500;
+      display: none;
+    }
+
+    .status.show {
+      display: block;
+    }
+
+    .status.success {
+      background-color: #e3f3e9;
+      color: #1e6f3f;
+      border-left: 4px solid #1e6f3f;
+    }
+
+    .status.error {
+      background-color: #fee9e7;
+      color: #b3261e;
+      border-left: 4px solid #b3261e;
+    }
+
+    .status.info {
+      background-color: #fff1db;
+      color: #9b6b00;
+      border-left: 4px solid #f29c33;
+    }
+
+    .spam-tip {
+      background-color: #fff8e7;
+      border-radius: 16px;
+      padding: 1rem;
+      margin: 1.5rem 0 0.5rem;
+      font-size: 0.95rem;
+      text-align: left;
+      border: 1px solid #ffe4b5;
+    }
+
+    .spam-tip p {
+      margin: 0.4rem 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .hint-box {
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .links {
+      margin-top: 2rem;
+    }
+
+    .links a {
+      color: #4b2aad;
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.95rem;
+    }
+
+    .links a:hover {
+      text-decoration: underline;
+    }
+
+    hr {
+      border: none;
+      border-top: 1px solid #eae6f5;
+      margin: 1.5rem 0 0.8rem;
+    }
+
+    .countdown {
+      font-size: 0.9rem;
+      color: #666;
+      margin-top: 0.5rem;
+    }
+
+    @media (max-width: 480px) {
+      .container { padding: 1.5rem; }
+      .btn-group { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="email-icon">✉️</div>
+    <h2>Verify your email</h2>
+    <div class="platform-badge" id="platformBadge">Volant Poetry</div>
+    <div class="brand" id="platformBrandName">Volant Poetry</div>
+    
+    <p style="color: #555; margin-bottom: 0.5rem;">We've sent a verification link to:</p>
+    <div class="email-display" id="displayEmail">loading...</div>
+
+    <div class="message-box">
+      <p>✅ <strong>Click the link in the email</strong> to activate your account</p>
+      <p>🔒 <strong>Then click the "I've verified" button below</strong></p>
+      <p>⏳ <strong>Link expires in 24 hours</strong></p>
+    </div>
+
+    <div id="statusMessage" class="status"></div>
+    <div id="hintContainer"></div>
+
+    <div class="btn-group">
+      <a href="users-login.html" class="btn btn-primary">Go to Login</a>
+      <button class="btn btn-secondary" id="resendBtn">Resend Email</button>
+    </div>
+
+    <button class="btn btn-outline" id="checkVerificationBtn" style="width: 100%; margin-top: 0;">
+      🔄 I've verified - Continue
+    </button>
+
+    <div class="spam-tip">
+      <p><strong>📬 Didn't get the email?</strong></p>
+      <p>✓ Check your <strong>Spam</strong> or <strong>Promotions</strong> folder</p>
+      <p>✓ Add <code style="background: #eee; padding: 2px 6px; border-radius: 4px;">noreply@silent-depth.firebaseapp.com</code> to contacts</p>
+      <p>✓ Wait 2-3 minutes and click "Resend Email"</p>
+      <p>✓ The email should come from Firebase, not from Volant Poetry</p>
+    </div>
+
+    <div class="countdown" id="countdown"></div>
+
+    <hr>
+
+    <div class="links">
+      <p>Wrong email? <a href="#" id="signupAgainLink">Sign up again</a> • <a href="#" id="homeLink">Back to Home</a></p>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { 
+      getAuth, 
+      sendEmailVerification, 
+      signOut,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import {
+      getFirestore,
+      doc,
+      updateDoc,
+      getDoc
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyC4DHI8aBVY4JjTvJ-r-TGIDPsewtEWxzU",
+      authDomain: "silent-depth.firebaseapp.com",
+      projectId: "silent-depth",
+      storageBucket: "silent-depth.firebasestorage.app",
+      messagingSenderId: "78008755450",
+      appId: "1:78008755450:web:3fd0f0f298a08820935543",
+      measurementId: "G-WSWDCB7KD8"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // DOM Elements
+    const displayEmail = document.getElementById('displayEmail');
+    const statusEl = document.getElementById('statusMessage');
+    const hintContainer = document.getElementById('hintContainer');
+    const resendBtn = document.getElementById('resendBtn');
+    const checkBtn = document.getElementById('checkVerificationBtn');
+    const countdownEl = document.getElementById('countdown');
+
+    // Get email from URL or localStorage
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlEmail = urlParams.get('email');
+    const redirectTarget = urlParams.get('redirect');
+    const platform = urlParams.get('platform') || 'reads';
+    const mode = urlParams.get('mode');
+    const oobCode = urlParams.get('oobCode');
+
+    // Platform configuration
+    const platformConfig = {
+      poetry: {
+        name: 'Volant Poetry',
+        badge: 'poetry',
+        homeUrl: 'index.html'
+      },
+      reads: {
+        name: 'Volant Reads',
+        badge: 'reads',
+        homeUrl: 'index.html'
+      },
+      foundry: {
+        name: 'Volant Foundry',
+        badge: 'foundry',
+        homeUrl: 'parent-house.html'
+      }
+    };
+
+    const currentPlatform = platformConfig[platform] || platformConfig.poetry;
+
+    // Update platform badge and display
+    const platformBadge = document.getElementById('platformBadge');
+    const platformBrandName = document.getElementById('platformBrandName');
+    platformBadge.textContent = currentPlatform.name;
+    platformBadge.classList.add(currentPlatform.badge);
+    platformBrandName.textContent = currentPlatform.name;
+    
+    let currentEmail = urlEmail || localStorage.getItem('pendingVerificationEmail') || 'your email';
+    displayEmail.textContent = currentEmail;
+
+    const loginLink = document.querySelector('.links a[href="users-login.html"]');
+    if (loginLink) {
+      const loginParams = new URLSearchParams();
+      loginParams.append('platform', platform);
+      if (redirectTarget) loginParams.append('redirect', redirectTarget);
+      loginLink.href = `universal-login.html?${loginParams.toString()}`;
+    }
+
+    // Setup signup again link
+    const signupAgainLink = document.getElementById('signupAgainLink');
+    if (signupAgainLink) {
+      signupAgainLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        const signupParams = new URLSearchParams();
+        signupParams.append('platform', platform);
+        if (redirectTarget) signupParams.append('redirect', redirectTarget);
+        window.location.href = `universal-signup.html?${signupParams.toString()}`;
+      });
+    }
+
+    // Setup home link
+    const homeLink = document.getElementById('homeLink');
+    if (homeLink) {
+      homeLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.location.href = currentPlatform.homeUrl;
+      });
+    }
+
+    // Check if user just clicked verification link
+    if (mode === 'verifyEmail' && oobCode) {
+      showStatus('✅ Verification link detected! Processing...', 'success');
+      
+      // Wait a bit for Firebase to process
+      setTimeout(async () => {
+        if (auth.currentUser) {
+          await auth.currentUser.reload();
+          if (auth.currentUser.emailVerified) {
+            // Auto-click the verify button
+            checkBtn.click();
+          }
+        }
+      }, 3000);
+    }
+
+    // Countdown timer
+    let resendCooldown = false;
+    function startCooldown(seconds = 60) {
+      resendCooldown = true;
+      resendBtn.disabled = true;
+      resendBtn.style.opacity = '0.6';
+      
+      let timeLeft = seconds;
+      countdownEl.textContent = `You can resend in ${timeLeft}s`;
+      
+      const interval = setInterval(() => {
+        timeLeft--;
+        countdownEl.textContent = `You can resend in ${timeLeft}s`;
+        
+        if (timeLeft <= 0) {
+          clearInterval(interval);
+          resendCooldown = false;
+          resendBtn.disabled = false;
+          resendBtn.style.opacity = '1';
+          countdownEl.textContent = '';
+        }
+      }, 1000);
+    }
+
+    function showStatus(message, type = 'info') {
+      statusEl.textContent = message;
+      statusEl.classList.add('show');
+      statusEl.classList.remove('success', 'error', 'info');
+      statusEl.classList.add(type);
+    }
+
+    function clearStatus() {
+      statusEl.textContent = '';
+      statusEl.classList.remove('show');
+    }
+
+    function showHint(message, type = 'warning') {
+      const hint = document.createElement('div');
+      hint.className = `hint-box`;
+      
+      let bgColor, textColor;
+      if (type === 'warning') {
+        bgColor = '#fff3cd';
+        textColor = '#856404';
+      } else if (type === 'error') {
+        bgColor = '#fee9e7';
+        textColor = '#b3261e';
+      } else {
+        bgColor = '#e3f3e9';
+        textColor = '#1e6f3f';
+      }
+      
+      hint.style.backgroundColor = bgColor;
+      hint.style.color = textColor;
+      hint.style.padding = '10px';
+      hint.style.borderRadius = '8px';
+      hint.style.marginTop = '10px';
+      hint.innerHTML = message;
+      
+      hintContainer.innerHTML = '';
+      hintContainer.appendChild(hint);
+      
+      setTimeout(() => {
+        if (hint.parentNode) hint.remove();
+      }, 8000);
+    }
+
+    // Check auth state
+    onAuthStateChanged(auth, (user) => {
+      if (user && !user.emailVerified) {
+        currentEmail = user.email;
+        displayEmail.textContent = user.email;
+        localStorage.setItem('pendingVerificationEmail', user.email);
+      }
+    });
+
+    // RESEND VERIFICATION EMAIL
+    resendBtn.addEventListener('click', async () => {
+      if (resendCooldown) {
+        showStatus('⏳ Please wait before resending again', 'info');
+        return;
+      }
+
+      clearStatus();
+      resendBtn.disabled = true;
+      resendBtn.textContent = 'Sending...';
+
+      try {
+        if (auth.currentUser) {
+          await sendEmailVerification(auth.currentUser);
+          showStatus('✅ Verification email resent! Check your inbox.', 'success');
+          showHint('📧 Look for email from: noreply@silent-depth.firebaseapp.com', 'info');
+          startCooldown(60);
+        } else {
+          showStatus('Please log in first to resend verification', 'info');
+          setTimeout(() => {
+            const loginParams = new URLSearchParams();
+            loginParams.append('platform', platform);
+            loginParams.append('email', currentEmail);
+            if (redirectTarget) loginParams.append('redirect', redirectTarget);
+            window.location.href = `universal-login.html?${loginParams.toString()}`;
+          }, 2000);
+        }
+      } catch (err) {
+        console.error('Resend error:', err);
+        showStatus('⚠ ' + err.message, 'error');
+      } finally {
+        resendBtn.disabled = false;
+        resendBtn.textContent = 'Resend Email';
+      }
+    });
+
+    // CHECK VERIFICATION STATUS - IMPROVED VERSION
+    checkBtn.addEventListener('click', async () => {
+      clearStatus();
+      hintContainer.innerHTML = '';
+      checkBtn.disabled = true;
+      checkBtn.textContent = 'Checking...';
+
+      try {
+        if (!auth.currentUser) {
+          showStatus('⏳ Please log in to check verification status', 'info');
+          setTimeout(() => {
+            const loginParams = new URLSearchParams();
+            loginParams.append('platform', platform);
+            loginParams.append('email', currentEmail);
+            if (redirectTarget) loginParams.append('redirect', redirectTarget);
+            window.location.href = `universal-login.html?${loginParams.toString()}`;
+          }, 2000);
+          return;
+        }
+
+        // IMPORTANT: Multiple reloads to ensure latest status
+        showStatus('Checking with Firebase server...', 'info');
+        
+        await auth.currentUser.reload();
+        await new Promise(resolve => setTimeout(resolve, 1500)); // Wait 1.5 seconds
+        await auth.currentUser.reload();
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Wait another second
+        await auth.currentUser.reload();
+
+        const user = auth.currentUser;
+
+        if (user.emailVerified) {
+          // Update Firestore
+          const userDocRef = doc(db, "users", user.uid);
+          const userDocSnap = await getDoc(userDocRef);
+          
+          if (userDocSnap.exists()) {
+            await updateDoc(userDocRef, { emailVerified: true });
+            isVerified: true
+          }
+          
+          showStatus('✅ Email verified! Redirecting to login...', 'success');
+          
+          localStorage.removeItem('pendingVerificationEmail');
+          await signOut(auth);
+          
+          setTimeout(() => {
+            let finalRedirect = currentPlatform.homeUrl;
+            if (redirectTarget) {
+              const decodedRedirect = decodeURIComponent(redirectTarget);
+              // Only use redirect if it's not an auth page
+              if (!decodedRedirect.includes('universal-login') && 
+                  !decodedRedirect.includes('universal-signup') && 
+                  !decodedRedirect.includes('users-login') && 
+                  !decodedRedirect.includes('users-signup') && 
+                  !decodedRedirect.includes('users-reset') &&
+                  !decodedRedirect.includes('verify-email')) {
+                finalRedirect = decodedRedirect;
+              }
+            }
+            window.location.href = finalRedirect;
+          }, 2000);
+        } else {
+          // Show detailed error message
+          showStatus('❌ Email NOT verified yet', 'error');
+          
+          let hintMessage = '';
+          if (!user.emailVerified) {
+            hintMessage = `
+              <strong>🔍 Why am I seeing this?</strong><br><br>
+              1. You haven't clicked the verification link yet<br>
+              2. The verification email should come from: <strong>noreply@silent-depth.firebaseapp.com</strong><br>
+              3. Check your Spam/Junk folder<br>
+              4. Click the link in that email, THEN click this button again<br><br>
+              <strong>⚠️ Important:</strong> The verification must be done through the email link, not just clicking this button!
+            `;
+          }
+          
+          showHint(hintMessage, 'warning');
+        }
+      } catch (err) {
+        console.error('Check error:', err);
+        showStatus('⚠ ' + err.message, 'error');
+      } finally {
+        checkBtn.disabled = false;
+        checkBtn.textContent = '🔄 I\'ve verified - Continue';
+      }
+    });
+
+    // Auto-start cooldown if email was just sent
+    const justSent = sessionStorage.getItem('verificationJustSent');
+    if (justSent) {
+      startCooldown(60);
+      sessionStorage.removeItem('verificationJustSent');
+    }
+  </script>
+</body>
+</html>
