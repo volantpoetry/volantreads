@@ -1888,7 +1888,7 @@
         
         function getPdfJsViewerUrl(pdfUrl, embedded) {
             if (!pdfUrl) return '';
-            return `/store/pdfjs/local-viewer.html?embedded=${embedded ? '1' : '0'}&file=${encodeURIComponent(pdfUrl)}`;
+            return `/pdfjs/local-viewer.html?embedded=${embedded ? '1' : '0'}&file=${encodeURIComponent(pdfUrl)}`;
         }
         
         function clickEmbeddedReaderControl(controlId) {
