@@ -474,6 +474,18 @@
       .author-hero-accent { height: 70px; }
       .author-hero-body { gap: 18px; }
     }
+
+    /* Hide the "Sold" stat (2nd stat block) from public viewers */
+.author-stats .stat:nth-child(2) {
+  display: none !important;
+}
+
+/* Hide Sold stat — author-only metric, not for public */
+.stat-sold { display: none !important; }
+
+/* Hide Followers stat — Volant Poetry leftover, unused on Reads */
+.stat-followers { display: none !important; }
+
   </style>
 </head>
 <body>
@@ -788,7 +800,7 @@ function formatNum(n) { return Number(n || 0).toLocaleString(); }
                 <div class="stat"><span class="num">${formatNum(totalBooks)}</span><span class="label">Books</span></div>
                 <div class="stat"><span class="num">${formatNum(totalSales)}</span><span class="label">Sold</span></div>
                 ${avgRating > 0 ? `<div class="stat"><span class="num">${avgRating.toFixed(1)}</span><span class="label">Rating</span></div>` : ''}
-${followerCount > 0 ? `<div class="stat"><span class="num">${formatNum(followerCount)}</span><span class="label">Followers</span></div>` : ''}
+${followerCount > 0 ? `<div class="stat stat-followers"><span class="num">${formatNum(followerCount)}</span><span class="label">Followers</span></div>` : ''}
               </div>
               ${buildSocialsHTML(userData?.socials)}
             </div>
