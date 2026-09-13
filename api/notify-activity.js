@@ -51,6 +51,7 @@ function prefsEnabled(prefs, key) {
 function buildEmail(input) {
     const { type, siteName, fromUserName, poemTitle, bookTitle, text, link, unsub } = input;
     const buttonLabel = (type === 'message' || type === 'dm') ? 'View message' : 'View poem';
+    const previewText = type === 'dm' ? (text.length > 140 ? text.slice(0, 140) + '…' : text) : text;
     let heading, intro;
     if (type === 'comment') {
         heading = `New comment on “${esc(poemTitle || 'your poem')}”`;
@@ -70,7 +71,7 @@ function buildEmail(input) {
         <div style="font-family:Arial,Helvetica,sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#faf7f2;border-radius:12px;">
             <h2 style="color:#3e362e;margin-top:0;">${heading}</h2>
             <p style="color:#555;font-size:16px;">${intro}</p>
-            <div style="background:#fff;border:1px solid #eee;border-left:3px solid #3e362e;border-radius:8px;padding:16px;margin:16px 0;color:#444;font-size:15px;line-height:1.5;">“${esc(text || '')}”</div>
+            <div style="background:#fff;border:1px solid #eee;border-left:3px solid #3e362e;border-radius:8px;padding:16px;margin:16px 0;color:#444;font-size:15px;line-height:1.5;">“${esc(previewText || '')}”</div>
             <a href="${esc(link)}" style="background:#3e362e;color:#fff;text-decoration:none;padding:12px 22px;border-radius:6px;display:inline-block;font-size:15px;font-weight:bold;">${buttonLabel}</a>
             <p style="margin-top:28px;color:#8a8a8a;font-size:12px;line-height:1.6;">You are receiving this because you have an account on ${esc(siteName)}.<br>
             Want to control these emails? <a href="${esc(unsub)}" style="color:#8a8a8a;">Unsubscribe from activity emails</a>.</p>
