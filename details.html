@@ -2322,7 +2322,8 @@ header {
       .preview-modal .preview-footer { padding: 0.8rem 1rem; }
       .preview-modal .preview-footer .preview-actions .btn-buy-preview { padding: 0.5rem 1.2rem; font-size: 0.85rem; }
       .reviews-summary { flex-direction: column; align-items: center; text-align: center; padding: 1rem; }
-      .reviews-summary .rating-big { font-size: 2rem; }
+      .reviews-summary .rating-big { font-size: 2rem; justify-content: center; }
+        .bookTopRating, #bookTopRating { justify-content: center; }
       .review-form { padding: 1rem; }
       .review-form .review-rating-select .star-btn { font-size: 1.5rem; }
       .review-item .review-header .review-date { margin-left: 0; width: 100%; }
@@ -4537,6 +4538,17 @@ function goToLogin() {
     }
 
     // ===== CONTACT AUTHOR FUNCTIONS =====
+    function notifyActivityEmail(type, toUid, fromUid, data) {
+      if (!toUid || !fromUid || toUid === fromUid) return;
+      try {
+        fetch('/api/notify-activity', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ toUid, type, fromUid, data: data || {} })
+        });
+      } catch (err) {}
+    }
+
     function openContactModal(book) {
       if (!currentUser) {
         showToast('🔐 Please sign in to contact the author.', 'error');
@@ -4581,6 +4593,14 @@ function goToLogin() {
           bookRef: doc(db, "books", currentBook.id)
         };
         const docRef = await addDoc(collection(db, "messages"), messageData);
+        if (currentBook.submittedBy && currentBook.submittedBy !== currentUser.uid) {
+          notifyActivityEmail('message', currentBook.submittedBy, currentUser.uid, {
+            fromUserName: name,
+            bookTitle: currentBook.title || 'Untitled',
+            text: message,
+            site: 'reads'
+          });
+        }
         showToast('✅ Message sent to author successfully!', 'success');
         closeContactModal();
       } catch (err) {

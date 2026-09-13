@@ -3093,8 +3093,10 @@ body:has(#page-mylibrary.active) #setupAlertBanner {
     }
 }
 
-
+/* Hide email notification settings until a verified sending domain is configured (remove this block once live) */
+        #emailNotifGroup { display: none; }
   </style>
+        
 </head>
 <body>
 
@@ -3516,6 +3518,24 @@ body:has(#page-mylibrary.active) #setupAlertBanner {
       <div class="settings-group">
         <label>Bio</label>
         <input type="text" id="settingsBio" placeholder="Tell us about yourself..." />
+      </div>
+
+      <div class="settings-group" id="emailNotifGroup">`n                        <label>Email Notifications</label>
+        <div style="margin:8px 0;">
+          <label style="display:flex;align-items:center;gap:8px;font-size:0.95rem;cursor:pointer;">
+            <input type="checkbox" id="prefAll" checked style="width:auto;height:auto;"> Send me activity emails
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:0.95rem;cursor:pointer;">
+            <input type="checkbox" id="prefComments" checked style="width:auto;height:auto;"> New comments on my poems
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:0.95rem;cursor:pointer;">
+            <input type="checkbox" id="prefReplies" checked style="width:auto;height:auto;"> Replies to my comments
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:0.95rem;cursor:pointer;">
+            <input type="checkbox" id="prefMessages" checked style="width:auto;height:auto;"> Messages &amp; direct messages
+          </label>
+        </div>
+        <div class="hint">You can also unsubscribe with one click from any email you receive.</div>
       </div>
 
       <button class="action-btn" id="saveSettingsBtn" style="width:100%;justify-content:center;margin-top:10px;" disabled>
@@ -4124,6 +4144,10 @@ body:has(#page-mylibrary.active) #setupAlertBanner {
   const settingsName = document.getElementById('settingsName');
   const settingsEmail = document.getElementById('settingsEmail');
   const settingsBio = document.getElementById('settingsBio');
+  const prefAllCheck = document.getElementById('prefAll');
+  const prefCommentsCheck = document.getElementById('prefComments');
+  const prefRepliesCheck = document.getElementById('prefReplies');
+  const prefMessagesCheck = document.getElementById('prefMessages');
   const settingsCountry = document.getElementById('settingsCountry');
   const settingsAuthorName = document.getElementById('settingsAuthorName');
   const settingsAuthorBio = document.getElementById('settingsAuthorBio');
@@ -4237,6 +4261,29 @@ body:has(#page-mylibrary.active) #setupAlertBanner {
   let emailValid = false;
   let originalUsername = '';
   let originalEmail = '';
+  let originalPrefs = { all: true, comments: true, replies: true, messages: true };
+
+  function syncPrefToggles(prefs) {
+    prefAllCheck.checked = prefs.all !== false;
+    prefCommentsCheck.checked = prefs.comments !== false;
+    prefRepliesCheck.checked = prefs.replies !== false;
+    prefMessagesCheck.checked = prefs.messages !== false;
+  }
+
+  function emailPrefsValue() {
+    return {
+      all: prefAllCheck.checked,
+      comments: prefCommentsCheck.checked,
+      replies: prefRepliesCheck.checked,
+      messages: prefMessagesCheck.checked
+    };
+  }
+
+  function prefsChanged() {
+    const p = emailPrefsValue();
+    return p.all !== originalPrefs.all || p.comments !== originalPrefs.comments ||
+      p.replies !== originalPrefs.replies || p.messages !== originalPrefs.messages;
+  }
 
   // ===== LIBRARY DATA =====
   let purchasedBooks = [];
@@ -4501,7 +4548,7 @@ body:has(#page-mylibrary.active) #setupAlertBanner {
   }
 
   function updateSaveButton() {
-    const changed = settingsName.value !== originalUsername || settingsEmail.value !== originalEmail;
+    const changed = settingsName.value !== originalUsername || settingsEmail.value !== originalEmail || prefsChanged();
     const canSave = usernameValid && emailValid && changed;
     saveSettingsBtn.disabled = !canSave;
     
@@ -4509,6 +4556,10 @@ body:has(#page-mylibrary.active) #setupAlertBanner {
       saveSettingsBtn.disabled = true;
     }
   }
+
+  [prefAllCheck, prefCommentsCheck, prefRepliesCheck, prefMessagesCheck].forEach(function(cb) {
+    cb.addEventListener('change', updateSaveButton);
+  });
 
   let usernameTimeout = null;
   let emailTimeout = null;
@@ -5121,6 +5172,13 @@ body:has(#page-mylibrary.active) #setupAlertBanner {
         settingsName.value = data.username || currentUser.displayName || '';
         settingsEmail.value = data.email || currentUser.email || '';
         settingsBio.value = data.bio || '';
+        originalPrefs = {
+          all: data.emailPrefs?.all !== false,
+          comments: data.emailPrefs?.comments !== false,
+          replies: data.emailPrefs?.replies !== false,
+          messages: data.emailPrefs?.messages !== false
+        };
+        syncPrefToggles(originalPrefs);
         settingsAuthorName.value = data.authorName || '';
         settingsAuthorBio.value = data.authorBio || '';
         settingsGmail.value = data.gmail || '';
@@ -7388,6 +7446,13 @@ window.addEventListener('storage', function(e) {
       userDisplayName = username;
       originalUsername = username;
       originalEmail = email;
+      originalPrefs = {
+        all: userData.emailPrefs?.all !== false,
+        comments: userData.emailPrefs?.comments !== false,
+        replies: userData.emailPrefs?.replies !== false,
+        messages: userData.emailPrefs?.messages !== false
+      };
+      syncPrefToggles(originalPrefs);
       
       greeting.textContent = `Welcome back, ${username} 👋`;
       subGreeting.textContent = 'Manage your books, track sales, and grow your audience.';
@@ -7725,6 +7790,7 @@ window.addEventListener('storage', function(e) {
         username: username,
         bio: bio,
         email: email,
+        emailPrefs: emailPrefsValue(),
         updatedAt: new Date().toISOString()
       };
       
@@ -7733,6 +7799,8 @@ window.addEventListener('storage', function(e) {
       userDisplayName = username;
       originalUsername = username;
       originalEmail = email;
+      originalPrefs = emailPrefsValue();
+      syncPrefToggles(originalPrefs);
       
       greeting.textContent = `Welcome back, ${userDisplayName} 👋`;
       showToast('✅ Profile settings saved successfully!', 'success');
