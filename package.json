@@ -1,0 +1,12 @@
+{
+  "name": "volantreads-store1",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Volant Reads — serverless helpers for the pre-order release flow.",
+  "engines": {
+    "node": ">=18"
+  },
+  "optionalDependencies": {
+    "firebase-admin": "^11.11.1"
+  }
+}

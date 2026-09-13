@@ -950,7 +950,8 @@
         font-size: 1.1rem !important;
     }
 }
-    </style>
+
+        </style>
 </head>
 <body>
     <div class="reader-header">
@@ -1075,7 +1076,7 @@
             where,
             getDocs
         } from "firebase/firestore";
-        import { getAuth, onAuthStateChanged } from "firebase/auth";
+        import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
         
         const firebaseConfig = {
             apiKey: "AIzaSyC4DHI8aBVY4JjTvJ-r-TGIDPsewtEWxzU",
@@ -1394,6 +1395,7 @@
                     title: bookData.title,
                     authorName: bookData.authorName,
                     pdfUrl: bookData.pdfUrl,
+                    bookFormat: bookData.bookFormat || '',
                     content: bookData.content || '',
                     downloadLimit: bookData.downloadLimit,
                     savedAt: new Date().toISOString()
@@ -1537,6 +1539,7 @@
                     title: freshData.title,
                     authorName: freshData.authorName,
                     pdfUrl: freshData.pdfUrl,
+                    bookFormat: freshData.bookFormat || '',
                     content: freshData.content || '',
                     downloadLimit: freshData.downloadLimit || 5
                 });
@@ -1546,6 +1549,7 @@
                     title: freshData.title,
                     authorName: freshData.authorName,
                     pdfUrl: freshData.pdfUrl,
+                    bookFormat: freshData.bookFormat || '',
                     content: freshData.content || '',
                     downloadLimit: freshData.downloadLimit || 5
                 };
@@ -1588,6 +1592,7 @@
                     title: currentBook.title || 'Untitled',
                     authorName: currentBook.authorName || 'Anonymous',
                     pdfUrl: currentBook.pdfUrl || '',
+                    bookFormat: currentBook.bookFormat || '',
                     content: currentBook.content || '',
                     downloadLimit: currentBook.downloadLimit || 5
                 });
@@ -1636,8 +1641,16 @@
             }
             
             if (!currentBook || !currentBook.pdfUrl) {
-                showToast('❌ No PDF available to download.', 'error');
+                showToast('❌ No book file available to download.', 'error');
                 return;
+            }
+
+            if (currentBook.preorder === true && currentBook.released !== true) {
+                const rd = currentBook.preorderReleaseDate;
+                if (!rd || new Date(String(rd) + 'T00:00:00') > new Date()) {
+                    showToast('🔒 This book releases on ' + (rd || 'the release date') + '. Download unlocks automatically.', 'error');
+                    return;
+                }
             }
             
             const purchased = await checkPurchaseStatus(currentUser.uid, bookId);
@@ -1667,7 +1680,8 @@
                 fileName = `${title} - ${author}`;
             }
             
-            fileName = fileName.replace(/[^a-z0-9 _\-,\.]/gi, '_').replace(/\s+/g, ' ').trim() + '.pdf';
+            const bookExt = (String(currentBook.bookFormat || '').toLowerCase() === 'epub' || /\.epub(\?|#|$)/i.test(currentBook.pdfUrl || '')) ? 'epub' : 'pdf';
+            fileName = fileName.replace(/[^a-z0-9 _\-,\.]/gi, '_').replace(/\s+/g, ' ').trim() + '.' + bookExt;
             
             try {
                 await recordUserDownload(currentUser.uid, bookId);
@@ -1888,7 +1902,7 @@
         
         function getPdfJsViewerUrl(pdfUrl, embedded) {
             if (!pdfUrl) return '';
-            return `/pdfjs/local-viewer.html?embedded=${embedded ? '1' : '0'}&file=${encodeURIComponent(pdfUrl)}`;
+            return `/store1/pdfjs/local-viewer.html?embedded=${embedded ? '1' : '0'}&file=${encodeURIComponent(pdfUrl)}`;
         }
         
         function clickEmbeddedReaderControl(controlId) {
@@ -1930,6 +1944,65 @@
                 saveReadingProgress(pageNum, percentage);
             }
         });
+
+        // ================================================================
+        // ===== EPUB VIEWER FUNCTIONS =====
+        // ================================================================
+
+        function renderEpub(url) {
+            const el = document.getElementById('epubViewer');
+            if (!el) return;
+            if (window.ePub) { openEpub(url); return; }
+            const loadScript = (src) => new Promise((res, rej) => {
+                const s = document.createElement('script');
+                s.src = src;
+                s.onload = res;
+                s.onerror = rej;
+                document.head.appendChild(s);
+            });
+            const fail = () => {
+                if (window.ePub) { openEpub(url); return; }
+                el.innerHTML = `<div class="text-content-wrapper"><div class="text-content" style="text-align:center;padding:3rem 1.5rem;"><p style="color:#6f6252;margin-bottom:1rem;">Could not load the EPUB reader.</p><a href="${escapeHtml2(url)}" target="_blank" rel="noopener" class="btn-back" style="display:inline-block;"><i class="fas fa-external-link-alt"></i> Open the file</a></div></div>`;
+            };
+            loadScript('epubjs/jszip.min.js')
+                .then(() => loadScript('epubjs/epub.min.js'))
+                .then(() => openEpub(url))
+                .catch(fail);
+        }
+
+        function openEpub(url) {
+            const el = document.getElementById('epubViewer');
+            if (!el || !window.ePub) return;
+            try {
+                window.__epubBook = window.ePub(url);
+            } catch (err) {
+                console.warn('Could not open EPUB:', err);
+                return;
+            }
+            const rendition = window.__epubBook.renderTo('epubViewer', { width: '100%', height: '100%', spread: 'auto' });
+            window.__epubRendition = rendition;
+            rendition.display().catch(err => console.warn('EPUB display error:', err));
+
+            const statusEl = document.getElementById('mainPageStatus');
+            if (statusEl) statusEl.textContent = 'Loaded';
+            rendition.on('relocated', (location) => {
+                let pct = 0;
+                try {
+                    const cfi = (location && location.start && location.start.cfi);
+                    if (cfi && window.__epubBook.locations) pct = Math.round(window.__epubBook.locations.percentageFromCfi(cfi) * 100);
+                } catch (err) { /* keep 0 */ }
+                if (statusEl) statusEl.textContent = (pct > 0 ? pct : '…') + '%';
+            });
+
+            const prevBtn = document.getElementById('mainPrevPage');
+            const nextBtn = document.getElementById('mainNextPage');
+            if (prevBtn) prevBtn.addEventListener('click', () => { if (window.__epubRendition) window.__epubRendition.prev().catch(() => {}); }, { once: false });
+            if (nextBtn) nextBtn.addEventListener('click', () => { if (window.__epubRendition) window.__epubRendition.next().catch(() => {}); }, { once: false });
+        }
+
+        function escapeHtml2(value) {
+            return String(value || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        }
         
         // ================================================================
         // ===== DISPLAY BOOK =====
@@ -1937,7 +2010,19 @@
         
         function displayBook() {
             const content = document.getElementById('readerContent');
-            
+            const fmt = String(currentBook.bookFormat || '').toLowerCase();
+            const isEpub = fmt === 'epub' || /\.epub(\?|#|$)/i.test(currentBook.pdfUrl || '');
+
+            if (isEpub && currentBook.pdfUrl) {
+                content.innerHTML = `
+                    <div class="pdf-viewer-wrapper" style="height:96vh; min-height:460px; background:#f6f3ed;">
+                        <div id="epubViewer" style="width:100%; height:100%;"></div>
+                    </div>
+                `;
+                renderEpub(currentBook.pdfUrl);
+                return;
+            }
+
             if (currentBook.pdfUrl) {
                 const isMobile = isPhoneDevice();
                 const embeddedUrl = getPdfJsViewerUrl(currentBook.pdfUrl, !isMobile);
@@ -2004,6 +2089,7 @@
                             authorName: freshData.authorName || 'Anonymous',
                             subtitle: freshData.subtitle || '',
                             pdfUrl: freshData.pdfUrl || '',
+                            bookFormat: freshData.bookFormat || '',
                             content: freshData.content || '',
                             downloadLimit: freshData.downloadLimit || 5,
                             price: freshData.pricing?.amount || 0,
@@ -2024,6 +2110,7 @@
                     authorName: cachedBook.authorName || 'Anonymous',
                     subtitle: cachedBook.subtitle || '',
                     pdfUrl: cachedBook.pdfUrl || '',
+                    bookFormat: cachedBook.bookFormat || '',
                     content: cachedBook.content || '',
                     downloadLimit: cachedBook.downloadLimit || 5,
                     price: cachedBook.price || 0,
@@ -2045,6 +2132,7 @@
                             authorName: freshData.authorName || 'Anonymous',
                             subtitle: freshData.subtitle || '',
                             pdfUrl: freshData.pdfUrl || '',
+                            bookFormat: freshData.bookFormat || '',
                             content: freshData.content || '',
                             downloadLimit: freshData.downloadLimit || 5,
                             price: freshData.pricing?.amount || 0,
@@ -2118,6 +2206,41 @@
             }
             
             if (purchased) {
+                if (currentBook.preorder === true && currentBook.released !== true) {
+                    const rd = currentBook.preorderReleaseDate;
+                    let lockText = 'the release date';
+                    let showLock = false;
+                    if (rd) {
+                        const parts = String(rd).split('-');
+                        if (parts.length === 3) {
+                            lockText = `${parts[2]} ${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][Number(parts[1]) - 1] || parts[1]} ${parts[0]}`;
+                        }
+                        const today = new Date(); today.setHours(0, 0, 0, 0);
+                        showLock = new Date(String(rd) + 'T00:00:00') > today;
+                    } else {
+                        showLock = true;
+                    }
+                    if (showLock) {
+                        document.getElementById('readerContent').innerHTML = `
+                            <div class="not-owned-state">
+                                <i class="fas fa-clock"></i>
+                                <h3>Pre-order confirmed 🥳</h3>
+                                <p>Your copy unlocks on <strong>${lockText}</strong>. We'll open it for you automatically on release day.</p>
+                                <a href="details.html?id=${bookId}" class="btn-back">
+                                    <i class="fas fa-arrow-left"></i> View Details
+                                </a>
+                            </div>
+                        `;
+                        const rdlBtn = document.getElementById('readerDownloadBtn');
+                        rdlBtn.disabled = true;
+                        rdlBtn.classList.add('btn-download-disabled');
+                        const stEl = document.getElementById('readerStatus');
+                        stEl.className = '';
+                        stEl.style.display = 'none';
+                        isLoading = false;
+                        return;
+                    }
+                }
                 await checkOfflineAvailability(currentBook.pdfUrl);
                 await updateDownloadButton();
                 

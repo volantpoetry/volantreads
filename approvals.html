@@ -29,8 +29,8 @@
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
     <!-- Favicons -->
-    <link rel="icon" type="image/png" href="https://volantpoetry.vercel.app/images/volant-reads-favicon.png" />
-    <link rel="apple-touch-icon" href="https://volantpoetry.vercel.app/images/volant-reads-favicon.png" />
+    <link rel="icon" type="image/png" href="../images/volant-reads-favicon.png" />
+    <link rel="apple-touch-icon" href="../images/volant-reads-favicon.png" />
     <style>
         * {
             margin: 0;
@@ -450,6 +450,14 @@
         }
         .book-card .actions .delete-btn:hover {
             background: #b71c1c;
+            transform: scale(1.02);
+        }
+        .book-card .actions .release-btn {
+            background: linear-gradient(135deg, #b76e4b 0%, #8a5a2b 100%);
+            color: white;
+        }
+        .book-card .actions .release-btn:hover {
+            filter: brightness(1.1);
             transform: scale(1.02);
         }
         .book-card .actions .view-image {
@@ -1059,9 +1067,52 @@
             overflow: hidden;
             position: relative;
             display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            justify-content: flex-start;
+        }
+        .pdf-embed-wrap {
+            flex: 1;
+            width: 100%;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            background: #121212;
+        }
+        .pdf-embed-wrap iframe.pdf-embed {
+            flex: 1;
+            width: 100%;
+            min-height: 0;
+            border: none;
+            background: #1a1a1a;
+        }
+        .pdf-embed-hint {
+            padding: 10px 12px;
+            text-align: center;
+            color: #9a8f7a;
+            font-size: 0.85rem;
+            background: #faf7f2;
+            border-top: 1px solid #eee;
+            display: flex;
+            gap: 10px;
             align-items: center;
             justify-content: center;
+            flex-wrap: wrap;
+            flex-shrink: 0;
         }
+        .pdf-embed-hint button {
+            padding: 6px 14px;
+            border: none;
+            border-radius: 20px;
+            background: #4b2aad;
+            color: white;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .pdf-embed-hint button:hover { background: #3a1f8a; }
+        .pdf-embed-hint button.view-fallback { background: #2d7d46; }
+        .pdf-embed-hint button.view-fallback:hover { background: #1f5f33; }
         .pdf-modal .pdf-container canvas {
             max-width: 100%;
             max-height: 100%;
@@ -1252,6 +1303,31 @@
                 padding: 0.2rem 0.5rem;
             }
         }
+        .settle-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 0.9rem 1rem;
+            border: 1px solid #ece5da;
+            border-radius: 12px;
+            margin-bottom: 0.6rem;
+            background: #fdfbf7;
+            flex-wrap: wrap;
+        }
+        .settle-row.disabled { opacity: 0.55; pointer-events: none; }
+        .settle-main { display: flex; flex-direction: column; gap: 0.2rem; min-width: 0; }
+        .settle-title { font-weight: 600; color: #2d2a24; }
+        .settle-sub { font-size: 0.72rem; color: #8a7b6a; }
+        .settle-right { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+        .settle-amt { font-weight: 700; color: #2d2a24; }
+        .settle-chip {
+            font-size: 0.65rem;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 20px;
+        }
+        .settle-status { font-size: 0.7rem; color: #8a7b6a; }
     </style>
 </head>
 <body>
@@ -1294,6 +1370,10 @@
             <button class="tab-btn" data-tab="messages">
                 <i class="fas fa-envelope"></i> Messages
                 <span class="badge" id="messagesBadge">0</span>
+            </button>
+            <button class="tab-btn" data-tab="settlements">
+                <i class="fas fa-hand-holding-usd"></i> Settlements
+                <span class="badge" id="settlementsBadge">0</span>
             </button>
         </div>
 
@@ -1389,6 +1469,40 @@
                 </div>
             </div>
         </div>
+
+        <!-- Settlements Tab -->
+        <div class="tab-content" id="tab-settlements">
+            <div class="summary-grid" id="settlementsSummary">
+                <div class="summary-card">
+                    <div class="number" id="sAttn" style="color:#c62828;">0</div>
+                    <div class="label">Needs Attention</div>
+                </div>
+                <div class="summary-card">
+                    <div class="number orange" id="sPending">0</div>
+                    <div class="label">Awaiting Settlement</div>
+                </div>
+                <div class="summary-card">
+                    <div class="number green" id="sPaid">0</div>
+                    <div class="label">Confirmed Paid</div>
+                </div>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:0.5rem;">
+                <h3 style="font-weight:600; color:#2d2a24;">
+                    <i class="fas fa-hand-holding-usd" style="color:#b76e4b;"></i> Author Settlements
+                </h3>
+                <span style="font-size:0.7rem; color:#8a7b6a; align-self:center;">
+                    A sale only counts as paid once Paystack confirms the transfer (usually next working day).
+                </span>
+            </div>
+
+            <div id="settlementsContainer">
+                <div class="loading-state">
+                    <div class="spinner"></div>
+                    <p>Loading settlements...</p>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div id="loadingState" class="loading-state">
@@ -1405,8 +1519,8 @@
             Current user: <span id="currentUserEmail">Unknown</span>
         </p>
         <div>
-            <a href="https://volantpoetry.vercel.app/admin/admin-login.html" class="btn"><i class="fas fa-sign-in-alt"></i> Admin Login</a>
-            <a href="https://volantpoetry.vercel.app/" class="btn" style="background: #6f6252;"><i class="fas fa-arrow-left"></i> Return Home</a>
+            <a href="../admin/admin-login.html" class="btn"><i class="fas fa-sign-in-alt"></i> Admin Login</a>
+            <a href="../index.html" class="btn" style="background: #6f6252;"><i class="fas fa-arrow-left"></i> Return Home</a>
         </div>
     </div>
 
@@ -1414,7 +1528,7 @@
         <i class="fas fa-lock"></i>
         <h2>Sign In Required</h2>
         <p>Please sign in to access the admin panel.</p>
-        <a href="https://volantpoetry.vercel.app/admin/admin-login.html" class="btn"><i class="fas fa-sign-in-alt"></i> Admin Login</a>
+        <a href="../admin/admin-login.html" class="btn"><i class="fas fa-sign-in-alt"></i> Admin Login</a>
     </div>
 </div>
 
@@ -1480,7 +1594,7 @@
     import { initializeApp } from "firebase/app";
     import { 
         getFirestore, collection, query, where, getDocs, 
-        doc, updateDoc, deleteDoc, orderBy, getDoc, writeBatch
+        doc, updateDoc, deleteDoc, orderBy, getDoc, writeBatch, addDoc, serverTimestamp
     } from "firebase/firestore";
     import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 
@@ -1546,6 +1660,7 @@
 
     let currentPdfUrl = '';
     let currentPdfTitle = '';
+    let currentPdfFormat = '';
     let toastTimeout = null;
     let copyToastTimeout = null;
     let authTimeout = null;
@@ -1623,27 +1738,27 @@
         }
     };
 
-    function openPDFModal(pdfUrl, title) {
+    function openPDFModal(pdfUrl, title, format) {
         currentPdfUrl = pdfUrl;
         currentPdfTitle = title || 'PDF Viewer';
-        pdfTitle.textContent = `📄 ${currentPdfTitle}`;
-        
+        const isEpub = format === 'epub' || /\.epub(\?|#|$)/i.test(pdfUrl || '');
+        const ext = isEpub ? 'EPUB' : 'PDF';
+        const iconHtml = isEpub ? '<i class="fas fa-book"></i>' : '<i class="fas fa-file-pdf"></i>';
+        pdfTitle.textContent = `${isEpub ? '📖' : '📄'} ${currentPdfTitle}`;
+
+        // Inbuilt preview (EPUB → dedicated EPUB viewer, PDF → multi-page viewer)
+        const viewerBase = isEpub ? 'epubjs/reader.html' : 'pdfjs/multi-page-viewer.html';
+        const viewerUrl = `${viewerBase}?viewerVersion=3&file=${encodeURIComponent(pdfUrl)}&startPage=1&endPage=${isEpub ? 10 : 8}&totalPages=${isEpub ? 100 : 20}&isFree=false&isPurchased=true&isSignedIn=true&currency=GHS&amount=0`;
+
         pdfContainer.innerHTML = `
-            <div class="pdf-fallback">
-                <i class="fas fa-file-pdf"></i>
-                <p class="pdf-status">Click "View Direct" to open the PDF in a new tab.</p>
-                <div class="pdf-view-options">
-                    <button class="view-direct" onclick="window.viewPDFDirect()">
-                        <i class="fas fa-eye"></i> View Direct
-                    </button>
-                    <button class="view-fallback" onclick="window.downloadCurrentPDF()">
-                        <i class="fas fa-download"></i> Download PDF
-                    </button>
+            <div class="pdf-embed-wrap">
+                <iframe src="${viewerUrl}" class="pdf-embed" allow="autoplay; fullscreen"
+                        referrerpolicy="no-referrer-when-downgrade" title="${ext} preview (inbuilt viewer)"></iframe>
+                <div class="pdf-embed-hint">
+                    <span>${iconHtml} Inbuilt ${ext} viewer</span>
+                    <button class="view-direct" onclick="window.viewPDFDirect()"><i class="fas fa-external-link-alt"></i> Open in new tab</button>
+                    <button class="view-fallback" onclick="window.downloadCurrentPDF()"><i class="fas fa-download"></i> Download ${ext}</button>
                 </div>
-                <p style="font-size:0.8rem; color:#999; margin-top:10px;">
-                    <i class="fas fa-info-circle"></i> 
-                    If the PDF doesn't open, try downloading it first.
-                </p>
             </div>
         `;
         
@@ -1655,14 +1770,16 @@
         pdfModal.classList.remove('show');
         document.body.style.overflow = '';
         currentPdfUrl = '';
+        currentPdfFormat = '';
     };
 
     window.downloadCurrentPDF = function() {
         if (currentPdfUrl) {
+            const isEpub = /\.epub(\?|#|$)/i.test(currentPdfUrl) || currentPdfFormat === 'epub';
             const url = addDownloadFlag(currentPdfUrl);
             const link = document.createElement('a');
             link.href = url;
-            link.download = `${currentPdfTitle || 'book'}.pdf`;
+            link.download = `${currentPdfTitle || 'book'}.${isEpub ? 'epub' : 'pdf'}`;
             link.target = '_blank';
             document.body.appendChild(link);
             link.click();
@@ -1671,28 +1788,30 @@
         }
     };
 
-    window.viewPDF = function(pdfUrl, title) {
+    window.viewPDF = function(pdfUrl, title, format) {
         if (!pdfUrl) {
-            showToast('❌ No PDF available.', 'error');
+            showToast('❌ No book file available.', 'error');
             return;
         }
         currentPdfUrl = pdfUrl;
         currentPdfTitle = title || 'PDF Viewer';
-        openPDFModal(pdfUrl, title);
+        currentPdfFormat = format || '';
+        openPDFModal(pdfUrl, title, format);
     };
 
-    window.downloadPDF = function(pdfUrl, title) {
+    window.downloadPDF = function(pdfUrl, title, format) {
         if (!pdfUrl) {
-            showToast('❌ No PDF available.', 'error');
+            showToast('❌ No book file available.', 'error');
             return;
         }
         
-        showToast('⏳ Downloading PDF...', 'info');
+        const isEpub = format === 'epub' || /\.epub(\?|#|$)/i.test(pdfUrl || '');
+        showToast(`⏳ Downloading ${isEpub ? 'EPUB' : 'PDF'}...`, 'info');
         
         const url = addDownloadFlag(pdfUrl);
         const link = document.createElement('a');
         link.href = url;
-        link.download = `${title || 'book'}.pdf`;
+        link.download = `${title || 'book'}.${isEpub ? 'epub' : 'pdf'}`;
         link.target = '_blank';
         document.body.appendChild(link);
         link.click();
@@ -1973,9 +2092,12 @@ Volant Reads Team
     function renderBookCard(book) {
         const imageUrl = book.imageUrl || '';
         const pdfUrl = book.pdfUrl || '';
-        const priceDisplay = book.pricing?.currency 
-            ? `${book.pricing.currency} ${book.pricing.amount?.toFixed(2)}` 
-            : 'Not set';
+        const bookFormat = book.bookFormat || ((/\.epub(\?|#|$)/i).test(pdfUrl) ? 'epub' : 'pdf');
+        const priceDisplay = book.preorder === true
+            ? (book.pricing?.currency || 'GHS') + ' ' + (Number(book.preorderPrice) > 0 ? Number(book.preorderPrice).toFixed(2) : (book.pricing?.amount || 0).toFixed(2)) + ' (pre-order)'
+            : (book.pricing?.currency 
+                ? `${book.pricing.currency} ${book.pricing.amount?.toFixed(2)}` 
+                : 'Not set');
         
         const safeTitle = (book.title || 'Untitled').replace(/[&<>"]/g, function(m) {
             if (m === '&') return '&amp;';
@@ -2070,6 +2192,9 @@ Volant Reads Team
                         <span class="tag"><i class="fas fa-globe"></i> ${book.language || 'Unknown'}</span>
                         <span class="tag"><i class="fas fa-map-marker-alt"></i> ${book.country || 'No country'}</span>
                         ${book.preorder ? '<span class="tag" style="background:#b76e4b; color:white;"><i class="fas fa-clock"></i> Pre-order</span>' : ''}
+                        ${book.series ? `<span class="tag" style="background:#5b4b8a; color:white;"><i class="fas fa-layer-group"></i> ${book.series}${book.seriesOrder ? ' · #' + book.seriesOrder : ''}</span>` : ''}
+                        ${book.preorder && book.preorderReleaseDate ? `<span class="tag" style="background:#8a5a2b; color:white;"><i class="fas fa-calendar-day"></i> Releases ${book.preorderReleaseDate}</span>` : ''}
+                        ${book.preorder && book.released === true ? '<span class="tag" style="background:#28a745; color:white;"><i class="fas fa-check-circle"></i> Released</span>' : ''}
                     </div>
                     
                     ${keywordsDisplay ? `<div class="meta">${keywordsDisplay}</div>` : ''}
@@ -2112,15 +2237,15 @@ Volant Reads Team
                         </a>
                     ` : ''}
                     ${pdfUrl ? `
-                        <button onclick="window.viewPDF('${pdfUrl}', '${safeTitle}')" class="view-pdf">
-                            <i class="fas fa-eye"></i> View PDF
+                        <button onclick="window.viewPDF('${pdfUrl}', '${safeTitle}', '${bookFormat}')" class="view-pdf">
+                            <i class="fas fa-eye"></i> View ${bookFormat === 'epub' ? 'EPUB' : 'PDF'}
                         </button>
-                        <button onclick="window.downloadPDF('${pdfUrl}', '${safeTitle}')" class="download-pdf">
-                            <i class="fas fa-download"></i> Download PDF
+                        <button onclick="window.downloadPDF('${pdfUrl}', '${safeTitle}', '${bookFormat}')" class="download-pdf">
+                            <i class="fas fa-download"></i> Download ${bookFormat === 'epub' ? 'EPUB' : 'PDF'}
                         </button>
                     ` : `
                         <span class="btn-disabled">
-                            <i class="fas fa-file-pdf"></i> No PDF
+                            <i class="fas fa-file-pdf"></i> No Book File
                         </span>
                     `}
                     <button class="copy-msg-btn" onclick="window.copyApprovalMessage('${book.id}')">
@@ -2129,6 +2254,11 @@ Volant Reads Team
                     <button class="delete-btn" onclick="window.deleteBook('${book.id}', '${safeTitle}')">
                         <i class="fas fa-trash"></i> Delete
                     </button>
+                    ${book.status === 'approved' && book.preorder === true && book.released !== true ? `
+                        <button class="release-btn" onclick="window.releasePreorder('${book.id}')">
+                            <i class="fas fa-rocket"></i> Release Now
+                        </button>
+                    ` : ''}
                 </div>
             </div>
         `;
@@ -2384,12 +2514,17 @@ Volant Reads Team
 
                         const book = allBooks.find(b => b.id === bookId);
                         if (book) {
+                            const prevStatus = book.status;
+                            const statusChanged = prevStatus !== status && (status === 'approved' || status === 'rejected');
                             book.sales = sales;
                             book.downloads = downloads;
                             book.downloadLimit = downloadLimit;
                             book.views = views;
                             book.rating = rating;
                             book.status = status;
+                            if (statusChanged) {
+                                await notifyAuthorOfBookStatus(book.submittedBy, book.title || '', status);
+                            }
                         }
 
                         const indicator = document.getElementById(`saved-${bookId}`);
@@ -2702,15 +2837,38 @@ ${msg.message || msg.content || ''}
         });
     });
 
+    // ========== SEND BOOK STATUS NOTIFICATION ==========
+    // Notifies the author via the notifications collection (read by store dashboards).
+    async function notifyAuthorOfBookStatus(sentToUid, bookTitle, status) {
+        if (!sentToUid) return;
+        const isApproved = status === 'approved';
+        try {
+            await addDoc(collection(db, "notifications"), {
+                userId: sentToUid,
+                forUser: sentToUid,
+                platform: "reads",
+                type: isApproved ? 'book_approved' : 'book_rejected',
+                message: isApproved
+                    ? `✅ Great news! Your book "${bookTitle || 'Your book'}" has been approved and is now live in the store!`
+                    : `❌ We're sorry, your book "${bookTitle || 'Your book'}" was rejected. Please review the submission guidelines and try again, or contact support if you have questions.`,
+                timestamp: serverTimestamp(),
+                read: false
+            });
+        } catch (e) { console.warn('Status notification skipped:', e.message); }
+    }
+
     // ========== APPROVE BOOK ==========
     window.approveBook = async function(bookId) {
         if (!confirm('✅ Approve this book? It will appear in the store.')) return;
         try {
-            await updateDoc(doc(db, "books", bookId), {
+            const bookRef = doc(db, "books", bookId);
+            const bookSnap = await getDoc(bookRef);
+            await updateDoc(bookRef, {
                 status: 'approved',
                 approvedAt: new Date(),
                 approvedBy: auth.currentUser?.uid || 'admin'
             });
+            await notifyAuthorOfBookStatus(bookSnap.exists() ? (bookSnap.data().submittedBy || '') : '', bookSnap.exists() ? (bookSnap.data().title || '') : '', 'approved');
             showToast('✅ Book approved successfully!', 'success');
             await loadPendingBooks();
             await loadAllBooks();
@@ -2725,7 +2883,12 @@ ${msg.message || msg.content || ''}
     window.rejectBook = async function(bookId) {
         if (!confirm('❌ Reject this book? This will permanently delete it.')) return;
         try {
-            await deleteDoc(doc(db, "books", bookId));
+            const bookRef = doc(db, "books", bookId);
+            const bookSnap = await getDoc(bookRef);
+            const authorUid = bookSnap.exists() ? (bookSnap.data().submittedBy || '') : '';
+            const bookTitle = bookSnap.exists() ? (bookSnap.data().title || '') : '';
+            await deleteDoc(bookRef);
+            await notifyAuthorOfBookStatus(authorUid, bookTitle, 'rejected');
             showToast('🗑️ Book rejected and deleted.', 'info');
             await loadPendingBooks();
             await loadAllBooks();
@@ -2736,11 +2899,72 @@ ${msg.message || msg.content || ''}
         }
     };
 
+    // ========== RELEASE PRE-ORDER BOOK ==========
+    window.releasePreorder = async function(bookId) {
+        if (!confirm('🚀 Release this pre-order now? Buyers will be notified and can download immediately.')) return;
+        let bookTitle = 'Your pre-ordered book';
+        let authorName = '';
+        try {
+            const bookSnap = await getDoc(doc(db, "books", bookId));
+            if (!bookSnap.exists()) { showToast('❌ Book not found.', 'error'); return; }
+            const book = bookSnap.data();
+            bookTitle = book.title || bookTitle;
+            authorName = book.authorName || '';
+
+            await updateDoc(doc(db, "books", bookId), {
+                released: true,
+                releasedAt: new Date(),
+                releasedBy: auth.currentUser?.uid || 'admin'
+            });
+
+            const pSnap = await getDocs(query(collection(db, "purchases"), where("bookId", "==", bookId), where("preorder", "==", true)));
+            const emails = [];
+            for (const ps of pSnap.docs) {
+                const pd = ps.data();
+                await updateDoc(ps.ref, { released: true, releasedAt: new Date() });
+                const ownerId = pd.userId || ps.id.split('_')[0];
+                if (ownerId) {
+                    if (pd.customerEmail) emails.push(pd.customerEmail);
+                    try {
+                        await addDoc(collection(db, "notifications"), {
+                            userId: ownerId,
+                            forUser: ownerId,
+                            platform: "reads",
+                            type: 'preorder_released',
+                            message: `🎉 "${bookTitle}" is now available! Your pre-order is ready — download it from your library.`,
+                            timestamp: serverTimestamp(),
+                            read: false
+                        });
+                    } catch (e) { /* skip */ }
+                }
+            }
+
+            const uniqueEmails = [...new Set(emails.filter(Boolean))];
+            if (uniqueEmails.length) {
+                try {
+                    await fetch('https://volantreads.vercel.app/api/notify-release', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ bookId, bookTitle, authorName, emails: uniqueEmails.slice(0, 50) })
+                    });
+                } catch (e) { /* email is best-effort */ }
+            }
+
+            showToast(`🚀 "${bookTitle}" released! ${pSnap.size} preview(s) unlocked.`, 'success');
+            await loadPendingBooks();
+            await loadAllBooks();
+            await loadManagementTable();
+        } catch (err) {
+            console.error('Release error:', err);
+            showToast('❌ Failed to release book: ' + err.message, 'error');
+        }
+    };
+
     // ========== SIGN OUT ==========
     window.adminSignOut = async function() {
         try {
             await signOut(auth);
-            window.location.href = 'https://volantpoetry.vercel.app/admin/admin-login.html';
+            window.location.href = '../admin/admin-login.html';
         } catch (err) {
             // Silent fail
         }
@@ -2760,11 +2984,191 @@ ${msg.message || msg.content || ''}
                 <i class="fas fa-sync"></i> Retry
             </button>
             <br><br>
-            <a href="https://volantpoetry.vercel.app/admin/admin-login.html" class="btn" style="background: #6f6252;">
+            <a href="../admin/admin-login.html" class="btn" style="background: #6f6252;">
                 <i class="fas fa-sign-in-alt"></i> Go to Login
             </a>
         `;
         document.querySelector('.container').prepend(timeoutError);
+    }
+
+    // ========== SETTLEMENTS ==========
+    async function runSettlementCheck(purchaseId) {
+        const endpoint = '/api/verify-settlements';
+        try {
+            const res = await fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(purchaseId ? { purchaseId } : {})
+            });
+            const data = await res.json();
+            return data;
+        } catch (err) {
+            return { success: false, message: err.message || 'Network error' };
+        }
+    }
+
+    async function confirmSettlement(purchaseId) {
+        const row = document.querySelector(`[data-settle-id="${purchaseId}"]`);
+        const statusEl = row ? row.querySelector('.settle-status') : null;
+        if (row) {
+            row.classList.add('disabled');
+            if (statusEl) statusEl.textContent = 'Updating…';
+        }
+        try {
+            await updateDoc(doc(db, "purchases", purchaseId), {
+                settlementStatus: 'paid',
+                settledAt: serverTimestamp(),
+                confirmedBy: auth.currentUser?.uid || 'admin',
+                confirmedAt: serverTimestamp(),
+                verifiedBy: 'admin-manual'
+            });
+            await loadSettlements();
+        } catch (err) {
+            if (statusEl) statusEl.textContent = 'Failed: ' + (err.message || 'update error');
+            if (row) row.classList.remove('disabled');
+        }
+    }
+
+    async function rescanSettlement(purchaseId) {
+        const row = document.querySelector(`[data-settle-id="${purchaseId}"]`);
+        const statusEl = row ? row.querySelector('.settle-status') : null;
+        if (row) {
+            row.classList.add('disabled');
+            if (statusEl) statusEl.textContent = 'Checking Paystack…';
+        }
+        const data = await runSettlementCheck(purchaseId);
+        if (data && data.configured === false) {
+            if (statusEl) statusEl.textContent = '⚠️ Settlement check not configured on server.';
+        } else if (data && data.markedPaid > 0) {
+            if (statusEl) statusEl.textContent = '✅ Confirmed by Paystack.';
+        } else if (data && data.flagged > 0) {
+            if (statusEl) statusEl.textContent = '⚠️ No transfer found — review.';
+        } else if (data && data.success === false) {
+            if (statusEl) statusEl.textContent = '❌ ' + (data.message || 'Check failed.');
+        } else {
+            if (statusEl) statusEl.textContent = '⏳ Still settling — no confirmed transfer yet.';
+        }
+        await loadSettlements();
+    }
+
+    async function loadSettlements() {
+        const container = document.getElementById('settlementsContainer');
+        if (!container) return;
+        const badge = document.getElementById('settlementsBadge');
+        container.innerHTML = '<div class="loading-state"><div class="spinner"></div><p>Loading settlements...</p></div>';
+
+        try {
+            const snapshot = await getDocs(query(
+                collection(db, "purchases"),
+                where("settlementStatus", "in", ["pending", "attention"])
+            ));
+
+            const items = [];
+            snapshot.forEach(ds => {
+                const d = ds.data() || {};
+                if (d.settlementStatus === 'paid') return;
+                if (d.status !== 'completed' || d.verified !== true) return;
+                if (d.itemType === 'lyric' || d.platform === 'lyrics' || d.lyricTitle) return;
+                items.push({
+                    id: ds.id,
+                    bookTitle: d.bookTitle || 'Unknown Book',
+                    authorId: d.authorId || '',
+                    amount: d.amount || 0,
+                    settlementDate: d.settlementDate ? new Date(d.settlementDate) : null,
+                    settlementStatus: d.settlementStatus || 'pending',
+                    transactionRef: d.transactionRef || '',
+                    attentionReason: d.attentionReason || ''
+                });
+            });
+
+            items.sort((a, b) => (b.settlementDate || 0) - (a.settlementDate || 0));
+
+            const authorIds = [...new Set(items.map(i => i.authorId).filter(Boolean))];
+            const names = {};
+            await Promise.all(authorIds.map(async (uid) => {
+                try {
+                    const u = await getDoc(doc(db, "users", uid));
+                    if (u.exists()) {
+                        const ud = u.data();
+                        names[uid] = ud.authorName || ud.username || ud.displayName || uid.slice(0, 8);
+                    } else {
+                        names[uid] = uid.slice(0, 8);
+                    }
+                } catch (err) {
+                    names[uid] = uid.slice(0, 8);
+                }
+            }));
+
+            const attention = items.filter(i => i.settlementStatus === 'attention');
+            badge.textContent = attention.length;
+            document.getElementById('sAttn').textContent = attention.length;
+            document.getElementById('sPending').textContent = items.length;
+            document.getElementById('sPaid').textContent = '-';
+
+            if (items.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-hand-holding-usd"></i>
+                        <h3>All Settlements Confirmed</h3>
+                        <p>No sales awaiting Paystack settlement right now.</p>
+                    </div>
+                    <div style="text-align:center; margin-top:1rem;">
+                        <button class="btn" onclick="runFullSettlementCheck()"><i class="fas fa-sync-alt"></i> Run Paystack Check Now</button>
+                    </div>`;
+                return;
+            }
+
+            let html = '';
+            items.forEach(i => {
+                const chip = i.settlementStatus === 'attention'
+                    ? '<span class="settle-chip" style="background:#fdeaea;color:#c62828;">Attention</span>'
+                    : '<span class="settle-chip" style="background:#fff8e6;color:#a8640b;">Settling</span>';
+                const date = i.settlementDate ? i.settlementDate.toDateString().slice(4) : '—';
+                const reason = i.attentionReason === 'no-paystack-transfer-found'
+                    ? 'No matching transfer found on Paystack.'
+                    : (i.attentionReason || '');
+                html += `
+                    <div class="settle-row" data-settle-id="${i.id}">
+                        <div class="settle-main">
+                            <div class="settle-title">${i.bookTitle}</div>
+                            <div class="settle-sub">${names[i.authorId] || 'Unknown author'} · charge ${i.transactionRef || '—'} · T+1 ${date}</div>
+                            ${reason ? `<div class="settle-sub" style="color:#c62828;">${reason}</div>` : ''}
+                        </div>
+                        <div class="settle-right">
+                            <div class="settle-amt">GHS ${i.amount.toFixed(2)}</div>
+                            ${chip}
+                            <span class="settle-status"></span>
+                            <button class="btn-reset" style="padding:0.35rem 0.9rem; background:#b76e4b; color:white; border:none; border-radius:30px; cursor:pointer; font-weight:600; font-size:0.75rem;" onclick="rescanSettlement('${i.id}')">
+                                <i class="fas fa-sync-alt"></i> Rescan
+                            </button>
+                            <button class="btn-reset" style="padding:0.35rem 0.9rem; background:#2d7d46; color:white; border:none; border-radius:30px; cursor:pointer; font-weight:600; font-size:0.75rem;" onclick="confirmSettlement('${i.id}')">
+                                <i class="fas fa-check-circle"></i> Confirm Paid
+                            </button>
+                        </div>
+                    </div>`;
+            });
+
+            container.innerHTML = html + `
+                <div style="text-align:center; margin-top:1rem;">
+                    <button class="btn" onclick="runFullSettlementCheck()"><i class="fas fa-sync-alt"></i> Run Paystack Check Now</button>
+                </div>`;
+        } catch (err) {
+            container.innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><h3>Failed to load settlements</h3><p>${(err.message || 'Unknown error').replace(/</g, '&lt;')}</p></div>`;
+        }
+    }
+
+    async function runFullSettlementCheck() {
+        const container = document.getElementById('settlementsContainer');
+        if (!container) return;
+        container.innerHTML += '<div class="settle-status" style="display:block;text-align:center;padding:0.5rem;">Running Paystack settlement check…</div>';
+        const data = await runSettlementCheck();
+        if (data && data.configured === false) {
+            alert('⚠️ Settlement check is not configured on the server (missing PAYSTACK_SECRET_KEY or service account).');
+        } else if (data && data.success === false) {
+            alert('❌ ' + (data.message || 'Settlement check failed.'));
+        } else {
+            await loadSettlements();
+        }
     }
 
     // ========== TAB SWITCHING ==========
@@ -2782,6 +3186,9 @@ ${msg.message || msg.content || ''}
             }
             if (tabName === 'messages') {
                 loadMessages();
+            }
+            if (tabName === 'settlements') {
+                loadSettlements();
             }
         });
     });
@@ -2816,6 +3223,7 @@ ${msg.message || msg.content || ''}
                 await loadAllBooks();
                 await loadManagementTable();
                 await loadMessages();
+                await loadSettlements();
             } else {
                 accessDenied.style.display = 'block';
             }
@@ -2838,6 +3246,6 @@ ${msg.message || msg.content || ''}
     console.log('💬 Messages: View, copy, reset, delete messages sent to authors');
 </script>
 
-<script src="https://volantpoetry.vercel.app/shared/return-url-handler.js"></script>
+<script src="../shared/return-url-handler.js"></script>
 </body>
 </html>

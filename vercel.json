@@ -1,0 +1,31 @@
+{
+  "functions": {
+    "api/*.js": {
+      "memory": 1024,
+      "maxDuration": 10
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/$1"
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/auto-release-books",
+      "schedule": "0 3 * * *"
+    },
+    {
+      "path": "/api/verify-settlements",
+      "schedule": "0 5 * * *"
+    },
+    {
+      "path": "/api/cleanup-notifications",
+      "schedule": "0 2 * * *"
+    }
+  ],
+  "env": {
+    "PAYSTACK_SECRET_KEY": "@paystack_secret_key"
+  }
+}

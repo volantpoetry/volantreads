@@ -4,6 +4,29 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Volant Reads · Book Details</title>
+
+   <script>
+    // Simple console blocker - production only
+    (function() {
+        if (window.location.hostname.includes('localhost') || 
+            window.location.hostname.includes('127.0.0.1')) {
+            return; // Allow in development
+        }
+        
+        // Block all console methods
+        var methods = ['log', 'info', 'warn', 'error', 'debug', 'trace', 'table', 'group', 'groupEnd', 'dir'];
+        methods.forEach(function(m) {
+            console[m] = function() {};
+            try {
+                Object.defineProperty(console, m, { configurable: false, writable: false });
+            } catch(e) {}
+        });
+        
+        window.onerror = function() { return true; };
+        window.onunhandledrejection = function() { return true; };
+    })();
+</script>
+
   <!-- Paystack SDK -->
   <script src="https://js.paystack.co/v1/inline.js"></script>
   
@@ -177,6 +200,63 @@ header {
       background: #fee;
       color: #b33;
     }
+    .user-wrap { position: relative; display: inline-flex; }
+    .account-menu {
+      position: absolute;
+      right: 0;
+      top: calc(100% + 10px);
+      width: 250px;
+      background: #fff;
+      border: 1px solid var(--border-light, #ede7df);
+      border-radius: 14px;
+      box-shadow: 0 16px 34px rgba(0,0,0,0.16);
+      padding: 0.55rem 0.4rem;
+      z-index: 400;
+      display: none;
+      flex-direction: column;
+    }
+    .account-menu.open { display: flex; }
+    .account-menu hr { border: none; border-top: 1px solid var(--border-light, #ede7df); margin: 0.4rem 0; }
+    .acct-head { display: flex; align-items: center; gap: 0.7rem; padding: 0.25rem 0.5rem; }
+    .acct-pic {
+      width: 42px;
+      height: 42px;
+      flex: 0 0 42px;
+      border-radius: 50%;
+      background: #f3e9dd;
+      color: var(--secondary, #b76e4b);
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      font-size: 0.9rem;
+      overflow: hidden;
+      background-size: cover;
+      background-position: center;
+    }
+    .acct-pic img { width: 100%; height: 100%; object-fit: cover; }
+    .acct-pic span { line-height: 1; }
+    .acct-id { min-width: 0; }
+    .acct-name { font-weight: 700; font-size: 0.9rem; color: var(--text-dark, #2d2a24); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .acct-email { font-size: 0.75rem; color: var(--text-light, #8a7b6a); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .acct-item {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.55rem 0.7rem;
+      border-radius: 10px;
+      font-size: 0.88rem;
+      color: var(--text-dark, #2d2a24);
+      background: none;
+      border: none;
+      text-align: left;
+      width: 100%;
+      cursor: pointer;
+      transition: background 0.13s ease, color 0.13s ease;
+      text-decoration: none;
+    }
+    .acct-item i { color: var(--secondary, #b76e4b); width: 1.15rem; text-align: center; }
+    .acct-item:hover { background: #f6efe6; color: #9e5a38; }
+    .acct-foot { font-size: 0.72rem; color: var(--text-light, #8a7b6a); text-align: center; padding: 0.4rem 0 0.1rem; }
 
     .btn-cart-header {
       position: relative;
@@ -349,6 +429,7 @@ header {
     .book-details .book-info .author {
       font-size: 1.2rem;
       color: var(--text-muted);
+      font-weight: 600;
       display: flex;
       align-items: center;
       gap: 6px;
@@ -895,6 +976,40 @@ header {
     }
     .purchase-status.limit-reached i {
       font-size: 1.2rem;
+    }
+    .purchase-status.preorder {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #fff3e0;
+      color: #8a5a2b;
+      border: 1px dashed #b76e4b;
+    }
+    .purchase-status.preorder i {
+      font-size: 1.2rem;
+      color: #b76e4b;
+    }
+    .preorder-countdown {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #fff3e0;
+      color: #8a5a2b;
+      border: 1px dashed #b76e4b;
+      border-radius: 10px;
+      padding: 10px 14px;
+      margin-top: 10px;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+    .preorder-countdown i {
+      color: #b76e4b;
+    }
+    .verified-badge {
+      color: #1976d2;
+      font-size: 0.85em;
+      margin-left: 3px;
+      vertical-align: middle;
     }
 
     .book-details .book-body {
@@ -2293,7 +2408,8 @@ header {
     .nav-right .btn-submit,
     .nav-right .btn-signin { order: 2 !important; }
     .nav-right .btn-wishlist-header { order: 3 !important; }
-    .nav-right .profile-wrap { order: 4 !important; }
+    .nav-right .profile-wrap,
+    .nav-right .user-wrap { order: 4 !important; }
   
   /* ===== FIX CART OVERLAY MOBILE SCROLLING (DETAILS PAGE) ===== */
 .cart-overlay {
@@ -3593,7 +3709,67 @@ header .logo-header {
 .cart-total .total-conversion-info {
     display: none !important;
 }
-                    </style>
+
+/* ===== READING LIST (LOCAL WISHLIST) & TOP RATING (VOLANT READS) ===== */
+.book-top-rating {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    margin-top: 0.2rem;
+    flex-wrap: wrap;
+}
+.book-top-rating i {
+    margin: 0 1px;
+}
+.btn-reading-list {
+    background: transparent;
+    color: var(--text-dark);
+    border: 2px solid var(--border-light);
+    padding: 0.9rem 1.5rem;
+    border-radius: 40px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+}
+.btn-reading-list:hover {
+    border-color: var(--secondary);
+    background: #fbf7f3;
+    transform: translateY(-2px);
+}
+.btn-reading-list i {
+    font-size: 1.1rem;
+    color: var(--wishlist-grey, #bdc3c7);
+    transition: var(--transition);
+}
+.btn-reading-list.active {
+    border-color: var(--secondary);
+    background: #f8efe8;
+    color: var(--secondary);
+}
+.btn-reading-list.active i {
+    color: var(--secondary);
+}
+.review-already {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #eef7ee;
+    color: #2d7d46;
+    border: 1px dashed #2d7d46;
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-bottom: 1.2rem;
+    font-size: 0.95rem;
+}
+.review-already i {
+    color: #2d7d46;
+}
+</style>
 
 <script>
 // Helper function for login redirect
@@ -3757,6 +3933,7 @@ function goToLogin() {
               <span style="margin-left:8px;font-size:0.65rem;color:#999;">(Updated hourly)</span>
             </div>
             <div class="badges" id="bookBadges"></div>
+            <div class="book-top-rating" id="bookTopRating"></div>
           </div>
 
           <div class="book-sidebar">
@@ -3766,6 +3943,7 @@ function goToLogin() {
               <div class="sidebar-item"><span class="label">Language</span><span class="value" id="sidebarLanguage">English</span></div>
               <div class="sidebar-item"><span class="label">Publishing Date</span><span class="value" id="sidebarPublished">2024</span></div>
               <div class="sidebar-item"><span class="label">Pages</span><span class="value" id="sidebarPages">N/A</span></div>
+              <div class="sidebar-item"><span class="label">File Type</span><span class="value" id="sidebarFileType">PDF</span></div>
               <!-- DOWNLOAD LIMIT - HIGHLIGHTED -->
               <div class="sidebar-item download-limit" id="sidebarDownloadLimit">
                 <span class="label"><i class="fas fa-download"></i> Download Limit</span>
@@ -3789,6 +3967,9 @@ function goToLogin() {
                 <button class="btn-wishlist" id="wishlistBtn">
                   <i class="fas fa-heart"></i> Add to Wishlist
                 </button>
+                <button class="btn-reading-list" id="readingListBtn" title="Add to reading list">
+                  <i class="fas fa-bookmark"></i> Save for later
+                </button>
                 
                 <div id="paymentStatusContainer" style="width:100%;">
                   <div class="login-prompt" id="loginPrompt">
@@ -3806,6 +3987,10 @@ function goToLogin() {
                   <div class="purchase-status owned" id="purchaseStatus" style="display:none;">
                     <i class="fas fa-check-circle"></i>
                     <span id="purchaseStatusText">✅ You own this book! Download anytime.</span>
+                  </div>
+
+                  <div class="preorder-countdown" id="preorderCountdown" style="display:none;">
+                    <i class="fas fa-hourglass-half"></i> <span id="preorderCountdownText"></span>
                   </div>
 
                   <button class="btn-pay" id="payBtn" style="display:none;">
@@ -3862,6 +4047,14 @@ function goToLogin() {
           </div>
         </div>
 
+        <div class="section" id="seriesSection" style="display:none;">
+          <div class="section-title"><i class="fas fa-layer-group"></i> Part of <span class="series-name-title" id="seriesNameTitle">the series</span></div>
+          <div class="series-books-grid" id="seriesBooksGrid"></div>
+          <button class="btn-cart" id="buySeriesBtn" style="display:none;margin-top:14px;width:100%;justify-content:center;">
+            <i class="fas fa-cart-plus"></i> Buy the whole series <span id="buySeriesLabel"></span>
+          </button>
+        </div>
+
         <div class="section" id="authorBioSection">
           <div class="section-title"><i class="fas fa-user-edit"></i> About the Author</div>
           <div class="author-bio" id="bookAuthorBio">No author bio available.</div>
@@ -3912,6 +4105,11 @@ function goToLogin() {
           <!-- Login to review -->
           <div class="login-to-review" id="loginToReview" style="display:none;">
             <p>🔐 <a href="javascript:void(0)" onclick="goToLogin()" class="btn-login-review">Sign in</a> to leave a review.</p>
+          </div>
+
+          <!-- Already reviewed -->
+          <div class="review-already" id="reviewAlready" style="display:none;">
+            <i class="fas fa-check-circle"></i> You've already reviewed this book. Thanks for sharing your thoughts!
           </div>
 
           <!-- Reviews List -->
@@ -4059,6 +4257,9 @@ function goToLogin() {
     const loginToReview = document.getElementById('loginToReview');
     const reviewForm = document.getElementById('reviewForm');
     const reviewFormContainer = document.getElementById('reviewFormContainer');
+    const reviewAlready = document.getElementById('reviewAlready');
+    const readingListBtn = document.getElementById('readingListBtn');
+    const bookTopRating = document.getElementById('bookTopRating');
 
     let selectedRating = 0;
     let currentUser = null;
@@ -4072,6 +4273,34 @@ function goToLogin() {
     let isCartCheckout = false;
     let userDownloadCount = 0;
     let downloadLimit = 5;
+
+    // ===== READING LIST (LOCAL WISHLIST) =====
+    const READING_LIST_KEY = 'volant_reads_wishlist';
+    function getReadingList() {
+      try { const v = JSON.parse(localStorage.getItem(READING_LIST_KEY)); return Array.isArray(v) ? v : []; } catch (e) { return []; }
+    }
+    function saveReadingList(ids) {
+      try { localStorage.setItem(READING_LIST_KEY, JSON.stringify(ids)); } catch (e) {}
+    }
+    function isInReadingList(bookId) {
+      return getReadingList().includes(bookId);
+    }
+    function toggleReadingList(bookId) {
+      const ids = getReadingList();
+      const idx = ids.indexOf(bookId);
+      if (idx > -1) { ids.splice(idx, 1); } else { ids.push(bookId); }
+      saveReadingList(ids);
+      return idx === -1;
+    }
+    function updateReadingListButton() {
+      if (!readingListBtn || !currentBook) return;
+      const inList = isInReadingList(currentBook.id);
+      readingListBtn.classList.toggle('active', inList);
+      readingListBtn.setAttribute('title', inList ? 'Remove from reading list' : 'Add to reading list');
+      readingListBtn.innerHTML = inList
+        ? '<i class="fas fa-bookmark"></i> In your reading list'
+        : '<i class="fas fa-bookmark"></i> Save for later';
+    }
 
     // ---- Offline cart (localStorage) ----
     const CART_KEY = 'volant_cart_items';
@@ -4507,7 +4736,7 @@ function goToLogin() {
       addAllWishlistToCartBtn.disabled = false;
 
       document.querySelectorAll('.btn-move-cart').forEach(btn => {
-        btn.addEventListener('click', function(e) {
+        btn.addEventListener('click', async function(e) {
           e.stopPropagation();
           const bookId = this.dataset.bookId;
           const title = this.dataset.title;
@@ -4518,7 +4747,19 @@ function goToLogin() {
           const cartItems = getCartItems();
           const existing = cartItems.find(item => item.id === bookId);
           if (existing) { showToast(`📚 "${title}" is already in your cart.`, 'info'); return; }
-          cartItems.push({ id: bookId, title: title || 'Untitled', author: author || 'Anonymous', price: price, currency: currency, image: image });
+          let effectivePrice = price;
+          let cartPreorder = false;
+          let cartReleaseDate = null;
+          try {
+            const bkSnap = await getDoc(doc(db, 'books', bookId));
+            if (bkSnap.exists()) {
+              const bd = bkSnap.data();
+              effectivePrice = effectiveBookPrice(bd);
+              cartPreorder = bd.preorder === true;
+              cartReleaseDate = bd.preorderReleaseDate || null;
+            }
+          } catch (err) { /* keep list price */ }
+          cartItems.push({ id: bookId, title: title || 'Untitled', author: author || 'Anonymous', price: effectivePrice, currency: currency, image: image, preorder: cartPreorder, preorderReleaseDate: cartReleaseDate });
           saveCartItems(cartItems);
           cartCount = cartItems.length;
           updateCartBadge();
@@ -4588,10 +4829,14 @@ function goToLogin() {
         const displayName = user.displayName || user.email || 'User';
         const initial = displayName.charAt(0).toUpperCase();
         let avatarHTML = `<span>${initial}</span>`;
+        let storedName = displayName;
         try {
           const userDoc = await getDoc(doc(db, "users", user.uid));
           if (userDoc.exists()) {
             const userData = userDoc.data();
+            if (userData.username) storedName = userData.username;
+            else if (userData.authorName) storedName = userData.authorName;
+            else if (userData.displayName) storedName = userData.displayName;
             if (userData.photoURL) avatarHTML = `<img src="${userData.photoURL}" alt="Profile" />`;
             else if (userData.cachedAvatarURL) avatarHTML = `<img src="${userData.cachedAvatarURL}" alt="Profile" />`;
             else if (userData.username) {
@@ -4602,13 +4847,43 @@ function goToLogin() {
             }
           }
         } catch (err) {}
+        let hasAuthorMaterial = false;
+        try {
+          const ud = await getDoc(doc(db, "users", user.uid));
+          if (ud.exists()) {
+            const uData = ud.data();
+            if ((uData.authorName && uData.authorName.trim()) || (uData.authorBio && uData.authorBio.trim())) {
+              hasAuthorMaterial = true;
+            }
+          }
+          if (!hasAuthorMaterial) {
+            const authorSnap = await getDocs(query(collection(db, "books"), where("submittedBy", "==", user.uid), limit(1)));
+            if (!authorSnap.empty) hasAuthorMaterial = true;
+          }
+        } catch (err) {}
         if (avatarHTML === `<span>${initial}</span>` && user.photoURL) avatarHTML = `<img src="${user.photoURL}" alt="Profile" />`;
 
         navRight.innerHTML = `
-          <a href="dashboard.html" class="profile-wrap" style="text-decoration:none;">
-            <div class="profile-avatar">${avatarHTML}</div>
-            <button class="btn-signout" id="signOutBtn" title="Sign out" style="pointer-events:auto;"><i class="fas fa-sign-out-alt"></i></button>
-          </a>
+          <div class="user-wrap">
+            <button type="button" id="signOutBtn" title="Account" aria-label="Account" style="background:none;border:none;padding:0;cursor:pointer;display:flex;align-items:center;gap:0.3rem;">
+              <span class="profile-avatar" style="pointer-events:none;">${avatarHTML}</span>
+              <span style="pointer-events:none;color:var(--text-light,#8a7b6a);font-size:0.7rem;"><i class="fas fa-chevron-down"></i></span>
+            </button>
+            <div class="account-menu" id="accountMenu">
+              <div class="acct-head">
+                <div class="acct-pic">${avatarHTML}</div>
+                <div class="acct-id">
+                  <div class="acct-name" id="navAcctName">${storedName}</div>
+                  <div class="acct-email" id="navAcctEmail">${user.email || ''}</div>
+                </div>
+              </div>
+              <hr>
+              <a class="acct-item" href="dashboard.html#library" style="text-decoration:none;"><i class="fas fa-book-open"></i> My Library</a>
+              <a class="acct-item" href="dashboard.html" id="navAcctDashboard" style="display:none;text-decoration:none;"><i class="fas fa-gauge-high"></i> My Dashboard</a>
+              <button class="acct-item" id="navAcctSignOut" type="button"><i class="fas fa-sign-out-alt"></i> Sign out</button>
+              <small class="acct-foot">Signed in on Volant Reads</small>
+            </div>
+          </div>
           <button class="btn-wishlist-header" id="wishlistHeaderBtn">
             <i class="fas fa-heart"></i> <span class="wishlist-text">Wishlist</span>
             <span class="wishlist-count" id="wishlistCountBadge">${wishlistCount}</span>
@@ -4618,8 +4893,21 @@ function goToLogin() {
             <span class="cart-count" id="cartCountBadge">${cartCount}</span>
           </button>
         `;
-        document.getElementById('signOutBtn')?.addEventListener('click', async () => {
+        document.getElementById('signOutBtn')?.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const menu = document.getElementById('accountMenu');
+          if (menu) menu.classList.toggle('open');
+        });
+        const dashLink = document.getElementById('navAcctDashboard');
+        if (dashLink) dashLink.style.display = hasAuthorMaterial ? 'block' : 'none';
+        document.getElementById('navAcctSignOut')?.addEventListener('click', async () => {
           try { await signOut(auth); showToast('👋 Signed out.', 'info'); window.location.reload(); } catch (e) { showToast('Error signing out.', 'error'); }
+        });
+        const acctMenuEl = document.getElementById('accountMenu');
+        document.addEventListener('click', (e) => {
+          if (acctMenuEl && acctMenuEl.classList.contains('open') && !e.target.closest('#accountMenu') && !e.target.closest('#signOutBtn')) {
+            acctMenuEl.classList.remove('open');
+          }
         });
         document.getElementById('cartHeaderBtn')?.addEventListener('click', openCart);
         document.getElementById('wishlistHeaderBtn')?.addEventListener('click', openWishlist);
@@ -4653,6 +4941,7 @@ function goToLogin() {
         await updateUIForBook();
         // Show/hide review form based on auth
         updateReviewFormVisibility();
+        updateReadingListButton();
       }
     });
 
@@ -4787,7 +5076,17 @@ function goToLogin() {
           const remaining = await getRemainingDownloads(currentUser.uid, currentBook.id, limit);
           const canDownload = await canUserDownload(currentUser.uid, currentBook.id, limit);
           
-          if (remaining === 'Unlimited') {
+          if (isPreorderLocked(currentBook)) {
+            purchaseStatusText.textContent = `🥳 Pre-order confirmed! Your copy unlocks on ${preorderReleaseDateLabel(currentBook)}.`;
+            purchaseStatus.className = 'purchase-status preorder';
+            purchaseStatus.style.display = 'flex';
+            sidebarDownloadLimit.classList.remove('limit-reached');
+            downloadReminder.style.display = 'none';
+            repurchaseBtn.style.display = 'none';
+            downloadBtn.style.display = 'none';
+            payBtn.style.display = 'none';
+            readOnlineBtn.style.display = 'none';
+          } else if (remaining === 'Unlimited') {
             purchaseStatusText.textContent = '✅ You own this book! Unlimited downloads.';
             purchaseStatus.className = 'purchase-status owned';
             sidebarDownloadLimit.classList.remove('limit-reached');
@@ -5057,6 +5356,15 @@ function goToLogin() {
       }
     }
 
+    // Paystack auto-settles subaccount balances to the author's bank/MoMo
+    // on the next working day (T+1). settlementDate is when we count it as paid.
+    function nextSettlementDate(from = new Date()) {
+      const d = new Date(from);
+      d.setDate(d.getDate() + 1);
+      while (d.getDay() === 0 || d.getDay() === 6) d.setDate(d.getDate() + 1);
+      return d.toISOString();
+    }
+
     async function recordPurchase(userId, bookId, transactionRef, paymentData = {}) {
       try {
         console.log('📝 Recording purchase:', {
@@ -5084,7 +5392,14 @@ function goToLogin() {
             lastDownloadedAt: null,
             purchaseCount: increment(1),
             authorId: paymentData.authorId || null,
-            bookTitle: paymentData.bookTitle || null
+            bookTitle: paymentData.bookTitle || null,
+            preorder: paymentData.preorder === true,
+            preorderReleaseDate: paymentData.preorderReleaseDate || null,
+            released: paymentData.released !== false,
+            releasedAt: paymentData.releasedAt || null,
+            authorSettled: true,
+            settlementStatus: 'pending',
+            settlementDate: nextSettlementDate()
           });
         } else {
           await setDoc(purchaseRef, {
@@ -5103,7 +5418,14 @@ function goToLogin() {
             lastDownloadedAt: null,
             purchaseCount: 1,
             authorId: paymentData.authorId || null,
-            bookTitle: paymentData.bookTitle || null
+            bookTitle: paymentData.bookTitle || null,
+            preorder: paymentData.preorder === true,
+            preorderReleaseDate: paymentData.preorderReleaseDate || null,
+            released: paymentData.released !== false,
+            releasedAt: paymentData.releasedAt || null,
+            authorSettled: true,
+            settlementStatus: 'pending',
+            settlementDate: nextSettlementDate()
           });
         }
         console.log('✅ Purchase recorded successfully');
@@ -5269,7 +5591,7 @@ function goToLogin() {
           },
           body: JSON.stringify({
             reference: response.reference,
-            amount: currentBook.pricing?.amount || 0,
+            amount: effectiveBookPrice(currentBook),
             email: currentUser.email,
             bookId: currentBook.id,
             authorId: currentBook.submittedBy
@@ -5295,12 +5617,15 @@ function goToLogin() {
           currentBook.id, 
           transactionRef,
           {
-            amount: response.amount || currentBook.pricing?.amount,
+            amount: response.amount || effectiveBookPrice(currentBook),
             currency: response.currency || currentBook.pricing?.currency || 'GHS',
             customerEmail: response.customer?.email || currentUser.email,
             verifiedBy: 'serverless-api',
             authorId: currentBook.submittedBy,
-            bookTitle: currentBook.title || 'Unknown'
+            bookTitle: currentBook.title || 'Unknown',
+            preorder: currentBook.preorder === true && currentBook.released !== true,
+            preorderReleaseDate: currentBook.preorderReleaseDate || null,
+            released: currentBook.released === true
           }
         );
         
@@ -5308,6 +5633,34 @@ function goToLogin() {
           hasPaidForBook = true;
           isProcessingPayment = false;
           paymentProcessing.classList.remove('active');
+          
+          if (isPreorderLocked(currentBook)) {
+            payBtn.style.display = 'none';
+            repurchaseBtn.style.display = 'none';
+            downloadBtn.style.display = 'none';
+            readOnlineBtn.style.display = 'none';
+            purchaseStatus.style.display = 'flex';
+            purchaseStatus.className = 'purchase-status preorder';
+            purchaseStatusText.textContent = `🥳 Pre-order confirmed! Your copy unlocks on ${preorderReleaseDateLabel(currentBook)}.`;
+            downloadReminder.style.display = 'none';
+            loginPrompt.style.display = 'none';
+            sidebarDownloadLimit.classList.remove('limit-reached');
+            if (currentBook.submittedBy) {
+              try {
+                await addDoc(collection(db, 'notifications'), {
+                  userId: currentBook.submittedBy,
+                  forUser: currentBook.submittedBy,
+                  platform: 'reads',
+                  type: 'preorder_sale',
+                  message: `🎉 New pre-order sale! ${currentUser.email || 'A reader'} pre-ordered "${currentBook.title}"${currentBook.preorderReleaseDate ? ' — releases on ' + preorderReleaseDateLabel(currentBook) : ''}.`,
+                  timestamp: serverTimestamp(),
+                  read: false
+                });
+              } catch (e) { console.warn('Could not notify author of pre-order sale:', e); }
+            }
+            showToast(`🎉 Pre-order confirmed! "${currentBook.title}" is yours — available on ${preorderReleaseDateLabel(currentBook)}.`, 'success');
+            return;
+          }
           
           // ===== INSTANT UI UPDATE - NO PAGE REFRESH =====
           paymentSuccess.classList.add('active');
@@ -5684,7 +6037,7 @@ function goToLogin() {
             },
             body: JSON.stringify({
               reference: response.reference,
-              amount: bookData.pricing?.amount || 0,
+              amount: effectiveBookPrice(bookData),
               email: currentUser.email,
               bookId: item.id,
               authorId: bookData.submittedBy
@@ -5722,6 +6075,16 @@ function goToLogin() {
         try {
           const authorId = authorIds[item.id] || null;
           const bookTitle = bookTitles[item.id] || item.title || 'Unknown';
+          let poPreorder = item.preorder === true && item.released !== true;
+          let poReleaseDate = item.preorderReleaseDate || null;
+          try {
+            const bkSnap = await getDoc(doc(db, 'books', item.id));
+            if (bkSnap.exists()) {
+              const bd = bkSnap.data();
+              poPreorder = bd.preorder === true && bd.released !== true;
+              poReleaseDate = bd.preorderReleaseDate || null;
+            }
+          } catch (e) { /* use cart values */ }
           
           const success = await recordPurchase(
             currentUser.uid, 
@@ -5733,7 +6096,10 @@ function goToLogin() {
               customerEmail: response.customer?.email || currentUser.email,
               verifiedBy: 'serverless-api',
               authorId: authorId,
-              bookTitle: bookTitle
+              bookTitle: bookTitle,
+              preorder: poPreorder,
+              preorderReleaseDate: poReleaseDate,
+              released: false
             }
           );
           if (success) {
@@ -5805,9 +6171,11 @@ function goToLogin() {
           break;
         case 'not_owned':
           payBtn.style.display = 'inline-flex';
-          const price = currentBook?.pricing?.amount || 0;
+          const price = effectiveBookPrice(currentBook);
           const currency = currentBook?.pricing?.currency || 'GHS';
-          payBtnText.textContent = `Pay ${currency} ${price.toFixed(2)} with Paystack`;
+          payBtnText.textContent = (currentBook?.preorder === true && currentBook?.released !== true)
+            ? `Pre-order ${currency} ${price.toFixed(2)} with Paystack`
+            : `Pay ${currency} ${price.toFixed(2)} with Paystack`;
           break;
         case 'not_signed_in':
           loginPrompt.style.display = 'flex';
@@ -5818,14 +6186,26 @@ function goToLogin() {
     }
 
     async function updatePaymentUIState() {
-      if (!currentUser) { updatePaymentUI('not_signed_in'); return; }
+      if (!currentUser) { refreshPreorderCountdown(); updatePaymentUI('not_signed_in'); return; }
       if (!currentBook) { return; }
+      refreshPreorderCountdown();
       const amount = currentBook.pricing?.amount || 0;
       if (amount <= 0) { hasPaidForBook = true; updatePaymentUI('owned'); return; }
       const purchased = await checkPurchaseStatus(currentUser.uid, currentBook.id);
       hasPaidForBook = purchased;
       
       if (purchased) {
+        if (isPreorderLocked(currentBook)) {
+          purchaseStatusText.textContent = `🥳 Pre-order confirmed! Your copy unlocks on ${preorderReleaseDateLabel(currentBook)}.`;
+          purchaseStatus.className = 'purchase-status preorder';
+          purchaseStatus.style.display = 'flex';
+          downloadReminder.style.display = 'none';
+          repurchaseBtn.style.display = 'none';
+          downloadBtn.style.display = 'none';
+          payBtn.style.display = 'none';
+          readOnlineBtn.style.display = 'none';
+          return;
+        }
         const canDownload = await canUserDownload(currentUser.uid, currentBook.id, downloadLimit);
         if (canDownload) {
           updatePaymentUI('owned');
@@ -5843,10 +6223,70 @@ function goToLogin() {
       }
     }
 
+    // ===== PRE-ORDER HELPERS =====
+    function effectiveBookPrice(book) {
+      if (!book) return 0;
+      if (book.preorder === true && book.released !== true && Number(book.preorderPrice) > 0) return Number(book.preorderPrice);
+      return book.pricing?.amount || 0;
+    }
+    function isPreorderLocked(book) {
+      if (!book || book.preorder !== true) return false;
+      if (book.released === true) return false;
+      const d = book.preorderReleaseDate;
+      if (d) {
+        const today = new Date(); today.setHours(0, 0, 0, 0);
+        if (new Date(String(d) + 'T00:00:00') <= today) return false;
+      }
+      return true;
+    }
+    function preorderReleaseDateLabel(book) {
+      const d = book && book.preorderReleaseDate;
+      if (!d) return 'the release date';
+      const parts = String(d).split('-');
+      if (parts.length === 3) {
+        const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        return `${parts[2]} ${months[Number(parts[1]) - 1] || parts[1]} ${parts[0]}`;
+      }
+      return d;
+    }
+    function preorderReleaseTime(book) {
+      if (!book || !book.preorderReleaseDate) return 0;
+      const d = String(book.preorderReleaseDate);
+      const base = /^\d{4}-\d{2}-\d{2}$/.test(d) ? d + 'T00:00:00' : d;
+      const t = new Date(base).getTime();
+      return Number.isFinite(t) ? t : 0;
+    }
+    function refreshPreorderCountdown() {
+      const box = document.getElementById('preorderCountdown');
+      const txt = document.getElementById('preorderCountdownText');
+      if (!box || !txt) return;
+      box.style.display = 'none';
+      if (!currentBook || currentBook.preorder !== true || currentBook.released === true) return;
+      const t = preorderReleaseTime(currentBook);
+      box.style.display = 'flex';
+      if (!t) { txt.textContent = `Releases ${preorderReleaseDateLabel(currentBook)}`; return; }
+      const write = () => {
+        const diff = t - Date.now();
+        if (diff <= 0) { txt.textContent = 'Now available! 🎉'; return; }
+        const days = Math.floor(diff / 86400000);
+        const hrs = Math.floor((diff % 86400000) / 3600000);
+        const mins = Math.floor((diff % 3600000) / 60000);
+        txt.textContent = days > 0 ? `Pre-order · releases in ${days}d ${hrs}h ${mins}m`
+          : hrs > 0 ? `Pre-order · releases in ${hrs}h ${mins}m`
+          : `Pre-order · releases in under an hour`;
+      };
+      write();
+      setInterval(write, 30000);
+    }
+
     // ===== DOWNLOAD BOOK =====
     async function downloadBook() {
       if (!currentUser) { showToast('❌ Please sign in to download.', 'error'); return; }
-      if (!currentBook || !currentBook.pdfUrl) { showToast('❌ PDF not available.', 'error'); return; }
+      if (!currentBook || !currentBook.pdfUrl) { showToast('❌ Book file not available.', 'error'); return; }
+      if (isPreorderLocked(currentBook)) {
+        showToast(`🔒 This book releases on ${preorderReleaseDateLabel(currentBook)}. Download unlocks automatically.`, 'error');
+        return;
+      }
 
       const amount = currentBook.pricing?.amount || 0;
       let hasPurchased = false;
@@ -5887,7 +6327,7 @@ function goToLogin() {
         const subtitlePart = currentBook.subtitle ? currentBook.subtitle.trim() : '';
         const authorPart = currentBook.authorName ? currentBook.authorName.trim() : 'Unknown';
         const baseName = subtitlePart ? `${titlePart}, ${subtitlePart} - ${authorPart}` : `${titlePart} - ${authorPart}`;
-        const fileName = baseName.replace(/[^a-z0-9 _\-,\.]/gi, '_').replace(/\s+/g, ' ').trim() + '.pdf';
+        const fileName = baseName.replace(/[^a-z0-9 _\-,\.]/gi, '_').replace(/\s+/g, ' ').trim() + '.' + ((String(currentBook.bookFormat || '').toLowerCase() === 'epub' || /\.epub(\?|#|$)/i.test(currentBook.pdfUrl || '')) ? 'epub' : 'pdf');
         const downloadUrl = URL.createObjectURL(blob);
         const anchor = document.createElement('a');
         anchor.href = downloadUrl;
@@ -5903,7 +6343,7 @@ function goToLogin() {
         showToast(`📄 Downloaded "${currentBook.title}"! (${remainingText})`, 'success');
       } catch (err) {
         console.error('Download error:', err);
-        showToast('⚠️ Unable to download PDF. Please try again.', 'error');
+        showToast('⚠️ Unable to download the book file. Please try again.', 'error');
       } finally {
         downloadBtn.disabled = false;
         downloadBtnText.textContent = 'Download';
@@ -5920,6 +6360,10 @@ function goToLogin() {
         showToast('❌ Book not loaded.', 'error');
         return;
       }
+      if (isPreorderLocked(currentBook)) {
+        showToast(`🔒 Read unlocks on ${preorderReleaseDateLabel(currentBook)}.`, 'error');
+        return;
+      }
       
       // Open the reader in a new tab
       const readerUrl = `reader.html?id=${currentBook.id}`;
@@ -5931,7 +6375,7 @@ function goToLogin() {
       if (!currentUser) { showToast('🔐 Please sign in to purchase.', 'error'); window.location.href = "universal-login.html?platform=reads&redirect=" + encodeURIComponent(window.location.pathname + window.location.search); return; }
       if (!currentBook) { showToast('❌ Book not loaded.', 'error'); return; }
       if (hasPaidForBook) { showToast('✅ You already own this book!', 'success'); return; }
-      const amount = currentBook.pricing?.amount || 0;
+      const amount = effectiveBookPrice(currentBook);
       if (amount <= 0) {
         showToast('📖 This book is free. Download it directly.', 'info');
         hasPaidForBook = true;
@@ -5948,7 +6392,7 @@ function goToLogin() {
     repurchaseBtn.addEventListener('click', function() {
       if (!currentUser) { showToast('🔐 Please sign in to purchase.', 'error'); window.location.href = "universal-login.html?platform=reads&redirect=" + encodeURIComponent(window.location.pathname + window.location.search); return; }
       if (!currentBook) { showToast('❌ Book not loaded.', 'error'); return; }
-      const amount = currentBook.pricing?.amount || 0;
+      const amount = effectiveBookPrice(currentBook);
       if (amount <= 0) {
         showToast('📖 This book is free. Download it directly.', 'info');
         downloadBook();
@@ -6047,6 +6491,10 @@ function goToLogin() {
         updatePreviewButton(book);
         // Update review form visibility
         updateReviewFormVisibility();
+        // Update reading list button
+        updateReadingListButton();
+        // Load series & bundle section (best-effort)
+        loadSeriesSection().catch(() => {});
       } catch (err) {
         loadingState.style.display = 'none'; notFound.style.display = 'block';
       }
@@ -6105,6 +6553,14 @@ function goToLogin() {
       bookTitle.textContent = book.title || 'Untitled';
       if (book.subtitle && book.subtitle.trim() !== '') { bookSubtitle.textContent = book.subtitle; bookSubtitle.style.display = 'block'; } else { bookSubtitle.style.display = 'none'; }
       bookAuthor.textContent = book.authorName || 'Anonymous';
+      bookAuthor.classList.add('author-link');
+      bookAuthor.style.cursor = 'pointer';
+      bookAuthor.style.color = 'var(--primary)';
+      bookAuthor.style.textDecoration = 'underline';
+      bookAuthor.onclick = function() {
+        const uid = book.submittedBy || '';
+        if (uid) { window.location.href = 'author.html?uid=' + encodeURIComponent(uid); }
+      };
       
       const publisherName = book.publisherName || '';
       const authorName = book.authorName || '';
@@ -6152,13 +6608,13 @@ function goToLogin() {
       const popularity = getPopularityBadge(totalDownloads);
       const displayText = getPublicDownloadDisplay(totalDownloads);
       bookBadges.innerHTML = '';
-      if (book.preorder === true || book.preorder === 'true') {
+      const isLockedPreorder = (book.preorder === true || book.preorder === 'true') && book.released !== true;
+      if (isLockedPreorder) {
         const badge = document.createElement('span');
         badge.className = 'badge preorder';
         badge.textContent = 'Pre-order';
         bookBadges.appendChild(badge);
-      }
-      if (book.status === 'approved') {
+      } else if (book.status === 'approved') {
         const badge = document.createElement('span');
         badge.className = 'badge approved';
         badge.textContent = '✓ Available';
@@ -6181,7 +6637,116 @@ function goToLogin() {
       sidebarLanguage.textContent = book.language || 'Not specified';
       sidebarPublished.textContent = book.publishDate || 'Not specified';
       sidebarPages.textContent = book.pageCount ? book.pageCount + ' pages' : 'Not specified';
+      const fileTypeEl = document.getElementById('sidebarFileType');
+      if (fileTypeEl) fileTypeEl.textContent = (String(book.bookFormat || '').toLowerCase() === 'epub' || /\.epub(\?|#|$)/i.test(book.pdfUrl || '')) ? 'EPUB' : 'PDF';
       if (book.authorBio) { bookAuthorBio.textContent = book.authorBio; authorBioSection.style.display = 'block'; } else { authorBioSection.style.display = 'none'; }
+    }
+
+    // ================================================================
+    // ===== SERIES & BUNDLE =====
+    // ================================================================
+    async function loadSeriesSection() {
+      try {
+        const seriesEl = document.getElementById('seriesSection');
+        const grid = document.getElementById('seriesBooksGrid');
+        const buyBtn = document.getElementById('buySeriesBtn');
+        const titleEl = document.getElementById('seriesNameTitle');
+        if (!currentBook || !currentBook.series) return;
+        const seriesName = String(currentBook.series).trim();
+        if (!seriesName) return;
+
+        const snap = await getDocs(query(collection(db, "books"), where("status", "==", "approved")));
+        const siblings = [];
+        snap.forEach(ds => {
+          const b = ds.data();
+          if (String(b.series || '').trim().toLowerCase() !== seriesName.toLowerCase()) return;
+          siblings.push({ id: ds.id, order: Number(b.seriesOrder) || 0, ...b });
+        });
+        if (siblings.length === 0) return;
+        siblings.sort((a, b) => (a.order - b.order) || (a.title || '').localeCompare(b.title || ''));
+
+        titleEl.textContent = seriesName;
+        grid.innerHTML = '';
+        siblings.forEach(b => {
+          const gridEl = document.createElement('div');
+          gridEl.className = 'series-book-card';
+          const currency = b.pricing?.currency || 'GHS';
+          const price = effectiveBookPrice(b);
+          gridEl.innerHTML = `
+            <div class="series-order">${b.order ? '#' + b.order : ''}</div>
+            <a href="details.html?id=${b.id}">
+              ${b.imageUrl ? `<img src="${b.imageUrl}" alt="${b.title || 'Book'}"/>` : `<div class="no-image"><i class="fas fa-book-open"></i></div>`}
+            </a>
+            <div class="series-title">${b.title || 'Untitled'}</div>
+            <div class="series-price">${currency} ${price.toFixed(2)}</div>
+          `;
+          grid.appendChild(gridEl);
+        });
+
+        seriesEl.style.display = 'block';
+
+        // Bundle pricing: 10% off the total of unowned unpurchased books
+        buyBtn.addEventListener('click', async () => {
+          if (!currentUser) { showToast('🔐 Please sign in to buy the series.', 'error'); return; }
+          buyBtn.disabled = true;
+          try {
+            const items = getCartItems();
+            const added = [];
+            let total = 0;
+            for (const b of siblings) {
+              if (b.id === currentBook.id) continue;
+              if (items.some(it => it.id === b.id)) continue;
+              const own = await checkPurchaseStatus(currentUser.uid, b.id);
+              if (own) continue;
+              const price = effectiveBookPrice(b);
+              total += price;
+              items.push({
+                id: b.id,
+                title: b.title || 'Untitled',
+                author: b.authorName || 'Anonymous',
+                price: price * 0.9,
+                currency: b.pricing?.currency || 'GHS',
+                image: b.imageUrl || '',
+                preorder: b.preorder === true,
+                preorderReleaseDate: b.preorderReleaseDate || null
+              });
+              added.push(b.title || b.id);
+            }
+            if (added.length === 0) { showToast('✅ You already own or have the whole series in your cart!', 'info'); return; }
+            saveCartItems(items);
+            cartCount = getCartItems().length;
+            updateCartBadge();
+            showToast(`🛒 Series bundle added: ${added.length} book(s) at 10% off — ${formatSeriesPrice(total)} in your cart!`, 'success');
+          } catch (err) {
+            console.warn('Series bundle failed:', err);
+            showToast('❌ Could not build the series bundle. Try again.', 'error');
+          } finally {
+            buyBtn.disabled = false;
+          }
+        });
+
+        const ownedCount = await countOwnedSeries(siblings);
+        if (ownedCount < siblings.length) {
+          buyBtn.style.display = 'inline-flex';
+          const missing = siblings.length - ownedCount;
+          document.getElementById('buySeriesLabel').textContent = `(${missing} book${missing > 1 ? 's' : ''} at 10% off)`;
+        }
+      } catch (err) {
+        console.warn('Series section skipped:', err.message);
+      }
+    }
+
+    async function countOwnedSeries(siblings) {
+      if (!currentUser) return 0;
+      let owned = 0;
+      for (const b of siblings) {
+        if (await checkPurchaseStatus(currentUser.uid, b.id)) owned++;
+      }
+      return owned;
+    }
+
+    function formatSeriesPrice(total) {
+      return 'series total ' + (total > 0 ? 'GHS ' + (total * 0.9).toFixed(2) : '');
     }
 
     // ================================================================
@@ -6202,20 +6767,31 @@ function goToLogin() {
         return;
       }
 
+      // EPUB books preview in the dedicated EPUB viewer.
+      const isEpub = (String(currentBook.bookFormat || '').toLowerCase() === 'epub' || /\.epub(\?|#|$)/i.test(currentBook.pdfUrl || ''));
+
       // ===== DETECT ACTUAL PDF PAGE COUNT =====
       let totalPages = currentBook.pageCount || 0;
-      
-      try {
-        const pdf = await pdfjsLib.getDocument(currentBook.pdfUrl).promise;
-        const actualPages = pdf.numPages;
-        console.log('📄 Actual PDF pages:', actualPages, '| Metadata pages:', totalPages);
-        totalPages = actualPages;
-      } catch (error) {
-        console.warn('⚠️ Could not detect PDF page count, using metadata:', error);
+
+      if (!isEpub) {
+        try {
+          const pdf = await pdfjsLib.getDocument(currentBook.pdfUrl).promise;
+          const actualPages = pdf.numPages;
+          console.log('📄 Actual PDF pages:', actualPages, '| Metadata pages:', totalPages);
+          totalPages = actualPages;
+        } catch (error) {
+          console.warn('⚠️ Could not detect PDF page count, using metadata:', error);
+        }
       }
 
       let previewPages = 0;
 
+      // EPUB files (or unknown page counts) default to a 10% preview slice
+      if (isEpub || totalPages <= 0) {
+        totalPages = totalPages > 0 ? totalPages : 100;
+        previewPages = Math.min(Math.max(Math.round(totalPages * 0.1), 10), totalPages);
+        console.log('📚 EPUB preview slice:', { totalPages, previewPages });
+      } else {
       console.log('📄 Book pages:', totalPages);
       console.log('📄 Current user:', currentUser ? 'Signed in' : 'Not signed in');
 
@@ -6247,6 +6823,7 @@ function goToLogin() {
 
       previewPages = Math.min(previewPages, totalPages);
       console.log('📄 Final preview pages:', previewPages);
+      }
 
       // ===== BOOK STATUS PARAMETERS =====
       const isFree = (currentBook.pricing?.amount || 0) <= 0;
@@ -6256,7 +6833,9 @@ function goToLogin() {
       const amount = currentBook.pricing?.amount || 0;
 
       // ===== BUILD PREVIEW URL WITH STATUS =====
-      const previewUrl = `pdfjs/multi-page-viewer.html?viewerVersion=2&file=${encodeURIComponent(currentBook.pdfUrl)}&startPage=1&endPage=${previewPages}&totalPages=${totalPages}&isFree=${isFree}&isPurchased=${isPurchased}&isSignedIn=${isSignedIn}&currency=${currency}&amount=${amount}`;
+      const viewerBase = isEpub ? 'epubjs/reader.html' : 'pdfjs/multi-page-viewer.html';
+      const previewPct = isEpub ? Math.round((previewPages / totalPages) * 100) : 0;
+      const previewUrl = `${viewerBase}?viewerVersion=3&file=${encodeURIComponent(currentBook.pdfUrl)}&startPage=1&endPage=${previewPages}&totalPages=${totalPages || 100}&previewPct=${previewPct}&isFree=${isFree}&isPurchased=${isPurchased}&isSignedIn=${isSignedIn}&currency=${currency}&amount=${amount}`;
       
       console.log('📄 Preview URL:', previewUrl);
 
@@ -6479,13 +7058,55 @@ function goToLogin() {
         }
     });
 
+    // ================================================================
+    // ===== TOP RATING (VOLANT READS) =====
+    // ================================================================
+    function renderBookTopRating(avg, count) {
+      if (!bookTopRating) return;
+      if (!count || !avg) {
+        bookTopRating.style.display = 'none';
+        bookTopRating.innerHTML = '';
+        return;
+      }
+      const full = Math.round(avg);
+      let stars = '';
+      for (let i = 1; i <= 5; i++) {
+        stars += i <= full
+          ? '<i class="fas fa-star" style="color:#f5b342;"></i>'
+          : '<i class="fas fa-star" style="color:#e6ded2;"></i>';
+      }
+      bookTopRating.innerHTML =
+        `<span style="display:inline-flex;align-items:center;gap:4px;">${stars}</span>` +
+        `<span style="font-size:0.9rem;font-weight:600;color:var(--text-muted);">${avg.toFixed(1)}</span>` +
+        `<span style="font-size:0.8rem;color:var(--text-light);">(${count} review${count > 1 ? 's' : ''})</span>`;
+      bookTopRating.style.display = 'flex';
+    }
+
     // ===== REVIEWS FUNCTIONS =====
-    function updateReviewFormVisibility() {
+    async function hasUserReviewed(bookId) {
+      if (!currentUser || !bookId) return false;
+      try {
+        const q = query(collection(db, "reviews"), where("userId", "==", currentUser.uid), where("bookId", "==", bookId));
+        const snapshot = await getDocs(q);
+        return !snapshot.empty;
+      } catch (err) { return false; }
+    }
+
+    async function updateReviewFormVisibility() {
       if (currentUser) {
-        reviewForm.style.display = 'block';
-        loginToReview.style.display = 'none';
+        const already = await hasUserReviewed(currentBook && currentBook.id);
+        if (already) {
+          reviewForm.style.display = 'none';
+          loginToReview.style.display = 'none';
+          reviewAlready.style.display = 'flex';
+        } else {
+          reviewAlready.style.display = 'none';
+          reviewForm.style.display = 'block';
+          loginToReview.style.display = 'none';
+        }
       } else {
         reviewForm.style.display = 'none';
+        reviewAlready.style.display = 'none';
         loginToReview.style.display = 'block';
       }
     }
@@ -6575,6 +7196,7 @@ function goToLogin() {
               <div class="review-header">
                 <span class="reviewer-name">
                   ${avatarHtml}${reviewerName}
+                  ${review.verified ? ` <span class="verified-badge" title="Verified buyer"><i class="fas fa-check-circle"></i></span>` : ''}
                 </span>
                 <span class="review-stars">${stars}</span>
                 <span class="review-date">${date.toLocaleDateString()}</span>
@@ -6594,6 +7216,7 @@ function goToLogin() {
         const avg = count > 0 ? (totalRating / count) : 0;
         avgRating.textContent = avg.toFixed(1);
         reviewCount.textContent = count;
+        renderBookTopRating(avg, count);
         
         const fullStars = Math.round(avg);
         const emptyStars = 5 - fullStars;
@@ -6677,7 +7300,13 @@ function goToLogin() {
         } catch (err) {
           console.warn('Error fetching user data:', err);
         }
-        
+
+        let verifiedBuyer = false;
+        try {
+          const pDoc = await getDoc(doc(db, "purchases", `${currentUser.uid}_${currentBook.id}`));
+          verifiedBuyer = pDoc.exists() && pDoc.data().status === 'completed' && pDoc.data().verified === true;
+        } catch (err) { console.warn('Purchase check failed:', err); }
+
         const reviewData = {
           userId: currentUser.uid,
           userName: userSnapshot.username,
@@ -6687,9 +7316,18 @@ function goToLogin() {
           bookTitle: currentBook.title || 'Untitled',
           rating: selectedRating,
           review: review,
+          verified: verifiedBuyer,
           helpfulCount: 0,
           createdAt: serverTimestamp()
         };
+
+        const duplicate = await hasUserReviewed(currentBook.id);
+        if (duplicate) {
+          showToast('ℹ️ You already reviewed this book.', 'info');
+          submitReviewBtn.disabled = false;
+          submitReviewBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Post Review';
+          return;
+        }
         
         await addDoc(collection(db, "reviews"), reviewData);
         
@@ -6732,14 +7370,26 @@ function goToLogin() {
         id: currentBook.id,
         title: currentBook.title || 'Untitled',
         author: currentBook.authorName || 'Anonymous',
-        price: currentBook.pricing?.amount || 0,
+        price: effectiveBookPrice(currentBook),
         currency: currentBook.pricing?.currency || 'GHS',
-        image: currentBook.imageUrl || ''
+        image: currentBook.imageUrl || '',
+        preorder: currentBook.preorder === true && currentBook.released !== true,
+        preorderReleaseDate: currentBook.preorderReleaseDate || null
       });
       saveCartItems(items);
       cartCount = items.length;
       updateCartBadge();
       showToast(`✅ "${currentBook.title}" added to cart!`, 'success');
+    });
+
+    // ===== READING LIST BUTTON (LOCAL WISHLIST) =====
+    readingListBtn.addEventListener('click', function() {
+      if (!currentBook) { showToast('❌ Book not loaded.', 'error'); return; }
+      const added = toggleReadingList(currentBook.id);
+      updateReadingListButton();
+      showToast(added
+        ? `🔖 "${currentBook.title}" saved to your reading list.`
+        : `Removed "${currentBook.title}" from your reading list.`, added ? 'success' : 'info');
     });
 
     // ===== WISHLIST BUTTON =====

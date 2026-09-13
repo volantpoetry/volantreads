@@ -1815,20 +1815,6 @@
             background: linear-gradient(135deg, #d4a574, #c9944d);
         }
 
-       /* Hide pre-order section */
-#preorderCheckbox,
-#preorderCheckbox + label,
-#preorderCheckbox + label + .hint,
-.preorder-fields,
-.preorder-fields.show,
-.preorder-fields .form-group,
-.preorder-fields .preorder-price-input,
-.preorder-fields .preorder-price-input .form-group,
-.preorder-fields .hint {
-    display: none !important;
-}
-.hint {display: none !important;}
-      
     </style>
 </head>
 <body>
@@ -2019,6 +2005,19 @@
                         <input type="date" id="publishDate" required />
                     </div>
                 </div>
+
+                <!-- SERIES & BUNDLE -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="seriesName"><i class="fas fa-layer-group"></i> Series name <span class="optional-badge">optional</span></label>
+                        <input type="text" id="seriesName" placeholder="e.g. The Silent Waves Saga" />
+                    </div>
+                    <div class="form-group">
+                        <label for="seriesOrder"><i class="fas fa-sort-numeric-down"></i> Series position <span class="optional-badge">optional</span></label>
+                        <input type="number" id="seriesOrder" placeholder="e.g. 2" min="1" />
+                    </div>
+                </div>
+                <p style="font-size:0.8rem; color:#888; margin-top:-4px; margin-bottom:14px;">Books sharing a series name are grouped and can be bought together as a bundle. Enter the position (1 = first book) so the series reads in order.</p>
 
                 <!-- ============================================================ -->
                 <!-- SECTION 3: GENRE & LANGUAGE -->
@@ -2211,15 +2210,15 @@
                     <span class="hint">Add at least 3 and up to 5 keywords to help readers find your book.</span>
                 </div>
 
-                <!-- PDF UPLOAD -->
+                <!-- BOOK FILE UPLOAD (PDF) -->
                 <div class="form-group">
-                    <label for="pdfUpload"><i class="fas fa-file-pdf"></i> Upload PDF <span style="color:#b76e4b;">*</span></label>
+                    <label for="pdfUpload"><i class="fas fa-book-open"></i> Upload Manuscript (PDF) <span style="color:#b76e4b;">*</span></label>
                     <div class="file-upload-wrapper">
                         <input type="file" id="pdfUpload" accept=".pdf,application/pdf" required />
-                        <span class="file-hint"><i class="fas fa-info-circle"></i> max 15 MB</span>
+                        <span class="file-hint"><i class="fas fa-info-circle"></i> PDF · max 15 MB</span>
                     </div>
                     <div id="pdfFeedback" class="file-feedback"></div>
-                    <span class="hint">Upload the full book in PDF format (max 15MB).</span>
+                    <span class="hint">Upload the full book as a PDF file (max 15MB).</span>
                 </div>
 
                 <!-- COVER IMAGE -->
@@ -2241,31 +2240,16 @@
                 </div>
 
                 <!-- ============================================================ -->
-                <!-- SECTION 7: PRE-ORDER (HIDDEN) -->
+                <!-- SECTION 7: PRE-ORDER -->
                 <!-- ============================================================ -->
-                <div class="section-title-block" style="display:none;">
+                <div class="section-title-block">
                     <div class="title-icon"><i class="fas fa-clock"></i></div>
-                    <h3>Pre-Order (Coming Soon)</h3>
+                    <h3>Pre-Order</h3>
                     <span class="section-badge">Optional</span>
                 </div>
 
-                <!-- PRE-ORDER COMING SOON NOTICE -->
-                <div style="background: #fef3e2; border: 1px solid #f5cba7; border-radius: 12px; padding: 0.8rem 1.2rem; margin-bottom: 1rem;">
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <i class="fas fa-clock" style="color: #b76e4b; font-size: 1.1rem;"></i>
-                        <div>
-                            <p style="margin: 0; font-weight: 600; color: #7a4a2a; font-size: 0.9rem;">
-                                📅 Pre-orders Coming Soon
-                            </p>
-                            <p style="margin: 0; font-size: 0.8rem; color: #8a6a4a;">
-                                We're working on allowing pre-orders for books. Stay tuned!
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- PRE-ORDER SECTION (HIDDEN) -->
-                <div class="form-group" style="display:none;">
+                <!-- PRE-ORDER SECTION -->
+                <div class="form-group">
                     <div class="checkbox-group">
                         <input type="checkbox" id="preorderCheckbox" />
                         <label for="preorderCheckbox"><i class="fas fa-clock"></i> Mark as pre-order</label>
@@ -2273,7 +2257,7 @@
                     <span class="hint">Check if the book is available for pre-order.</span>
                 </div>
 
-                <div id="preorderFields" class="preorder-fields" style="display:none;">
+                <div id="preorderFields" class="preorder-fields">
                     <div class="form-group">
                         <label for="preorderReleaseDate"><i class="fas fa-calendar-day"></i> Release Date <span style="color:#b76e4b;">*</span></label>
                         <input type="date" id="preorderReleaseDate" />
@@ -3073,7 +3057,7 @@ document.addEventListener('DOMContentLoaded', setupBackLink);
                 return true;
             }
         }
-        pdfInput.addEventListener('change', function() { validateFile(this, pdfFeedback, MAX_PDF_SIZE, 'PDF'); });
+        pdfInput.addEventListener('change', function() { validateFile(this, pdfFeedback, MAX_PDF_SIZE, 'Book file'); });
         coverInput.addEventListener('change', function() { validateFile(this, imageFeedback, MAX_IMAGE_SIZE,
             'Cover image'); });
 
@@ -3781,6 +3765,8 @@ document.addEventListener('DOMContentLoaded', setupBackLink);
             const pageCount = parseInt(document.getElementById('pageCount').value.trim());
             const price = priceAmount.value.trim();
             const currency = currencySelect.value;
+            const series = document.getElementById('seriesName').value.trim() || null;
+            const seriesOrder = parseInt(document.getElementById('seriesOrder').value) || 0;
 
             // Validation...
             if (!authorName) { showFeedback('❌ Author name is required.', 'error');
@@ -3853,7 +3839,7 @@ document.addEventListener('DOMContentLoaded', setupBackLink);
                 pdfInput.focus(); return; }
             if (!coverFile) { showFeedback('❌ Please upload a cover image.', 'error');
                 coverInput.focus(); return; }
-            if (!validateFile(pdfInput, pdfFeedback, MAX_PDF_SIZE, 'PDF') || !validateFile(coverInput, imageFeedback,
+            if (!validateFile(pdfInput, pdfFeedback, MAX_PDF_SIZE, 'Book file') || !validateFile(coverInput, imageFeedback,
                     MAX_IMAGE_SIZE, 'Cover image')) {
                 showFeedback('❌ One or more files exceed the size limit.', 'error');
                 return;
@@ -3905,8 +3891,8 @@ document.addEventListener('DOMContentLoaded', setupBackLink);
                 let imageUrl, pdfUrl;
                 progressStatus.textContent = 'Uploading cover image...';
                 imageUrl = await uploadWithProgress(coverFile, 'image', 'cover image');
-                progressStatus.textContent = 'Uploading PDF...';
-                pdfUrl = await uploadWithProgress(pdfFile, 'raw', 'PDF');
+                progressStatus.textContent = 'Uploading manuscript...';
+                pdfUrl = await uploadWithProgress(pdfFile, 'raw', 'book file');
                 progressStatus.textContent = 'Saving to database...';
                 progressFill.style.width = '100%';
                 progressText.textContent = '100%';
@@ -3925,6 +3911,8 @@ document.addEventListener('DOMContentLoaded', setupBackLink);
                     authorBio,
                     synopsis,
                     isbn: isbn || null,
+                    series,
+                    seriesOrder,
                     publishDate,
                     genre: finalGenre,
                     language: finalLanguage,
@@ -3938,6 +3926,7 @@ document.addEventListener('DOMContentLoaded', setupBackLink);
                     otherDetails: otherDetails || null,
                     imageUrl,
                     pdfUrl,
+                    bookFormat: 'pdf',
                     pricing: { currency, amount: parseFloat(price) },
                     submittedBy: currentUser.uid,
                     submittedByUsername: currentUsername,

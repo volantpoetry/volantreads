@@ -1,0 +1,828 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Volant Reads Â· Author Profile</title>
+
+   <script>
+    // Simple console blocker - production only
+    (function() {
+        if (window.location.hostname.includes('localhost') || 
+            window.location.hostname.includes('127.0.0.1')) {
+            return; // Allow in development
+        }
+        
+        // Block all console methods
+        var methods = ['log', 'info', 'warn', 'error', 'debug', 'trace', 'table', 'group', 'groupEnd', 'dir'];
+        methods.forEach(function(m) {
+            console[m] = function() {};
+            try {
+                Object.defineProperty(console, m, { configurable: false, writable: false });
+            } catch(e) {}
+        });
+        
+        window.onerror = function() { return true; };
+        window.onunhandledrejection = function() { return true; };
+    })();
+</script>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="icon" type="image/png" href="https://volantpoetry.vercel.app/images/volant-reads-favicon.png" />
+  <link rel="apple-touch-icon" href="https://volantpoetry.vercel.app/images/volant-reads-favicon.png" />
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --primary: #4b2aad;
+      --primary-light: #6a45d1;
+      --primary-dark: #3a1f8a;
+      --secondary: #b76e4b;
+      --bg-cream: #faf7f2;
+      --bg-white: #ffffff;
+      --text-dark: #2d2a24;
+      --text-muted: #6f6252;
+      --text-light: #8a7b6a;
+      --border: #ede7df;
+      --shadow-sm: 0 4px 12px rgba(0,0,0,0.04);
+      --shadow-md: 0 8px 30px rgba(0,0,0,0.08);
+      --shadow-lg: 0 20px 60px rgba(0,0,0,0.12);
+      --radius-lg: 24px;
+      --radius-md: 16px;
+      --radius-sm: 10px;
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--bg-cream); color: var(--text-dark); line-height: 1.6; min-height: 100vh; }
+    a { color: inherit; text-decoration: none; }
+
+    /* ===== HEADER ===== */
+    header {
+      background: var(--bg-white);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      position: sticky !important;
+      top: 0 !important;
+      z-index: 100 !important;
+      height: 64px;
+      display: flex;
+      align-items: center;
+    }
+    nav {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 3rem;
+      width: 100%;
+      height: 100%;
+      gap: 1.5rem;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      flex-shrink: 0;
+      margin-right: auto;
+    }
+    .nav-logo-img { width: 38px; height: 38px; border-radius: 0; object-fit: contain; }
+    .logo-text {
+      font-family: 'Playfair Display', serif;
+      font-weight: 700;
+      font-size: 1.5rem;
+      color: var(--primary);
+      white-space: nowrap;
+    }
+    .logo-highlight { color: #fff; text-shadow: 0 0 2px var(--primary), 0 0 4px var(--primary), 0 0 6px var(--primary); }
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      flex-shrink: 0;
+      padding-right: 2rem;
+      margin-left: auto;
+    }
+    .btn-signin {
+      padding: 0.45rem 1.2rem;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      background: var(--primary);
+      color: #fff;
+      transition: 0.2s;
+      white-space: nowrap;
+      cursor: pointer;
+      border: none;
+    }
+    .btn-signin:hover { background: var(--primary-dark); transform: translateY(-1px); }
+    .profile-wrap { display: flex; align-items: center; gap: 0.5rem; cursor: pointer; }
+    .profile-avatar {
+      width: 34px; height: 34px; border-radius: 50%;
+      border: 2px solid var(--primary-light);
+      background: #e0d6cc;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; color: var(--text-muted);
+      overflow: hidden; flex-shrink: 0;
+    }
+    .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .profile-name-nav {
+      font-size: 0.85rem; font-weight: 500; color: var(--text-dark);
+      max-width: 90px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .btn-signout {
+      background: transparent; border: none; color: var(--text-light);
+      font-size: 0.75rem; cursor: pointer; padding: 0.25rem 0.4rem; border-radius: 4px; transition: 0.2s;
+    }
+    .btn-signout:hover { background: #fee; color: #b33; }
+    .user-wrap { position: relative; display: inline-flex; }
+    .account-menu {
+      position: absolute;
+      right: 0;
+      top: calc(100% + 10px);
+      width: 250px;
+      background: #fff;
+      border: 1px solid var(--primary-light, #ede7df);
+      border-radius: 14px;
+      box-shadow: 0 16px 34px rgba(0,0,0,0.16);
+      padding: 0.55rem 0.4rem;
+      z-index: 400;
+      display: none;
+      flex-direction: column;
+    }
+    .account-menu.open { display: flex; }
+    .account-menu hr { border: none; border-top: 1px solid var(--primary-light, #ede7df); margin: 0.4rem 0; }
+    .acct-head { display: flex; align-items: center; gap: 0.7rem; padding: 0.25rem 0.5rem; }
+    .acct-pic {
+      width: 42px;
+      height: 42px;
+      flex: 0 0 42px;
+      border-radius: 50%;
+      background: #f3e9dd;
+      color: var(--secondary, #b76e4b);
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      font-size: 0.9rem;
+      overflow: hidden;
+      background-size: cover;
+      background-position: center;
+    }
+    .acct-pic img { width: 100%; height: 100%; object-fit: cover; }
+    .acct-pic span { line-height: 1; }
+    .acct-id { min-width: 0; }
+    .acct-name { font-weight: 700; font-size: 0.9rem; color: var(--text-dark, #2d2a24); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .acct-email { font-size: 0.75rem; color: var(--text-light, #8a7b6a); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .acct-item {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.55rem 0.7rem;
+      border-radius: 10px;
+      font-size: 0.88rem;
+      color: var(--text-dark, #2d2a24);
+      background: none;
+      border: none;
+      text-align: left;
+      width: 100%;
+      cursor: pointer;
+      transition: background 0.13s ease, color 0.13s ease;
+      text-decoration: none;
+    }
+    .acct-item i { color: var(--secondary, #b76e4b); width: 1.15rem; text-align: center; }
+    .acct-item:hover { background: #f6efe6; color: #9e5a38; }
+    .acct-foot { font-size: 0.72rem; color: var(--text-light, #8a7b6a); text-align: center; padding: 0.4rem 0 0.1rem; }
+
+    @media (max-width: 768px) {
+      nav { padding: 0 1.2rem; }
+      .logo-text { font-size: 1.15rem; }
+      .nav-right { padding-right: 0; }
+    }
+    @media (max-width: 480px) {
+      nav { padding: 0 0.8rem; gap: 0.6rem; }
+      .nav-logo-img { width: 30px; height: 30px; }
+      .logo-text { font-size: 1rem; }
+      .nav-right { gap: 0.4rem; }
+      .btn-signin { font-size: 0.72rem; padding: 0.3rem 0.7rem; }
+      .profile-avatar { width: 28px; height: 28px; font-size: 0.9rem; }
+      .profile-name-nav { display: none; }
+      .btn-signout { font-size: 0.65rem; }
+    }
+
+    /* ===== PAGE ===== */
+    .page-wrap { max-width: 1100px; margin: 0 auto; padding: 28px 24px 60px; }
+
+    /* ===== HERO / PROFILE CARD ===== */
+    .author-hero {
+      background: var(--bg-white);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      overflow: hidden;
+      margin-bottom: 32px;
+    }
+    .author-hero-accent {
+      height: 100px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 50%, var(--secondary) 100%);
+    }
+    .author-hero-body {
+      display: flex;
+      gap: 28px;
+      align-items: flex-start;
+      padding: 0 36px 32px;
+      margin-top: -48px;
+      flex-wrap: wrap;
+    }
+    .author-avatar {
+      width: 120px; height: 120px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      border: 5px solid var(--bg-white);
+      box-shadow: var(--shadow-md);
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden; flex-shrink: 0;
+    }
+    .author-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .author-avatar .initials {
+      color: #fff;
+      font-family: 'Playfair Display', serif;
+      font-size: 2.6rem; font-weight: 700;
+    }
+    .author-info { flex: 1; min-width: 220px; padding-top: 52px; }
+    .author-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.8rem; font-weight: 700; color: var(--text-dark);
+      line-height: 1.2;
+    }
+    .author-handle {
+      display: inline-flex; align-items: center; gap: 5px;
+      color: var(--text-muted); font-size: 0.88rem; margin-top: 4px;
+    }
+    .author-meta-row {
+      display: flex; align-items: center; gap: 12px; margin-top: 10px; flex-wrap: wrap;
+    }
+    .author-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: var(--bg-cream); color: var(--text-light); font-size: 0.78rem;
+      padding: 4px 10px; border-radius: 20px; font-weight: 500;
+    }
+    .author-badge i { font-size: 0.7rem; }
+    .share-btn {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: var(--bg-cream); border: 1px solid var(--border); color: var(--text-muted);
+      padding: 6px 14px; border-radius: 20px; font-size: 0.82rem;
+      font-weight: 600; cursor: pointer; transition: 0.2s;
+    }
+    .share-btn:hover { border-color: var(--primary); color: var(--primary); }
+    .author-stats {
+      display: flex; gap: 20px; margin-top: 18px; flex-wrap: wrap;
+    }
+    .author-stats .stat {
+      display: flex; flex-direction: column; min-width: 70px;
+    }
+    .author-stats .stat .num {
+      font-size: 1.3rem; font-weight: 800; color: var(--primary); line-height: 1.2;
+    }
+    .author-stats .stat .label {
+      font-size: 0.72rem; color: var(--text-light);
+      text-transform: uppercase; letter-spacing: 0.06em; font-weight: 500;
+    }
+
+    /* ===== ABOUT CARD ===== */
+    .about-card {
+      background: var(--bg-white);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+      padding: 28px 32px;
+      margin-bottom: 32px;
+    }
+    .about-card h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.15rem; font-weight: 700; color: var(--text-dark);
+      margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
+    }
+    .about-card h3 i { color: var(--primary); font-size: 0.9rem; }
+    .about-card p {
+      color: var(--text-muted); font-size: 0.92rem; line-height: 1.7;
+      white-space: pre-wrap;
+    }
+
+    /* ===== SECTION HEADING ===== */
+    .section-heading {
+      display: flex; align-items: center; gap: 10px;
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem; font-weight: 700;
+      margin-bottom: 20px; color: var(--text-dark);
+    }
+    .section-heading i { color: var(--primary); font-size: 1.05rem; }
+
+    /* ===== BOOKS GRID ===== */
+    .books-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+    }
+    .book-card {
+      background: var(--bg-white);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+    .book-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+    .cover-wrap {
+      position: relative;
+      padding-top: 145%;
+      background: #f0ebe4;
+      overflow: hidden;
+    }
+    .cover-wrap img {
+      position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+    }
+    .cover-wrap .no-img {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      color: #b9b3a8; background: linear-gradient(135deg, #f5f0e8, #ebe4d8);
+    }
+    .cover-wrap .no-img i { font-size: 2rem; margin-bottom: 6px; }
+    .book-badge-row {
+      position: absolute; top: 8px; left: 8px; right: 8px;
+      display: flex; justify-content: space-between; align-items: flex-start; gap: 6px;
+    }
+    .book-badge {
+      display: inline-flex; align-items: center; gap: 3px;
+      padding: 3px 8px; border-radius: 6px;
+      font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.03em; backdrop-filter: blur(4px);
+    }
+    .book-badge.preorder { background: rgba(75,42,173,0.9); color: #fff; }
+    .book-badge.filetype { background: rgba(255,255,255,0.92); color: var(--text-dark); }
+    .book-badge.sale {
+      background: #dc2626; color: #fff;
+    }
+    .book-body {
+      padding: 14px 14px 16px; display: flex; flex-direction: column; gap: 5px; flex: 1;
+    }
+    .book-title {
+      font-family: 'Playfair Display', serif;
+      font-weight: 600; font-size: 0.95rem; color: var(--text-dark);
+      line-height: 1.3;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      line-clamp: 2;
+      overflow: hidden;
+    }
+    .book-genre {
+      font-size: 0.72rem; color: var(--primary); font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.04em;
+    }
+    .book-price-row { display: flex; align-items: baseline; gap: 6px; margin-top: 2px; }
+    .book-price { color: var(--secondary); font-weight: 700; font-size: 0.92rem; }
+    .book-price.free { color: #2e7d32; }
+    .book-price-old {
+      color: var(--text-light); font-size: 0.78rem; text-decoration: line-through;
+    }
+    .book-rating {
+      display: flex; align-items: center; gap: 4px; font-size: 0.75rem; color: var(--text-light);
+    }
+    .book-rating i { color: #f59e0b; font-size: 0.7rem; }
+
+    /* ===== EMPTY / ERROR / LOADING ===== */
+    .empty-state, .error-state {
+      text-align: center; padding: 56px 24px;
+      background: var(--bg-white); border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm); color: var(--text-muted);
+    }
+    .empty-state i, .error-state i {
+      font-size: 2.4rem; color: var(--text-light); margin-bottom: 12px; display: block;
+    }
+    .empty-state h3, .error-state h3 {
+      font-family: 'Playfair Display', serif; color: var(--text-dark); margin-bottom: 6px;
+    }
+    .loading-state { text-align: center; padding: 70px 24px; color: var(--text-light); }
+    .spinner {
+      width: 38px; height: 38px;
+      border: 4px solid var(--border); border-top-color: var(--primary);
+      border-radius: 50%; animation: spin 0.8s linear infinite;
+      margin: 0 auto 12px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ===== TOAST ===== */
+    #toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      background: var(--text-dark); color: #fff;
+      padding: 12px 24px; border-radius: 999px; font-size: 0.88rem;
+      box-shadow: var(--shadow-md); opacity: 0; pointer-events: none;
+      transition: opacity 0.3s ease; z-index: 999; max-width: 90vw; text-align: center;
+    }
+    #toast.show { opacity: 1; }
+
+    /* ===== FOOTER ===== */
+    .site-footer {
+      text-align: center; padding: 20px; font-size: 0.78rem; color: var(--text-light);
+      border-top: 1px solid var(--border); margin-top: 20px;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    /* ===== SOCIAL LINKS ===== */
+    .author-socials {
+      display: flex; align-items: center; gap: 8px; margin-top: 16px; flex-wrap: wrap;
+    }
+    .social-link {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 38px; height: 38px; border-radius: 50%;
+      background: var(--bg-cream); border: 1px solid var(--border);
+      color: var(--text-muted); font-size: 0.95rem;
+      transition: all 0.2s; cursor: pointer;
+    }
+    .social-link.instagram { color: #e1306c; border-color: #e1306c; background: rgba(225, 48, 108, 0.09); }
+    .social-link.tiktok { color: #010101; border-color: #010101; background: rgba(0, 0, 0, 0.06); }
+    .social-link.twitter { color: #000; border-color: #000; background: rgba(0, 0, 0, 0.06); }
+    .social-link.facebook { color: #1877f2; border-color: #1877f2; background: rgba(24, 119, 242, 0.09); }
+    .social-link.whatsapp { color: #25d366; border-color: #25d366; background: rgba(37, 211, 102, 0.10); }
+    .social-link.website { color: var(--primary); border-color: var(--primary); background: rgba(183, 110, 75, 0.10); }
+    .social-link:hover { transform: translateY(-2px); box-shadow: var(--shadow-sm); }
+    .social-link.instagram:hover { background: #e1306c; border-color: #e1306c; color: #fff; }
+    .social-link.tiktok:hover { background: #010101; border-color: #010101; color: #fff; }
+    .social-link.twitter:hover { background: #000; border-color: #000; color: #fff; }
+    .social-link.facebook:hover { background: #1877f2; border-color: #1877f2; color: #fff; }
+    .social-link.whatsapp:hover { background: #25d366; border-color: #25d366; color: #fff; }
+    .social-link.website:hover { background: var(--primary); border-color: var(--primary); color: #fff; }
+
+    @media (max-width: 900px) {
+      .books-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 640px) {
+      .page-wrap { padding: 20px 14px 50px; }
+      .author-hero-body { padding: 0 20px 24px; }
+      .author-avatar { width: 96px; height: 96px; }
+      .author-avatar .initials { font-size: 2rem; }
+      .author-info { padding-top: 44px; min-width: 180px; }
+      .author-name { font-size: 1.45rem; }
+      .author-stats { gap: 14px; }
+      .author-stats .stat .num { font-size: 1.1rem; }
+      .about-card { padding: 20px; }
+      .books-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
+      .book-body { padding: 10px 10px 14px; }
+      .book-title { font-size: 0.88rem; }
+      .book-price { font-size: 0.85rem; }
+    }
+    @media (max-width: 380px) {
+      .author-hero-accent { height: 70px; }
+      .author-hero-body { gap: 18px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <nav>
+      <a href="index.html" class="logo">
+        <img src="https://volantpoetry.vercel.app/images/logokk.png" alt="Volant Reads Logo" class="nav-logo-img">
+        <span class="logo-text"><span class="logo-highlight">Volant</span> Reads</span>
+      </a>
+      <div class="nav-right" id="navRight"></div>
+    </nav>
+  </header>
+
+  <div class="page-wrap">
+    <div id="profileWrap">
+      <div class="loading-state" id="profileLoading">
+        <div class="spinner"></div>
+        <p>Loading author profile...</p>
+      </div>
+    </div>
+  </div>
+
+  <footer class="site-footer">&copy; <span id="year"></span> Volant Reads</footer>
+  <div id="toast"></div>
+
+  <script type="importmap">
+    { "imports": {
+        "firebase/app": "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js",
+        "firebase/firestore": "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js",
+        "firebase/auth": "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"
+    }}
+  </script>
+
+  <script type="module">
+    import { initializeApp } from "firebase/app";
+    import { getFirestore, collection, query, where, getDocs, doc, getDoc, onSnapshot, limit } from "firebase/firestore";
+    import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyC4DHI8aBVY4JjTvJ-r-TGIDPsewtEWxzU",
+      authDomain: "silent-depth.firebaseapp.com",
+      projectId: "silent-depth",
+      storageBucket: "silent-depth.appspot.com",
+      messagingSenderId: "78008755450",
+      appId: "1:78008755450:web:3fd0f0f298a08820935543"
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    const profileWrap = document.getElementById('profileWrap');
+    const navRight = document.getElementById('navRight');
+    const toastEl = document.getElementById('toast');
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    let toastTimer = null;
+    function showToast(msg) {
+      toastEl.textContent = msg;
+      toastEl.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2600);
+    }
+
+    function goToLogin() {
+      const redir = window.location.pathname + window.location.search;
+      window.location.href = 'universal-login.html?platform=reads&redirect=' + encodeURIComponent(redir);
+    }
+
+    /* ===== HEADER ===== */
+function renderHeader(user) {
+      if (!user) {
+        navRight.innerHTML = `<a href="javascript:void(0)" onclick="window.__goToLogin()" class="btn-signin"><i class="fas fa-sign-in-alt"></i> Sign In</a>`;
+        return;
+      }
+      const nick = user.displayName || user.email || '';
+      let avatarHTML = `<span>${(user.displayName || user.email || 'U').charAt(0).toUpperCase()}</span>`;
+      let navName = nick;
+      getDoc(doc(db, 'users', user.uid)).then(snap => {
+        if (snap.exists()) {
+          const ud = snap.data();
+          const storedName = ud.username || ud.displayName || ud.authorName || '';
+          if (storedName) navName = storedName;
+          if (ud.photoURL) avatarHTML = `<img src="${ud.photoURL}" alt="" />`;
+          else if (ud.cachedAvatarURL) avatarHTML = `<img src="${ud.cachedAvatarURL}" alt="" />`;
+          else if (storedName) avatarHTML = `<span>${storedName.charAt(0).toUpperCase()}</span>`;
+        }
+      }).catch(() => {}).finally(async () => {
+        let hasAuthorMaterial = false;
+        try {
+          const ud = await getDoc(doc(db, 'users', user.uid));
+          if (ud.exists()) {
+            const uData = ud.data();
+            if ((uData.authorName && uData.authorName.trim()) || (uData.authorBio && uData.authorBio.trim())) {
+              hasAuthorMaterial = true;
+            }
+          }
+          if (!hasAuthorMaterial) {
+            const authorSnap = await getDocs(query(collection(db, 'books'), where('submittedBy', '==', user.uid), limit(1)));
+            if (!authorSnap.empty) hasAuthorMaterial = true;
+          }
+        } catch (err) {}
+        navRight.innerHTML = `
+          <div class="user-wrap">
+            <button type="button" id="signOutBtn" title="Account" aria-label="Account" style="background:none;border:none;padding:0;cursor:pointer;display:flex;align-items:center;gap:0.3rem;">
+              <span class="profile-avatar" style="pointer-events:none;">${avatarHTML}</span>
+              <span style="pointer-events:none;color:var(--text-light,#8a7b6a);font-size:0.7rem;"><i class="fas fa-chevron-down"></i></span>
+            </button>
+            <div class="account-menu" id="accountMenu">
+              <div class="acct-head">
+                <div class="acct-pic">${avatarHTML}</div>
+                <div class="acct-id">
+                  <div class="acct-name" id="navAcctName">${esc(navName)}</div>
+                  <div class="acct-email" id="navAcctEmail">${user.email || ''}</div>
+                </div>
+              </div>
+              <hr>
+              <a class="acct-item" href="dashboard.html#library" style="text-decoration:none;"><i class="fas fa-book-open"></i> My Library</a>
+              <a class="acct-item" href="dashboard.html" id="navAcctDashboard" style="display:none;text-decoration:none;"><i class="fas fa-gauge-high"></i> My Dashboard</a>
+              <button class="acct-item" id="navAcctSignOut" type="button"><i class="fas fa-sign-out-alt"></i> Sign out</button>
+              <small class="acct-foot">Signed in on Volant Reads</small>
+            </div>
+          </div>`;
+        document.getElementById('signOutBtn')?.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const menu = document.getElementById('accountMenu');
+          if (menu) menu.classList.toggle('open');
+        });
+        const dashLink = document.getElementById('navAcctDashboard');
+        if (dashLink) dashLink.style.display = hasAuthorMaterial ? 'block' : 'none';
+        document.getElementById('navAcctSignOut')?.addEventListener('click', async () => {
+          try { await signOut(auth); showToast('Signed out.'); setTimeout(() => location.reload(), 500); }
+          catch (err) { showToast('Error signing out.'); }
+        });
+        const acctMenuEl = document.getElementById('accountMenu');
+        document.addEventListener('click', (e) => {
+          if (acctMenuEl && acctMenuEl.classList.contains('open') && !e.target.closest('#accountMenu') && !e.target.closest('#signOutBtn')) {
+            acctMenuEl.classList.remove('open');
+          }
+        });
+      });
+    }
+    onAuthStateChanged(auth, user => renderHeader(user));
+    window.__goToLogin = goToLogin;
+
+    /* ===== HELPERS ===== */
+    function esc(s) { return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+    function initials(name) { const p = (name || 'A').trim().split(/\s+/); return p.slice(0,2).map(x=>x[0]?.toUpperCase()||'').join('') || 'A'; }
+function formatNum(n) { return Number(n || 0).toLocaleString(); }
+    function stripAt(s) { return String(s || '').trim().replace(/^@/, ''); }
+    function toURL(val, kind) {
+      let v = String(val || '').trim();
+      if (!v) return '';
+      if (/^https?:\/\//i.test(v)) return v;
+      if (kind === 'instagram') return 'https://instagram.com/' + encodeURIComponent(stripAt(v));
+      if (kind === 'tiktok') return 'https://tiktok.com/@' + encodeURIComponent(stripAt(v));
+      if (kind === 'twitter') return 'https://x.com/' + encodeURIComponent(stripAt(v));
+      if (kind === 'facebook') return /^https?:\/\//i.test(v) ? v : 'https://facebook.com/' + encodeURIComponent(v);
+      if (kind === 'whatsapp') return 'https://wa.me/' + v.replace(/[^0-9]/g, '');
+      if (kind === 'website') return 'https://' + v;
+      return v;
+    }
+    function buildSocialsHTML(socials) {
+      if (!socials || typeof socials !== 'object') return '';
+      const items = [
+        ['instagram', 'fab', 'fa-instagram', 'instagram'],
+        ['tiktok', 'fab', 'fa-tiktok', 'tiktok'],
+        ['twitter', 'fab', 'fa-x-twitter', 'twitter'],
+        ['facebook', 'fab', 'fa-facebook-f', 'facebook'],
+        ['whatsapp', 'fab', 'fa-whatsapp', 'whatsapp'],
+        ['website', 'fas', 'fa-globe', 'website']
+      ];
+      const links = [];
+      for (const [key, fam, icon, kind] of items) {
+        const raw = socials[key];
+        if (!raw || !String(raw).trim()) continue;
+        const href = toURL(raw, kind);
+        if (!href) continue;
+        links.push(`<a class="social-link ${key}" href="${esc(href)}" target="_blank" rel="noopener" title="${esc(String(raw).trim())}"><i class="${fam} ${icon}"></i></a>`);
+      }
+      return links.length ? `<div class="author-socials">${links.join('')}</div>` : '';
+    }
+
+    /* ===== BOOK CARD ===== */
+    function buildBookCard(book) {
+      const a = document.createElement('a');
+      a.className = 'book-card';
+      a.href = `details.html?id=${encodeURIComponent(book.id)}`;
+
+      const cover = document.createElement('div');
+      cover.className = 'cover-wrap';
+      if (book.imageUrl) {
+        const img = document.createElement('img');
+        img.src = book.imageUrl;
+        img.alt = book.title || '';
+        img.loading = 'lazy';
+        img.onerror = function() { this.style.display = 'none'; this.parentElement.innerHTML = `<div class="no-img"><i class="fas fa-book-open"></i></div>`; };
+        cover.appendChild(img);
+      } else {
+        cover.innerHTML = `<div class="no-img"><i class="fas fa-book-open"></i></div>`;
+      }
+
+      /* Badges */
+      const badgeRow = document.createElement('div');
+      badgeRow.className = 'book-badge-row';
+      const badges = [];
+      if (book.preorder && !book.released) badges.push(`<span class="book-badge preorder"><i class="fas fa-clock"></i> Pre-order</span>`);
+      if (book.bookType) badges.push(`<span class="book-badge filetype"><i class="fas fa-${book.bookType.toLowerCase() === 'epub' ? 'file-lines' : 'file-pdf'}"></i> ${esc(book.bookType.toUpperCase())}</span>`);
+      if (Number(book.saleCount) > 20) badges.push(`<span class="book-badge filetype" style="background:rgba(255,255,255,0.92);color:#b45309;"><i class="fas fa-fire"></i> Popular</span>`);
+      if (badges.length) {
+        badgeRow.innerHTML = badges.join('');
+        cover.appendChild(badgeRow);
+      }
+
+      a.appendChild(cover);
+
+      const body = document.createElement('div');
+      body.className = 'book-body';
+
+      const genre = book.genre || '';
+      if (genre) { const g = document.createElement('div'); g.className = 'book-genre'; g.textContent = genre; body.appendChild(g); }
+
+      const title = document.createElement('div');
+      title.className = 'book-title';
+      title.textContent = book.title || 'Untitled';
+      body.appendChild(title);
+
+      const amount = book.pricing?.amount || 0;
+      const isOnSale = Number(book.salePrice) > 0 && Number(book.salePrice) < amount;
+      const priceRow = document.createElement('div');
+      priceRow.className = 'book-price-row';
+      if (isOnSale) {
+        priceRow.innerHTML = `<span class="book-price">${esc(book.pricing?.currency || 'GHS')} ${Number(book.salePrice).toFixed(2)}</span><span class="book-price-old">${esc(book.pricing?.currency || 'GHS')} ${amount.toFixed(2)}</span>`;
+      } else {
+        priceRow.innerHTML = `<span class="book-price${amount <= 0 ? ' free' : ''}">${amount <= 0 ? 'FREE' : esc(book.pricing?.currency || 'GHS') + ' ' + amount.toFixed(2)}</span>`;
+      }
+      body.appendChild(priceRow);
+
+      const avgRating = book.ratingCount > 0 ? (book.ratingSum / book.ratingCount) : 0;
+      if (avgRating > 0 || book.ratingCount > 0) {
+        const r = document.createElement('div');
+        r.className = 'book-rating';
+        r.innerHTML = `<i class="fas fa-star"></i> ${avgRating.toFixed(1)} <span>(${formatNum(book.ratingCount)})</span>`;
+        body.appendChild(r);
+      }
+
+      a.appendChild(body);
+      return a;
+    }
+
+    /* ===== LOAD AUTHOR ===== */
+    async function loadAuthor() {
+      const params = new URLSearchParams(window.location.search);
+      const uid = params.get('uid');
+      if (!uid) {
+        profileWrap.innerHTML = `<div class="error-state"><i class="fas fa-user-slash"></i><h3>Author not found</h3><p>No author was specified.</p></div>`;
+        return;
+      }
+
+      let userData = null;
+      try {
+        const snap = await getDoc(doc(db, 'users', uid));
+        if (snap.exists()) userData = snap.data();
+      } catch (err) { console.error('Profile load error:', err); }
+
+      let books = [];
+      try {
+        const snap = await getDocs(query(collection(db, 'books'), where('submittedBy', '==', uid), where('status', '==', 'approved')));
+        books = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        books.sort((a, b) => {
+          const ta = a.approvedAt?.seconds || a.createdAt?.seconds || 0;
+          const tb = b.approvedAt?.seconds || b.createdAt?.seconds || 0;
+          return tb - ta;
+        });
+      } catch (err) { console.error('Books load error:', err); }
+
+      if (!userData && books.length === 0) {
+        profileWrap.innerHTML = `<div class="error-state"><i class="fas fa-user-slash"></i><h3>Profile unavailable</h3><p>We couldn't find this author on Volant Reads.</p></div>`;
+        return;
+      }
+
+      const name = userData?.authorName || userData?.username || userData?.displayName || books[0]?.authorName || 'Anonymous Author';
+      const username = userData?.username || '';
+      const bio = userData?.authorBio || userData?.bio || '';
+      const country = userData?.country || '';
+      const avatar = userData?.photoURL || userData?.cachedAvatarURL || '';
+
+      /* Aggregated stats */
+      const totalBooks = books.length;
+      const totalSales = books.reduce((s, b) => s + (Number(b.saleCount) || 0), 0);
+      const totalRatingSum = books.reduce((s, b) => s + (Number(b.ratingSum) || 0), 0);
+      const totalRatingCount = books.reduce((s, b) => s + (Number(b.ratingCount) || 0), 0);
+      const avgRating = totalRatingCount > 0 ? (totalRatingSum / totalRatingCount) : 0;
+      const followerCount = userData?.followerCount || 0;
+
+      profileWrap.innerHTML = `
+        <div class="author-hero">
+          <div class="author-hero-accent"></div>
+          <div class="author-hero-body">
+            <div class="author-avatar">
+              ${avatar
+                ? `<img src="${esc(avatar)}" alt="${esc(name)}" onerror="this.style.display='none';this.parentElement.innerHTML='<span class=initials>${esc(initials(name))}</span>';">`
+                : `<span class="initials">${esc(initials(name))}</span>`}
+            </div>
+            <div class="author-info">
+              <div class="author-name">${esc(name)}</div>
+              ${username ? `<div class="author-handle"><i class="fas fa-at"></i> ${esc(username)}</div>` : ''}
+              <div class="author-meta-row">
+                ${country ? `<span class="author-badge"><i class="fas fa-map-marker-alt"></i> ${esc(country)}</span>` : ''}
+                <button class="share-btn" id="shareBtn"><i class="fas fa-share-alt"></i> Share Profile</button>
+              </div>
+              <div class="author-stats">
+                <div class="stat"><span class="num">${formatNum(totalBooks)}</span><span class="label">Books</span></div>
+                <div class="stat"><span class="num">${formatNum(totalSales)}</span><span class="label">Sold</span></div>
+                ${avgRating > 0 ? `<div class="stat"><span class="num">${avgRating.toFixed(1)}</span><span class="label">Rating</span></div>` : ''}
+${followerCount > 0 ? `<div class="stat"><span class="num">${formatNum(followerCount)}</span><span class="label">Followers</span></div>` : ''}
+              </div>
+              ${buildSocialsHTML(userData?.socials)}
+            </div>
+          </div>
+        </div>
+
+        ${bio ? `
+        <div class="about-card">
+          <h3><i class="fas fa-feather-alt"></i> About the Author</h3>
+          <p>${esc(bio)}</p>
+        </div>` : ''}
+
+        <div class="section-heading"><i class="fas fa-book"></i> Books by this author${totalBooks > 0 ? ` <span style="font-family:Inter,sans-serif;font-size:0.8rem;font-weight:500;color:var(--text-light);">(${totalBooks})</span>` : ''}</div>
+
+        ${books.length === 0
+          ? `<div class="empty-state"><i class="fas fa-book-open"></i><h3>No published books yet</h3><p>This author hasn't published any books on Volant Reads yet.</p></div>`
+          : `<div class="books-grid" id="booksGrid"></div>`}
+      `;
+
+      const grid = document.getElementById('booksGrid');
+      if (grid) books.forEach(b => grid.appendChild(buildBookCard(b)));
+
+      /* Share */
+      document.getElementById('shareBtn')?.addEventListener('click', () => {
+        const url = `${location.origin}/store1/author.html?uid=${encodeURIComponent(uid)}`;
+        if (navigator.share) {
+          navigator.share({ title: `${name} on Volant Reads`, url });
+        } else {
+          navigator.clipboard.writeText(url).then(() => showToast('Profile link copied!')).catch(() => showToast('Could not copy link.'));
+        }
+      });
+    }
+
+    loadAuthor();
+  </script>
+</body>
+</html>

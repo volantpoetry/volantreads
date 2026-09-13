@@ -55,6 +55,18 @@
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="icon" type="image/png" href="https://volantpoetry.vercel.app/images/volant-reads-favicon.png" />
   <link rel="apple-touch-icon" href="https://volantpoetry.vercel.app/images/volant-reads-favicon.png" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#4b2aad" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Volant Reads" />
+
+  <script>
+        if ('serviceWorker' in navigator && location.protocol === 'https:') {
+            navigator.serviceWorker.register('./sw.js').catch(function() {});
+        }
+    </script>
 
   <style>
    * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter',sans-serif; }
@@ -212,6 +224,7 @@ body { background:#f7f7fb; color:#1d1833; }
 .page-card .badge-status.approved { background:#dff7e5; color:#15723d; }
 .page-card .badge-status.rejected { background:#fde8e8; color:#c62828; }
 .page-card .badge-status.draft { background:#f0f0f0; color:#666; }
+.page-card .badge-status.hidden { background:#fdeee3; color:#9c3a1e; }
 
 .sales-badge {
   display:inline-block; padding:2px 12px; border-radius:999px;
@@ -273,6 +286,31 @@ body { background:#f7f7fb; color:#1d1833; }
   transform:scale(1.05);
 }
 .share-book-btn i {
+  font-size:0.65rem;
+}
+
+.delist-book-btn {
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  background:#9c3a1e;
+  color:white;
+  border:none;
+  padding:6px 16px;
+  border-radius:20px;
+  font-size:0.7rem;
+  font-weight:600;
+  cursor:pointer;
+  transition:0.2s;
+  margin-top:6px;
+  align-self:flex-start;
+  text-decoration:none;
+}
+.delist-book-btn:hover {
+  background:#7c2d15;
+  transform:scale(1.05);
+}
+.delist-book-btn i {
   font-size:0.65rem;
 }
 
@@ -1073,6 +1111,123 @@ nav {
   cursor: pointer;
 }
 .btn-logout:hover { background:#fef0f0; color:#b33; border-color:#b33; }
+.btn-notif {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.3rem;
+  height: 2.3rem;
+  border-radius: 8px;
+  background: transparent;
+  border: 1px solid #ede7df;
+  color: #6f6252;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: 0.3s;
+}
+.btn-notif:hover { background:#f5f1eb; color:#5a2dca; border-color:#5a2dca; }
+.notif-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: #e74c3c;
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+}
+.btn-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.3rem;
+  height: 2.3rem;
+  border-radius: 50%;
+  background: transparent;
+  border: 1px solid #ede7df;
+  cursor: pointer;
+  padding: 0;
+  overflow: hidden;
+  transition: 0.3s;
+}
+.btn-avatar:hover { border-color: #b33; box-shadow: 0 2px 8px rgba(231,76,60,0.25); }
+.nav-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6a34ff, #4b2aad);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  background-size: cover;
+  background-position: center;
+}
+.user-wrap { position: relative; display: inline-flex; }
+.account-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 10px);
+  width: 250px;
+  background: #fff;
+  border: 1px solid #ede7df;
+  border-radius: 14px;
+  box-shadow: 0 16px 34px rgba(0,0,0,0.16);
+  padding: 0.55rem 0.4rem;
+  z-index: 400;
+  display: none;
+  flex-direction: column;
+}
+.account-menu.open { display: flex; }
+.account-menu hr { border: none; border-top: 1px solid #ede7df; margin: 0.4rem 0; }
+.acct-head { display: flex; align-items: center; gap: 0.7rem; padding: 0.25rem 0.5rem; }
+.acct-pic {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  border-radius: 50%;
+  background: #efeaff;
+  color: #6a34ff;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 0.9rem;
+  overflow: hidden;
+  background-size: cover;
+  background-position: center;
+}
+.acct-pic img { width: 100%; height: 100%; object-fit: cover; }
+.acct-id { min-width: 0; }
+.acct-name { font-weight: 700; font-size: 0.9rem; color: #1d1833; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.acct-email { font-size: 0.75rem; color: #8a8698; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.acct-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.55rem 0.7rem;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  color: #1d1833;
+  background: none;
+  border: none;
+  text-align: left;
+  width: 100%;
+  cursor: pointer;
+  transition: background 0.13s ease, color 0.13s ease;
+}
+.acct-item i { color: #6a34ff; width: 1.15rem; text-align: center; }
+.acct-item:hover { background: #f3efff; color: #4b2aad; }
+.acct-foot { font-size: 0.72rem; color: #8a8698; text-align: center; padding: 0.4rem 0 0.1rem; }
 .menu-toggle {
   display: none;
   background: none;
@@ -1144,10 +1299,14 @@ nav {
   flex-direction: column;
   padding: 16px 18px;
   border-bottom: 1px solid #f0f0f0;
+  border-left: 3px solid transparent;
+  border-radius: 10px;
   transition: 0.2s;
   cursor: default;
 }
 .message-item:hover { background:#faf9ff; }
+.message-item.unread { border-left-color: #6a34ff; background: #faf8ff; }
+.message-item .message-body a.read-link { color:#6a34ff; text-decoration:underline; font-weight:500; }
 .message-item:last-child { border-bottom:none; }
 .message-item .message-header {
   display: flex;
@@ -1172,6 +1331,153 @@ nav {
 .message-item .badge-read { background:#dff7e5; color:#15723d; padding:1px 10px; border-radius:999px; font-size:0.6rem; font-weight:600; }
 .message-item .btn-mark-read { background:none; border:none; color:#6a34ff; font-size:0.7rem; cursor:pointer; padding:2px 8px; border-radius:4px; transition:0.2s; }
 .message-item .btn-mark-read:hover { background:#f0eaff; text-decoration:underline; }
+.message-item .message-header > div:last-child { flex-shrink:0; }
+.message-item .message-sender { min-width:0; }
+.message-item .message-sender .sender-email a { white-space:normal; overflow-wrap:anywhere; word-break:break-word; }
+.message-item .message-subject, .message-body, .message-meta span { overflow-wrap:anywhere; word-break:break-word; }
+
+/* Mobile: stack message header, let long emails/subjects wrap cleanly */
+@media (max-width: 600px) {
+  .message-item { padding: 14px; }
+  .message-item .message-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+  .message-item .message-sender {
+    flex-wrap: wrap;
+    gap: 6px 8px;
+  }
+  .message-item .message-sender .sender-email {
+    display: block;
+    width: 100%;
+    margin-left: 1.3rem;
+  }
+  .message-item .message-header > div:last-child {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .message-item .message-meta {
+    flex-wrap: wrap;
+    gap: 8px 14px;
+  }
+  .message-item .message-meta span {
+    display: inline-flex;
+    align-items: center;
+  }
+}
+
+/* ===== MESSAGES / NOTIFICATIONS TABS ===== */
+.msg-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.msg-tab {
+  background: #f0eaff;
+  color: #5b4bb7;
+  border: 1px solid #e0d8ff;
+  padding: 8px 18px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.msg-tab.active {
+  background: #6a34ff;
+  color: #fff;
+  border-color: #6a34ff;
+}
+.msg-tab i { margin-right: 6px; }
+.msg-tab-panel { margin-bottom: 0; }
+
+/* ===== NOTIFICATIONS FEED (inside Messages tab) ===== */
+.notif-page-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 0 4px 12px;
+  border-bottom: 1px solid #f0f0f0;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+.notif-page-summary { font-size: 0.8rem; color: #999; }
+.btn-mark-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #6a34ff;
+  color: #fff;
+  border: none;
+  padding: 7px 14px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+  white-space: nowrap;
+}
+.btn-mark-all:hover { background: #5629d6; transform: translateY(-1px); }
+.btn-mark-all:active { transform: translateY(0); }
+.notif-page-item {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 12px 8px;
+  border-bottom: 1px solid #f0f0f0;
+  border-left: 3px solid transparent;
+  border-radius: 10px;
+}
+.notif-page-item:last-child { border-bottom: none; }
+.notif-page-item.unread { background: #f6f2ff; }
+.notif-page-item.plnot-reads { border-left-color: #0b57d0; }
+.notif-page-item.plnot-lyrics { border-left-color: #a21caf; }
+.notif-page-item.plnot-mall { border-left-color: #157347; }
+.notif-page-item.plnot-poetry { border-left-color: #b04a00; }
+.notif-page-badge-line { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; }
+.notif-page-msg a.read-link { color:#6a34ff; text-decoration:underline; font-weight:500; }
+.notif-page-msg .notif-user-link { font-weight: 600; color: #B8860B; text-decoration: none; }
+.notif-page-msg .notif-user-link:hover { text-decoration: underline; color: #DAA520; }
+.notif-page-msg .notif-poem-link { font-weight: 700; color: #4b2aad; text-decoration: none; }
+.notif-page-msg a.notif-poem-link { border-bottom: 1px dashed #c2b5f0; }
+.notif-page-msg a.notif-poem-link:hover { border-bottom: 1px solid #4b2aad; color: #2c1a6e; }
+.notif-page-msg .email-link { color:#6a34ff; text-decoration:underline; }
+.notif-page-content { min-width: 0; flex: 1; }
+.notif-page-msg { font-size: 0.92rem; color: #2d2a24; line-height: 1.4; overflow-wrap: anywhere; word-break: break-word; }
+.notif-page-platform {
+  display: inline-flex;
+  align-items: center;
+  background: #f3e9ff;
+  color: #6a34ff;
+  border: 1px solid #e0d2ff;
+  border-radius: 999px;
+  padding: 1px 9px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+.notif-page-platform.notif-page-platform-reads { background: #e8f4ff; color: #0b57d0; border-color: #c7e3ff; }
+.notif-page-platform.notif-page-platform-lyrics { background: #fdecf4; color: #a21caf; border-color: #f5c6e0; }
+.notif-page-platform.notif-page-platform-mall { background: #eafaf0; color: #157347; border-color: #bfeccd; }
+.notif-page-platform.notif-page-platform-poetry { background: #fef3e2; color: #b04a00; border-color: #ffd9a3; }
+.notif-page-platform.notif-page-platform-team { background: #f0eefe; color: #5a3ec8; border-color: #d9cef7; }
+.notif-page-time { font-size: 0.72rem; color: #999; margin-top: 3px; display: flex; align-items: center; gap: 8px; }
+
+@media (max-width: 600px) {
+  .msg-tabs { flex-wrap: wrap; }
+  .msg-tab { padding: 7px 12px; font-size: 0.8rem; }
+  .notif-page-actions { flex-direction: column; align-items: stretch; }
+  .btn-mark-all { justify-content: center; }
+  .notif-page-item { padding: 10px 4px; }
+  .notif-page-msg { font-size: 0.88rem; }
+}
 
 .toast {
   position:fixed;
@@ -1217,7 +1523,9 @@ nav {
   .logo-header { font-size: 1.1rem !important; padding-left: 0 !important; }
   .logo-text { font-size: 1.1rem !important; }
   .nav-logo-img { width: 28px !important; height: 28px !important; }
-  .btn-store, .btn-logout { font-size: 0.7rem !important; padding: 0.25rem 0.7rem !important; }
+  .btn-store { font-size: 0.7rem !important; padding: 0.25rem 0.7rem !important; }
+  .btn-avatar { width: 1.9rem !important; height: 1.9rem !important; }
+  .btn-notif { width: 1.9rem !important; height: 1.9rem !important; font-size: 0.85rem !important; }
   .nav-right { padding-right: 0 !important; gap: 0.4rem !important; }
   .profile-avatar { width: 28px !important; height: 28px !important; font-size: 1rem !important; }
   .page-grid { grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); }
@@ -1235,7 +1543,10 @@ nav {
   .logo-header { font-size: 0.9rem !important; gap: 0.3rem !important; padding-left: 0 !important; }
   .logo-text { font-size: 0.9rem !important; }
   .nav-logo-img { width: 22px !important; height: 22px !important; }
-  .btn-store, .btn-logout { font-size: 0.6rem !important; padding: 0.2rem 0.5rem !important; border-radius: 4px !important; }
+  .btn-store { font-size: 0.6rem !important; padding: 0.2rem 0.5rem !important; border-radius: 4px !important; }
+  .btn-avatar { width: 1.7rem !important; height: 1.7rem !important; }
+  .btn-notif { width: 1.7rem !important; height: 1.7rem !important; font-size: 0.75rem !important; }
+  .nav-avatar { font-size: 0.6rem !important; }
   .nav-right { padding-right: 0 !important; gap: 0.3rem !important; }
   .profile-avatar { width: 22px !important; height: 22px !important; font-size: 0.8rem !important; }
   .page-card .book-title { font-size:0.8rem !important; }
@@ -2795,11 +3106,31 @@ body:has(#page-mylibrary.active) #setupAlertBanner {
       <span class="logo-text"><span class="logo-highlight">Volant</span> Reads</span>
     </a>
     <div class="nav-right" id="navRight">
+      <a href="index.html" class="btn-store"><i class="fas fa-store"></i> Store</a>
+      <button class="btn-notif" id="notifBellBtn" title="Notifications" aria-label="Notifications">
+        <i class="fas fa-bell"></i>
+        <span class="notif-badge" id="notifBadge" style="display:none;">0</span>
+      </button>
+      <div class="user-wrap">
+        <button class="btn-avatar" id="signOutBtn" title="Account" aria-label="Account">
+          <span class="nav-avatar" id="navAvatar">U</span>
+        </button>
+        <div class="account-menu" id="accountMenu">
+          <div class="acct-head">
+            <div class="acct-pic" id="navAcctPic">U</div>
+            <div class="acct-id">
+              <div class="acct-name" id="navAcctName">…</div>
+              <div class="acct-email" id="navAcctEmail"></div>
+            </div>
+          </div>
+          <hr>
+          <button class="acct-item" id="navAcctSignOut" type="button"><i class="fas fa-sign-out-alt"></i> Sign out</button>
+          <small class="acct-foot">Signed in on Volant Reads</small>
+        </div>
+      </div>
       <button class="menu-toggle" id="menuToggle" aria-label="Toggle Menu">
         <i class="fas fa-bars"></i>
       </button>
-      <button class="btn-logout" id="signOutBtn" title="Sign out"><i class="fas fa-sign-out-alt"></i> Sign Out</button>
-      <a href="index.html" class="btn-store"><i class="fas fa-store"></i> Store</a>
     </div>
   </nav>
 </header>
@@ -2821,6 +3152,7 @@ body:has(#page-mylibrary.active) #setupAlertBanner {
       <a data-page="dashboard"><i class="fas fa-th-large"></i> Dashboard</a>
       <a data-page="mybooks"><i class="fas fa-edit"></i> My Books</a>
       <a data-page="sales"><i class="fas fa-chart-simple"></i> Sales</a>
+      <a data-page="finances"><i class="fas fa-coins"></i> Finances</a>
       <a data-page="analytics"><i class="fas fa-chart-line"></i> Analytics</a>
       <a data-page="wishlist"><i class="fas fa-heart"></i> Wishlist <span class="wishlist-badge" id="wishlistNavBadge">0</span></a>
       <a data-page="messages"><i class="fas fa-comment-dots"></i> Messages <span class="message-badge" id="messageNavBadge">0</span></a>
@@ -3056,6 +3388,24 @@ body:has(#page-mylibrary.active) #setupAlertBanner {
     </div>
   </div>
 
+  <!-- FINANCES PAGE -->
+  <div class="page-section" id="page-finances">
+    <div class="page-header">
+      <h2>💵 Finances</h2>
+      <p>Your earnings, per-book sales and payout history.</p>
+    </div>
+    <div class="stats" id="financeStats"></div>
+    <div class="panel" style="margin-top:20px;">
+      <h3 style="margin-bottom:16px;">Earnings by book</h3>
+      <div id="financeByBook"></div>
+    </div>
+    <div class="panel" style="margin-top:20px;">
+      <h3 style="margin-bottom:16px;">Recent transactions</h3>
+      <div id="financeTransactions"></div>
+    </div>
+    <div id="financeNote" style="margin-top:12px; font-size:0.78rem; color:#888;"></div>
+  </div>
+
   <!-- ANALYTICS PAGE -->
   <div class="page-section" id="page-analytics">
     <div class="page-header">
@@ -3086,10 +3436,23 @@ body:has(#page-mylibrary.active) #setupAlertBanner {
   <div class="page-section" id="page-messages">
     <div class="page-header">
       <h2>💬 Messages</h2>
-      <p>Communicate with readers and other authors.</p>
+      <p>Communicate with readers and other authors. Notifications are kept for 90 days.</p>
     </div>
-    <div class="panel">
+    <div class="msg-tabs">
+      <button type="button" class="msg-tab active" data-msg-tab="messages"><i class="fas fa-comment-dots"></i> Messages</button>
+      <button type="button" class="msg-tab" data-msg-tab="notifications"><i class="fas fa-bell"></i> Notifications</button>
+    </div>
+    <div class="panel msg-tab-panel" id="msgTabMessages">
       <div id="messagesList">
+        <!-- populated by JS -->
+      </div>
+    </div>
+    <div class="panel msg-tab-panel" id="msgTabNotifications" style="display:none;">
+      <div class="notif-page-actions">
+        <span class="notif-page-summary" id="notifPageSummary">90 days of notifications</span>
+        <button type="button" class="btn-mark-all" id="notifPageMarkAll"><i class="fas fa-check-double"></i> Mark all read</button>
+      </div>
+      <div id="notificationsList">
         <!-- populated by JS -->
       </div>
     </div>
@@ -3192,6 +3555,37 @@ body:has(#page-mylibrary.active) #setupAlertBanner {
         <label>Publisher Name <span style="font-weight:400;font-size:0.7rem;color:#888;">optional</span></label>
         <input type="text" id="settingsPublisherName" placeholder="Publisher name (leave empty to use author name)" />
         <div class="hint">If different from your author name.</div>
+      </div>
+
+      <div class="settings-group">
+        <label>Social Media Handles <span style="font-weight:400;font-size:0.7rem;color:#888;">optional</span></label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div class="settings-group" style="margin:0;">
+            <label style="display:flex;align-items:center;gap:6px;"><i class="fab fa-instagram" style="color:#e1306c;"></i> Instagram</label>
+            <input type="text" id="settingsInstagram" placeholder="@yourhandle or link" />
+          </div>
+          <div class="settings-group" style="margin:0;">
+            <label style="display:flex;align-items:center;gap:6px;"><i class="fab fa-tiktok" style="color:#010101;"></i> TikTok</label>
+            <input type="text" id="settingsTikTok" placeholder="@yourhandle or link" />
+          </div>
+          <div class="settings-group" style="margin:0;">
+            <label style="display:flex;align-items:center;gap:6px;"><i class="fab fa-x-twitter" style="color:#000;"></i> X (Twitter)</label>
+            <input type="text" id="settingsTwitter" placeholder="@yourhandle or link" />
+          </div>
+          <div class="settings-group" style="margin:0;">
+            <label style="display:flex;align-items:center;gap:6px;"><i class="fab fa-facebook-f" style="color:#1877f2;"></i> Facebook</label>
+            <input type="text" id="settingsFacebook" placeholder="Profile link or page" />
+          </div>
+          <div class="settings-group" style="margin:0;">
+            <label style="display:flex;align-items:center;gap:6px;"><i class="fab fa-whatsapp" style="color:#25d366;"></i> WhatsApp</label>
+            <input type="text" id="settingsWhatsapp" placeholder="+233 24 444 4444" />
+          </div>
+          <div class="settings-group" style="margin:0;">
+            <label style="display:flex;align-items:center;gap:6px;"><i class="fas fa-globe" style="color:#6a34ff;"></i> Website</label>
+            <input type="text" id="settingsWebsite" placeholder="https://yourwebsite.com" />
+          </div>
+        </div>
+        <div class="hint">These will appear on your public author profile so readers can connect with you.</div>
       </div>
 
       <div class="settings-group">
@@ -3312,7 +3706,7 @@ body:has(#page-mylibrary.active) #setupAlertBanner {
     <!-- ===== YOUR EARNINGS ===== -->
     <div class="settings-tab-content" id="settings-tab-earnings">
       <h3 style="margin-bottom:20px;">💰 Your Earnings</h3>
-      <p style="color:#888; margin-bottom:16px;">Track your book sales and revenue all in one place.</p>
+      <p style="color:#888; margin-bottom:16px;">Track your book sales and revenue all in one place. A sale counts as paid only after Paystack confirms the settlement (usually the next working day).</p>
 
       <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; margin-bottom:20px;">
         <div style="background:#f8f6ff; padding:16px; border-radius:12px; text-align:center; border:1px solid #ede8ff;">
@@ -3323,8 +3717,12 @@ body:has(#page-mylibrary.active) #setupAlertBanner {
           <div style="font-size:0.75rem; color:#888; text-transform:uppercase; letter-spacing:0.5px;">Total Earnings</div>
           <div style="font-size:1.6rem; font-weight:700; color:#15723d;" id="totalEarnings">GHS 0.00</div>
         </div>
+        <div style="background:#e8f6ff; padding:16px; border-radius:12px; text-align:center; border:1px solid #c2e4fa;">
+          <div style="font-size:0.75rem; color:#888; text-transform:uppercase; letter-spacing:0.5px;">Paid Out</div>
+          <div style="font-size:1.6rem; font-weight:700; color:#1a73e8;" id="paidOut">GHS 0.00</div>
+        </div>
         <div style="background:#fff8e6; padding:16px; border-radius:12px; text-align:center; border:1px solid #f0e0b5;">
-          <div style="font-size:0.75rem; color:#888; text-transform:uppercase; letter-spacing:0.5px;">Pending Payout</div>
+          <div style="font-size:0.75rem; color:#888; text-transform:uppercase; letter-spacing:0.5px;">Outstanding Balance</div>
           <div style="font-size:1.6rem; font-weight:700; color:#a8640b;" id="pendingPayout">GHS 0.00</div>
         </div>
         <div style="background:#f0f0f0; padding:16px; border-radius:12px; text-align:center; border:1px solid #ddd; display:none;" id="commissionCard">
@@ -3426,6 +3824,18 @@ body:has(#page-mylibrary.active) #setupAlertBanner {
           <input type="date" id="updatePublishDate" required />
         </div>
       </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Series Name</label>
+          <input type="text" id="updateSeriesName" placeholder="e.g. The Silent Waves Saga" />
+        </div>
+        <div class="form-group">
+          <label>Series Position</label>
+          <input type="number" id="updateSeriesOrder" placeholder="e.g. 2" min="1" />
+        </div>
+      </div>
+      <p style="font-size:0.8rem; color:#888; margin-top:-6px; margin-bottom:14px;">Books sharing a series name can be bought together as a bundle. Position 1 = first book.</p>
 
       <div class="form-row">
         <div class="form-group">
@@ -3551,7 +3961,7 @@ body:has(#page-mylibrary.active) #setupAlertBanner {
       <div class="form-group">
         <label>PDF File</label>
         <div class="file-input-wrapper">
-          <input type="file" id="updatePdfFile" accept=".pdf" />
+          <input type="file" id="updatePdfFile" accept=".pdf,application/pdf" />
           <span class="current-file" id="updatePdfCurrent">Current PDF saved</span>
         </div>
         <div class="file-hint">Upload a new PDF to replace the current one. Max 15MB.</div>
@@ -3665,13 +4075,17 @@ body:has(#page-mylibrary.active) #setupAlertBanner {
     query, 
     where, 
     getDocs, 
+    onSnapshot, 
     getDoc, 
     doc, 
     updateDoc,
     deleteDoc,
     serverTimestamp,
     addDoc,
-    increment
+    increment,
+    limit,
+    orderBy,
+    writeBatch
   } from "firebase/firestore";
   import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 
@@ -3716,8 +4130,16 @@ body:has(#page-mylibrary.active) #setupAlertBanner {
   const settingsGmail = document.getElementById('settingsGmail');
   const settingsPhoneNumber = document.getElementById('settingsPhoneNumber');
   const settingsPublisherName = document.getElementById('settingsPublisherName');
+  const settingsInstagram = document.getElementById('settingsInstagram');
+  const settingsTikTok = document.getElementById('settingsTikTok');
+  const settingsTwitter = document.getElementById('settingsTwitter');
+  const settingsFacebook = document.getElementById('settingsFacebook');
+  const settingsWhatsapp = document.getElementById('settingsWhatsapp');
+  const settingsWebsite = document.getElementById('settingsWebsite');
   const wishlistNavBadge = document.getElementById('wishlistNavBadge');
   const messageNavBadge = document.getElementById('messageNavBadge');
+  const notifBellBtn = document.getElementById('notifBellBtn');
+  const notifBadge = document.getElementById('notifBadge');
   const myBooksGrid = document.getElementById('myBooksGrid');
   const chartDays = document.getElementById('chartDays');
 
@@ -3763,6 +4185,8 @@ body:has(#page-mylibrary.active) #setupAlertBanner {
   const updateAuthorBio = document.getElementById('updateAuthorBio');
   const updateBookSynopsis = document.getElementById('updateBookSynopsis');
   const updateIsbn = document.getElementById('updateIsbn');
+  const updateSeriesName = document.getElementById('updateSeriesName');
+  const updateSeriesOrder = document.getElementById('updateSeriesOrder');
   const updatePublishDate = document.getElementById('updatePublishDate');
   const updateGenre = document.getElementById('updateGenre');
   const updateLanguage = document.getElementById('updateLanguage');
@@ -4506,6 +4930,7 @@ body:has(#page-mylibrary.active) #setupAlertBanner {
       let totalSales = 0;
       let totalEarnings = 0;
       let totalCommission = 0;
+      let paidOut = 0;
       let pendingPayout = 0;
       const transactions = [];
       
@@ -4517,11 +4942,29 @@ body:has(#page-mylibrary.active) #setupAlertBanner {
         const netAmount = amount - fee;
         const commission = netAmount * (commissionRate / 100);
         const earnings = netAmount - commission;
+        const rawSettle = data.settlementDate;
+        const settlementDate = rawSettle ? new Date(rawSettle) : null;
+        let settled;
+        if (data.settlementStatus === 'paid') {
+          settled = true;
+        } else if (data.settlementStatus === 'attention' || data.settlementStatus === 'failed') {
+          settled = false;
+        } else if (data.settlementStatus === 'pending') {
+          settled = false;
+        } else {
+          // Legacy sales (before settlement tracking). Checkout required an
+          // active subaccount, so their Paystack split settled long ago.
+          settled = true;
+        }
         
         totalSales++;
         totalEarnings += earnings;
         totalCommission += commission;
-        pendingPayout += earnings;
+        if (settled) {
+          paidOut += earnings;
+        } else {
+          pendingPayout += earnings;
+        }
         
         transactions.push({
           bookTitle: data.bookTitle || 'Unknown Book',
@@ -4530,28 +4973,39 @@ body:has(#page-mylibrary.active) #setupAlertBanner {
           commission: commission,
           earnings: earnings,
           date: data.purchasedAt?.toDate?.() || new Date(data.purchasedAt) || new Date(),
-          status: data.status || 'completed'
+          status: settled ? 'paid' : (data.settlementStatus === 'attention' || data.settlementStatus === 'failed' ? 'attention' : 'pending')
         });
       });
       
       document.getElementById('totalSales').textContent = totalSales;
       document.getElementById('totalEarnings').textContent = `GHS ${totalEarnings.toFixed(2)}`;
       document.getElementById('totalCommission').textContent = `GHS ${totalCommission.toFixed(2)}`;
+      document.getElementById('paidOut').textContent = `GHS ${paidOut.toFixed(2)}`;
       document.getElementById('pendingPayout').textContent = `GHS ${pendingPayout.toFixed(2)}`;
       
       const historyDiv = document.getElementById('transactionHistory');
       if (transactions.length === 0) {
         historyDiv.innerHTML = `<p style="color: #888; padding: 10px 0;">No transactions yet.</p>`;
       } else {
-        historyDiv.innerHTML = transactions.sort((a, b) => b.date - a.date).slice(0, 10).map(t => `
+        historyDiv.innerHTML = transactions.sort((a, b) => b.date - a.date).slice(0, 10).map(t => {
+            const chip = t.status === 'paid'
+              ? { label: 'Paid', bg: '#dff7e5', fg: '#15723d' }
+              : t.status === 'attention'
+                ? { label: 'Review', bg: '#fdeaea', fg: '#c62828' }
+                : { label: 'Settling', bg: '#fff8e6', fg: '#a8640b' };
+            return `
           <div class="row">
             <span>
               <strong>${t.bookTitle}</strong>
               <span style="font-size:0.75rem;color:#888;margin-left:8px;">${t.date.toLocaleDateString()}</span>
             </span>
-            <span style="color:#15723d;">+GHS ${t.earnings.toFixed(2)}</span>
+            <span style="display:flex;align-items:center;gap:8px;">
+              <span style="font-size:0.65rem;font-weight:600;padding:2px 8px;border-radius:20px;background:${chip.bg};color:${chip.fg};">${chip.label}</span>
+              <span style="color:#15723d;">+GHS ${t.earnings.toFixed(2)}</span>
+            </span>
           </div>
-        `).join('');
+        `;
+          }).join('');
       }
     } catch (err) {
       console.warn('Error loading earnings:', err);
@@ -4672,6 +5126,14 @@ body:has(#page-mylibrary.active) #setupAlertBanner {
         settingsGmail.value = data.gmail || '';
         settingsPhoneNumber.value = data.phoneNumber || '';
         settingsPublisherName.value = data.publisherName || '';
+
+        const socials = data.socials || {};
+        settingsInstagram.value = (socials.instagram || '').replace(/^@/, '');
+        settingsTikTok.value = (socials.tiktok || '').replace(/^@/, '');
+        settingsTwitter.value = (socials.twitter || '').replace(/^@/, '');
+        settingsFacebook.value = socials.facebook || '';
+        settingsWhatsapp.value = socials.whatsapp || '';
+        settingsWebsite.value = socials.website || '';
         
         if (data.country) {
           const savedCountry = data.country.trim();
@@ -4755,6 +5217,10 @@ body:has(#page-mylibrary.active) #setupAlertBanner {
       loadRecommendations();
       loadBadges();
       loadReadingStats();
+    }
+    
+    if (pageId === 'messages') {
+      markAllMessagesRead();
     }
     
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -4879,7 +5345,8 @@ body:has(#page-mylibrary.active) #setupAlertBanner {
         'pending': '⏳ Pending Review',
         'approved': '✅ Published',
         'rejected': '❌ Not Accepted',
-        'draft': '📄 Draft'
+        'draft': '📄 Draft',
+        'hidden': '🙈 Delisted'
       };
       const statusText = statusLabels[book.status] || book.status.charAt(0).toUpperCase() + book.status.slice(1);
       statusBadge.className = `badge-status ${book.status}`;
@@ -4923,9 +5390,47 @@ body:has(#page-mylibrary.active) #setupAlertBanner {
     });
     btnGroup.appendChild(shareBtn);
 
+    if (showStatus && book.status && (book.status === 'approved' || book.status === 'hidden')) {
+      const delistBtn = document.createElement('button');
+      delistBtn.className = 'delist-book-btn';
+      const isHidden = book.status === 'hidden';
+      delistBtn.innerHTML = isHidden ? '<i class="fas fa-eye"></i> Relist' : '<i class="fas fa-eye-slash"></i> Delist';
+      delistBtn.title = isHidden ? 'Make this book visible in the bookstore again' : 'Hide this book from the bookstore';
+      delistBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        toggleBookVisibility(book.id);
+      });
+      btnGroup.appendChild(delistBtn);
+    }
+
     body.appendChild(btnGroup);
     card.appendChild(body);
     return card;
+  }
+
+  // ===== DELIST / RELIST BOOK =====
+  async function toggleBookVisibility(bookId) {
+    const book = authorBooks.find(b => b.id === bookId);
+    if (!book) { showToast('❌ Book not found', 'error'); return; }
+    if (book.status !== 'approved' && book.status !== 'hidden') {
+      showToast('Only published books can be delisted.', 'info');
+      return;
+    }
+    const next = book.status === 'approved' ? 'hidden' : 'approved';
+    const hide = next === 'hidden';
+    if (!confirm(hide
+      ? `Delist "${book.title || 'Untitled'}"?\n\nIt will be hidden from the bookstore until you relist it. Your book stays on the platform — nothing is deleted.`
+      : `Relist "${book.title || 'Untitled'}"?\n\nIt will become visible in the bookstore again.`)) return;
+    try {
+      await updateDoc(doc(db, "books", bookId), { status: next, updatedAt: serverTimestamp() });
+      book.status = next;
+      showToast(hide ? 'Book delisted. Hidden from the bookstore.' : 'Book relisted. Live in the bookstore again.', 'success');
+      renderMyBooks(authorBooks);
+      renderMyBooksPage(authorBooks);
+    } catch (err) {
+      console.error("Toggle visibility error:", err);
+      showToast('Error updating book: ' + err.message, 'error');
+    }
   }
 
   // ===== OPEN UPDATE MODAL =====
@@ -4961,6 +5466,8 @@ body:has(#page-mylibrary.active) #setupAlertBanner {
       updateCurrency.value = data.pricing?.currency || 'GHS';
       updatePrice.value = data.pricing?.amount || '';
       updateKeywords.value = (data.keywords || []).join(', ');
+      updateSeriesName.value = data.series || '';
+      updateSeriesOrder.value = data.seriesOrder || '';
       
       const downloadLimit = data.downloadLimit || data.downloads || 5;
       setUpdateDownloadsValue(downloadLimit);
@@ -5053,7 +5560,7 @@ async function updateBook() {
     if (updatePdfFile.files.length > 0) {
       const file = updatePdfFile.files[0];
       if (file.size > 15 * 1024 * 1024) {
-        showToast('❌ PDF must be less than 15MB', 'error');
+        showToast('❌ Book file must be less than 15MB', 'error');
         updateBookBtn.disabled = false;
         updateBookBtn.innerHTML = '<i class="fas fa-save"></i> Update Book';
         return;
@@ -5068,6 +5575,8 @@ async function updateBook() {
       authorBio,
       synopsis,
       isbn: updateIsbn.value.trim() || '',
+      series: updateSeriesName.value.trim() || null,
+      seriesOrder: parseInt(updateSeriesOrder.value) || 0,
       publishDate,
       genre,
       language,
@@ -5080,7 +5589,10 @@ async function updateBook() {
     };
 
     if (imageUrl) updateData.imageUrl = imageUrl;
-    if (pdfUrl) updateData.pdfUrl = pdfUrl;
+    if (pdfUrl) {
+      updateData.pdfUrl = pdfUrl;
+      updateData.bookFormat = 'pdf';
+    }
 
     await updateDoc(doc(db, "books", bookId), updateData);
 
@@ -5177,7 +5689,356 @@ async function updateBook() {
     userMessages = await getUserMessages(userId);
     unreadCount = userMessages.filter(m => m.read === false || m.status === 'unread').length;
     messageNavBadge.textContent = unreadCount;
+    updateBellBadge();
     renderMessages();
+  }
+
+  let messageUnsubs = [];
+  let notifUnsubs = [];
+  let messagesToUser = new Map();
+  let messagesFromUser = new Map();
+  let notifUserCount = 0;
+  let notifForCount = 0;
+
+  function updateBellBadge() {
+    const total = unreadCount + notifUserCount + notifForCount;
+    if (notifBadge) {
+      notifBadge.textContent = total > 9 ? '9+' : total;
+      notifBadge.style.display = total > 0 ? 'flex' : 'none';
+    }
+  }
+
+  function refreshMessageState() {
+    const merged = [];
+    const seen = new Set();
+    const push = m => {
+      if (!seen.has(m.id)) { seen.add(m.id); merged.push(m); }
+    };
+    messagesToUser.forEach(m => push(m));
+    messagesFromUser.forEach(m => push(m));
+    merged.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+    userMessages = merged;
+    unreadCount = userMessages.filter(m => m.read === false || m.status === 'unread').length;
+    if (messageNavBadge) messageNavBadge.textContent = unreadCount;
+    updateBellBadge();
+    renderMessages();
+  }
+
+  function setupMessageListener(userId) {
+    messageUnsubs.forEach(unsub => { try { unsub(); } catch(e) {} });
+    messageUnsubs = [];
+    messagesToUser = new Map();
+    messagesFromUser = new Map();
+    if (!userId) { refreshMessageState(); return; }
+    const mapOf = (snap, targetMap) => {
+      snap.docChanges().forEach(ch => {
+        const d = ch.doc;
+        const data = d.data();
+        const m = { id: d.id, ...data, createdAt: data.createdAt?.toDate?.() || new Date(data.createdAt) || new Date() };
+        if (ch.type === 'removed') targetMap.delete(d.id);
+        else targetMap.set(d.id, m);
+      });
+      refreshMessageState();
+    };
+    const q1 = query(collection(db, "messages"), where("toUserId", "==", userId));
+    const q2 = query(collection(db, "messages"), where("authorId", "==", userId));
+    messageUnsubs.push(onSnapshot(q1, snap => mapOf(snap, messagesToUser), err => console.warn('Message listener error:', err)));
+    messageUnsubs.push(onSnapshot(q2, snap => mapOf(snap, messagesFromUser), err => console.warn('Message listener error:', err)));
+  }
+
+  function setupNotifListener(userId) {
+    notifUnsubs.forEach(unsub => { try { unsub(); } catch(e) {} });
+    notifUnsubs = [];
+    notifUserCount = 0;
+    notifForCount = 0;
+    if (!userId) { updateBellBadge(); return; }
+    const countNotifs = (which, snap) => {
+      if (which === 'user') notifUserCount = snap.size;
+      else notifForCount = snap.size;
+      updateBellBadge();
+    };
+    try {
+      const q1 = query(collection(db, "notifications"), where("userId", "==", userId), where("read", "==", false));
+      const q2 = query(collection(db, "notifications"), where("forUser", "==", userId), where("read", "==", false));
+      notifUnsubs.push(onSnapshot(q1, snap => countNotifs('user', snap), () => {}));
+      notifUnsubs.push(onSnapshot(q2, snap => countNotifs('forUser', snap), () => {}));
+    } catch (e) { console.warn('Notif listener error:', e); }
+  }
+
+  async function markAllMessagesRead() {
+    const jobs = [];
+    const unread = userMessages.filter(m => m.read === false || m.status === 'unread');
+    unread.forEach(m => jobs.push(updateDoc(doc(db, "messages", m.id), { read: true, status: 'read' })));
+    if (currentUser) {
+      try {
+        const q1 = query(collection(db, "notifications"), where("userId", "==", currentUser.uid), where("read", "==", false));
+        const q2 = query(collection(db, "notifications"), where("forUser", "==", currentUser.uid), where("read", "==", false));
+        const [s1, s2] = await Promise.all([getDocs(q1), getDocs(q2)]);
+        s1.forEach(ds => jobs.push(updateDoc(ds.ref, { read: true })));
+        s2.forEach(ds => jobs.push(updateDoc(ds.ref, { read: true })));
+      } catch (err) { console.warn('Error clearing notifications:', err); }
+    }
+    if (jobs.length) {
+      try { await Promise.all(jobs); }
+      catch (err) { console.error('Error marking all read:', err); }
+    }
+  }
+
+  // ===== NOTIFICATIONS FEED (inside Messages tab) =====
+  function notifTypeIcon(type) {
+    switch (type) {
+      case 'book_approved': return '✅';
+      case 'book_rejected': return '❌';
+      case 'preorder_reminder': return '⏰';
+      case 'preorder_released': return '🎉';
+      case 'release': return '📢';
+      case 'preorder_sale': return '💰';
+      case 'deletion_request_submitted': return '🗑️';
+      case 'new_order': return '🛒';
+      case 'order_status': return '📦';
+      case 'product_approved': return '✅';
+      case 'product_rejected': return '❌';
+      case 'nudge': return '⏰';
+      case 'referral': return '🎁';
+      case 'wishlist': return '💜';
+      case 'commission': return '✍️';
+      case 'custom_lyrics': return '✍️';
+      case 'collab': return '🤝';
+      default: return '🔔';
+    }
+  }
+
+  function notifPagePlatformBadge(d) {
+    if (d.type === 'announcement' || d.isPoemOfWeek || d.isQuoteOfWeek) {
+      return `<span class="notif-page-platform notif-page-platform-team">Volant Team</span>`;
+    }
+    const p = d.platform || inferNotifPlatform(d.type);
+    const labels = { reads: 'Volant Reads', poetry: 'Volant Poetry', lyrics: 'Volant Lyrics', mall: 'Volant Mall' };
+    const label = labels[p];
+    if (!label) return '';
+    return `<span class="notif-page-platform notif-page-platform-${p}">${label}</span>`;
+  }
+
+function escHtml(s) {
+return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function linkifyText(text) {
+    const safe = escHtml(text);
+    return safe
+      .replace(/(https?:\/\/[^\s<]+)/g, '<a class="read-link" href="$1" target="_blank" rel="noopener">$1</a>')
+      .replace(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g, '<a class="read-link" href="mailto:$1">$1</a>');
+  }
+
+  function notifText(d) {
+    const t = d.type;
+    const name = d.fromUserName || d.fromName || d.senderName || '';
+    const poemT = String(d.poemTitle || '').slice(0, 40);
+    const short = (s) => {
+        s = String(s || '').replace(/\r?\n/g, ' ').trim();
+        return s.length > 120 ? s.slice(0, 120) + '…' : s;
+    };
+    const cleanMsg = (s) => String(s || '').replace(/<a\s+class="read-link"\s+href="[^"]*"[^>]*>\s*([^<]*)\s*<\/a>/gi, '$1').replace(/&quot;/g, '"').replace(/&#0?39;/g, "'").replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&nbsp;/g, ' ');
+    if (t === 'like') return (name ? name + ' liked' : 'Someone liked') + (poemT ? ' your poem: ' + poemT : ' your poem');
+    if (t === 'comment') return (name ? name + ' commented' : 'Someone commented') + (poemT ? ' on your poem: ' + poemT : ' on your poem') + (d.commentText ? ': ' + short(d.commentText) : '');
+    if (t === 'reply') return (name ? name + ' replied' : 'Someone replied') + (poemT ? ' on your poem: ' + poemT : ' on your poem') + (d.replyText ? ': ' + short(d.replyText) : '');
+    if (t === 'follow') return (name ? name + ' started following you' : 'Someone started following you');
+    if (d.extra && typeof d.extra === 'object' && d.extra.body) return String(d.extra.body);
+    return short(cleanMsg(d.message || d.body || d.title || 'You have a new notification'));
+  }
+
+  const poemCache = {};
+  async function getPoemInfo(poemId) {
+    if (!poemId) return { slug: null };
+    if (poemCache[poemId]) return poemCache[poemId];
+    try {
+      const poemDoc = await getDoc(doc(db, "recentPoems", poemId));
+      if (poemDoc.exists()) {
+        const data = poemDoc.data();
+        let slug = data.slug;
+        if (!slug && data.title) {
+          slug = String(data.title).toLowerCase().trim()
+            .replace(/[\s_]+/g, "-")
+            .replace(/[^a-z0-9\-]/g, "")
+            .replace(/\-+/g, "-")
+            .replace(/^\-+|\-+$/g, "");
+        }
+        poemCache[poemId] = { slug };
+        return { slug };
+      }
+    } catch (e) { /* silent fail */ }
+    return { slug: null };
+  }
+
+  async function notifTextHTML(d) {
+    const t = d.type;
+    const esc = escHtml;
+    const base = 'https://volantpoetry.vercel.app';
+    const userName = d.fromUserName || d.fromName || d.senderName || 'Someone';
+    const uid = d.fromUser || d.fromUid || '';
+    const userLink = (uid && uid !== 'system')
+      ? '<a href="' + base + '/user-profile.html?uid=' + encodeURIComponent(uid) + '" class="notif-user-link" target="_blank">' + esc(userName) + '</a>'
+      : '<b>' + esc(userName) + '</b>';
+    const poemId = d.poemId;
+    const poemSlug = d.poemSlug;
+    const poemTitle = d.poemTitle;
+    let poemLink = '';
+    if (poemTitle) {
+      let slug = (poemSlug && poemSlug !== 'null' && poemSlug !== 'undefined') ? poemSlug : null;
+      if (!slug && poemId) {
+        const info = await getPoemInfo(poemId);
+        if (info) slug = info.slug;
+      }
+      if (slug) {
+        const href = base + '/poem.html?collection=recentPoems&slug=' + encodeURIComponent(slug);
+        poemLink = '<a href="' + href + '" class="notif-poem-link" target="_blank">' + esc(String(poemTitle).slice(0, 40)) + '</a>';
+      } else {
+        poemLink = '<span class="notif-poem-link">' + esc(String(poemTitle).slice(0, 40)) + '</span>';
+      }
+    }
+    const short = (s) => { s = String(s || '').replace(/\r?\n/g, ' ').trim(); return s.length > 120 ? s.slice(0, 120) + '…' : s; };
+    const snippet = (s) => s ? ' <em>“' + esc(short(s)) + '”</em>' : '';
+    if (t === 'like') return userLink + ' liked ' + (poemLink || 'your poem');
+    if (t === 'comment') return userLink + ' commented on ' + (poemLink || 'your poem') + snippet(d.commentText);
+    if (t === 'reply') return userLink + ' replied to your comment' + snippet(d.replyText);
+    if (t === 'follow') return userLink + ' started following you';
+
+    if (t === 'collaboration' || /added you as( a)? collaborator on/.test(String(d.message || (d.extra && d.extra.body) || ''))) {
+      const raw = String(d.message || (d.extra && d.extra.body) || '').replace(/\r?\n/g, ' ').trim();
+      const m = raw.match(/^(.*?) added you as(?: a)? collaborator on "([^"]+)"(.*)$/);
+      const senderName = d.fromUserName || d.fromName || (m ? m[1].trim() : 'Someone');
+      const senderUid = d.fromUser || '';
+      const senderHtml = (senderUid && senderUid !== 'system')
+        ? '<a href="' + base + '/user-profile.html?uid=' + encodeURIComponent(senderUid) + '" class="notif-user-link" target="_blank">' + esc(senderName) + '</a>'
+        : '<b>' + esc(senderName) + '</b>';
+      const workTitle = m ? m[2] : (d.workTitle || d.poemTitle || 'a work');
+      let slug = (d.poemSlug && d.poemSlug !== 'null' && d.poemSlug !== 'undefined') ? d.poemSlug : null;
+      if (!slug && d.poemId) { const info = await getPoemInfo(d.poemId); if (info) slug = info.slug; }
+      const workEsc = esc(String(workTitle).slice(0, 40));
+      const workHtml = slug
+        ? '<a href="' + base + '/poem.html?collection=recentPoems&slug=' + encodeURIComponent(slug) + '" class="notif-poem-link" target="_blank">' + workEsc + '</a>'
+        : '<span class="notif-poem-link">' + workEsc + '</span>';
+      const suffix = m ? esc(m[3] || '') : '';
+      return senderHtml + ' added you as a collaborator on ' + workHtml + suffix;
+    }
+
+    if (d.isPoemOfWeek && poemTitle) {
+      let slug = (d.poemSlug && d.poemSlug !== 'null' && d.poemSlug !== 'undefined') ? d.poemSlug : null;
+      if (!slug && d.poemId) { const info = await getPoemInfo(d.poemId); if (info) slug = info.slug; }
+      let body = esc(String(d.message || '').replace(/\r\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim());
+      const hm = body.match(/^Hello ([^,]+),/);
+      if (hm) body = body.replace(/^Hello ([^,]+),/, 'Hello <b>' + esc(hm[1]) + '</b>,');
+      const titleEsc = esc(String(poemTitle).slice(0, 40));
+      const titleHtml = slug
+        ? '<a href="' + base + '/poem.html?collection=recentPoems&slug=' + encodeURIComponent(slug) + '" class="notif-poem-link" target="_blank">' + titleEsc + '</a>'
+        : '<span class="notif-poem-link">' + titleEsc + '</span>';
+      const tm = body.match(/"([^"]+)"/);
+      if (tm) body = body.replace('"' + tm[1] + '"', '"' + titleHtml + '"');
+      body = body.replace(/reach\.volant@gmail\.com/g, '<a class="email-link" href="mailto:reach.volant@gmail.com">reach.volant@gmail.com</a>');
+      body = body.replace(/\n{2,}/g, '<br><br>');
+      body = body.replace(/\n/g, '<br>');
+      return body;
+    }
+
+    if (d.isQuoteOfWeek) {
+      const rawMsg = String(d.message || '').replace(/\r\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+      const quoteText = d.quote || (rawMsg.match(/"([^"]+)"/) || [])[1] || '';
+      const qRaw = String(quoteText).replace(/\n+/g, ' ').trim();
+      const qEsc = esc(qRaw.length > 70 ? qRaw.slice(0, 67).replace(/\s+\S*$/, '') + '\u2026' : qRaw);
+      const qHtml = qEsc
+        ? '<a href="' + base + '/quote-of-the-week.html' + '" class="notif-poem-link" target="_blank">' + qEsc + '</a>'
+        : '';
+      let body = esc(rawMsg);
+      const hm = body.match(/^Hello ([^,]+),/);
+      if (hm) body = body.replace(/^Hello ([^,]+),/, 'Hello <b>' + esc(hm[1]) + '</b>,');
+      const tm = body.match(/"([^"]+)"/);
+      if (tm && qHtml) body = body.replace('"' + tm[1] + '"', '"' + qHtml + '"');
+      body = body.replace(/reach\.volant@gmail\.com/g, '<a class="email-link" href="mailto:reach.volant@gmail.com">reach.volant@gmail.com</a>');
+      body = body.replace(/\n{2,}/g, '<br><br>');
+      body = body.replace(/\n/g, '<br>');
+      return body;
+    }
+
+    return linkifyText(notifText(d));
+  }
+
+  function inferNotifPlatform(type) {
+    if (type === 'book_approved' || type === 'book_rejected' || type === 'preorder_reminder' || type === 'preorder_released' || type === 'preorder_sale' || type === 'release') return 'reads';
+    if (type === 'new_order' || type === 'order_status' || type === 'product_approved' || type === 'product_rejected' || type === 'nudge' || type === 'referral' || type === 'wishlist') return 'mall';
+    if (type === 'commission' || type === 'commission_accepted' || type === 'commission_declined' || type === 'custom_lyrics' || type === 'collab_request' || type === 'play') return 'lyrics';
+    if (type === 'like' || type === 'comment' || type === 'reply' || type === 'follow' || type === 'mention') return 'poetry';
+    return '';
+  }
+
+  function fmtNotifTime(ts) {
+    if (!ts) return '';
+    const t = typeof ts.toMillis === 'function' ? ts.toMillis() : (ts.seconds ? ts.seconds * 1000 : 0);
+    if (!t) return '';
+    const diff = Date.now() - t;
+    const m = 60000, h = 3600000, d = 86400000;
+    if (diff < m) return 'now';
+    if (diff < h) return Math.floor(diff / m) + 'm ago';
+    if (diff < d) return Math.floor(diff / h) + 'h ago';
+    if (diff < 7 * d) return Math.floor(diff / d) + 'd ago';
+    return new Date(t).toLocaleDateString();
+  }
+
+  async function loadNotificationsPage() {
+    const list = document.getElementById('notificationsList');
+    const summary = document.getElementById('notifPageSummary');
+    if (!list || !currentUser) return;
+    const uid = currentUser.uid;
+    const items = [];
+    const unreadRefs = [];
+    try {
+      const q1 = query(collection(db, "notifications"), where("userId", "==", uid), limit(200));
+      const q2 = query(collection(db, "notifications"), where("forUser", "==", uid), limit(200));
+      const [s1, s2] = await Promise.all([getDocs(q1), getDocs(q2)]);
+      const seen = new Set();
+      const push = ds => { if (!seen.has(ds.id)) { seen.add(ds.id); items.push(ds); } };
+      s1.forEach(push);
+      s2.forEach(push);
+      const tsOf = (t) => t ? (t.toMillis ? t.toMillis() : (t.seconds ? t.seconds * 1000 : 0)) : 0;
+      items.sort((a, b) => tsOf(b.data().timestamp || b.data().createdAt) - tsOf(a.data().timestamp || a.data().createdAt));
+      const poemIds = [...new Set(items.map(ds => ds.data().poemId).filter(Boolean))];
+      if (poemIds.length) await Promise.all(poemIds.map(id => getPoemInfo(id)));
+    } catch (err) {
+      console.warn('Error loading notifications:', err);
+    }
+
+    if (items.length === 0) {
+      list.innerHTML = `<div class="row" style="padding:30px 0; justify-content:center;"><span style="color:#888; font-size:1rem;">🔔 No notifications yet</span></div>`;
+    } else {
+      let inner = '';
+      for (const ds of items) {
+        const d = ds.data();
+        const isUnread = d.read === false;
+        if (isUnread) unreadRefs.push(ds.ref);
+        const dtext = await notifTextHTML(d);
+        const plat = d.platform || inferNotifPlatform(d.type || '');
+        inner += `
+          <div class="notif-page-item ${isUnread ? 'unread' : ''} plnot-${plat}" data-plat="${plat}">
+            <div class="notif-page-content">
+              <div class="notif-page-badge-line">${notifPagePlatformBadge(d)}</div>
+              <div class="notif-page-msg">${dtext}</div>
+              <div class="notif-page-time">${fmtNotifTime(d.timestamp || d.createdAt)}${isUnread ? '<span class="badge-unread">Unread</span>' : ''}</div>
+            </div>
+          </div>
+        `;
+      }
+      list.innerHTML = inner;
+    }
+    if (summary) summary.textContent = items.length ? `${items.length} notification${items.length === 1 ? '' : 's'} · kept for 90 days` : '';
+
+    // Viewing the feed marks the notification flags off (messages are handled below).
+    if (unreadRefs.length) {
+      try {
+        const batch = writeBatch(db);
+        unreadRefs.forEach(ref => batch.update(ref, { read: true }));
+        await batch.commit();
+      } catch (e) { /* ignore */ }
+    }
+    try { await markAllMessagesRead(); } catch (e) { /* ignore */ }
   }
 
   function renderMessages() {
@@ -5213,7 +6074,7 @@ async function updateBook() {
           </div>
           ${bookTitle ? `<div class="message-subject">📚 Book: ${bookTitle}</div>` : ''}
           ${subject ? `<div class="message-subject">📝 Subject: ${subject}</div>` : ''}
-          <div class="message-body">${message}</div>
+          <div class="message-body">${linkifyText(message)}</div>
           <div class="message-meta">
             <span><i class="fas fa-envelope"></i> ${senderEmail ? `<a href="${mailtoLink}" style="color:#6a34ff;text-decoration:underline;" target="_blank">${senderEmail}</a>` : 'No email provided'}</span>
             ${msg.bookId ? `<span><i class="fas fa-book"></i> Book ID: ${msg.bookId}</span>` : ''}
@@ -5232,7 +6093,7 @@ async function updateBook() {
         if (success) {
           const msg = userMessages.find(m => m.id === messageId);
           if (msg) { msg.read = true; msg.status = 'read'; }
-          await loadMessages(currentUser.uid);
+          refreshMessageState();
           showToast('✅ Message marked as read', 'success');
         } else {
           showToast('❌ Error marking message as read', 'error');
@@ -5337,7 +6198,10 @@ async function updateBook() {
                         readCount: readData.readCount || 0,
                         lastReadAt: readData.lastReadAt?.toDate?.() || null,
                         percentage: readData.percentage || 0,
-                        page: readData.page || 0
+                        page: readData.page || 0,
+                        preorder: bookData.preorder === true || bookData.preorder === 'true',
+                        preorderReleaseDate: bookData.preorderReleaseDate || null,
+                        released: bookData.released === true || bookData.released === 'true'
                     };
                 }
                 return null;
@@ -5441,7 +6305,11 @@ async function updateBook() {
 
     // Show status badge
     const statusBadge = document.createElement('span');
-    if (book.status === 'owned') {
+    const preorderLocked = book.preorder && book.released !== true;
+    if (book.status === 'owned' && preorderLocked) {
+      statusBadge.className = 'badge-status pending';
+      statusBadge.innerHTML = `<i class="fas fa-hourglass-half"></i> Pre-order · unlocks ${book.preorderReleaseDate || 'on release date'}`;
+    } else if (book.status === 'owned') {
       statusBadge.className = 'badge-status approved';
       statusBadge.innerHTML = '<i class="fas fa-check-circle"></i> Owned';
     } else if (book.status === 'read') {
@@ -5450,8 +6318,8 @@ async function updateBook() {
     }
     body.appendChild(statusBadge);
 
-    // Show download info (only if owned)
-    if (book.status === 'owned') {
+    // Show download info (only if owned and released)
+    if (book.status === 'owned' && !preorderLocked) {
       const limitDisplay = book.downloadLimit === 'unlimited' ? '♾️ Unlimited' : `${book.downloadLimit}`;
       const used = book.downloadCount || 0;
       const remaining = book.downloadLimit === 'unlimited' ? '♾️' : Math.max(0, book.downloadLimit - used);
@@ -5485,7 +6353,7 @@ async function updateBook() {
     const btnGroup = document.createElement('div');
     btnGroup.className = 'btn-group';
 
-    if (book.pdfUrl) {
+    if (book.pdfUrl && !preorderLocked) {
       const readBtn = document.createElement('button');
       readBtn.className = 'update-book-btn';
       readBtn.innerHTML = '<i class="fas fa-book-open"></i> Read Online';
@@ -5495,6 +6363,14 @@ async function updateBook() {
         window.open(`reader.html?id=${book.id}`, '_blank');
       });
       btnGroup.appendChild(readBtn);
+    } else if (book.pdfUrl && preorderLocked) {
+      const lockedBtn = document.createElement('button');
+      lockedBtn.className = 'share-book-btn';
+      lockedBtn.innerHTML = `<i class="fas fa-lock"></i> Unlocks ${book.preorderReleaseDate || 'on release'}`;
+      lockedBtn.disabled = true;
+      lockedBtn.style.opacity = '0.7';
+      lockedBtn.style.cursor = 'default';
+      btnGroup.appendChild(lockedBtn);
     }
 
     const shareBtn = document.createElement('button');
@@ -6101,7 +6977,8 @@ allBooksData.forEach(data => {
         loadPayoutSettings(user.uid),
         loadEarnings(user.uid),
         loadWishlist(user.uid),
-        loadMessages(user.uid)
+        setupMessageListener(user.uid),
+        setupNotifListener(user.uid)
       ]);
       
       await renderAll();
@@ -6160,7 +7037,8 @@ function renderStats(books) {
         'pending': '⏳ Pending',
         'approved': '✅ Published',
         'rejected': '❌ Rejected',
-        'draft': '📄 Draft'
+        'draft': '📄 Draft',
+        'hidden': '🙈 Delisted'
       };
       const statusLabel = statusLabels[b.status] || b.status || 'Draft';
       const statusClass = b.status || 'draft';
@@ -6262,6 +7140,93 @@ function renderStats(books) {
     }).join('');
   }
 
+  function renderFinancesPage() {
+    if (!currentUser) return;
+    getDocs(query(collection(db, 'purchases'), where('authorId', '==', currentUser.uid))).then(async (snapshot) => {
+      const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
+      const commissionRate = userDoc.data()?.commissionRate || 10;
+      const all = [];
+      let totalSales = 0;
+      let totalEarnings = 0;
+      let paidOut = 0;
+      let pendingPayout = 0;
+      snapshot.forEach(docRef => {
+        const data = docRef.data();
+        if (data.itemType === 'lyric' || data.platform === 'lyrics' || data.lyricTitle) return;
+        const amount = data.amount || 0;
+        const fee = data.fee || 0;
+        const netAmount = amount - fee;
+        const comm = netAmount * (commissionRate / 100);
+        const earnings = netAmount - comm;
+        const status = data.settlementStatus || '';
+        let settled;
+        if (status === 'paid') settled = true;
+        else if (status === 'attention' || status === 'failed') settled = false;
+        else if (status === 'pending') settled = false;
+        else settled = true;
+        totalSales++;
+        totalEarnings += earnings;
+        paidOut += settled ? earnings : 0;
+        pendingPayout += settled ? 0 : earnings;
+        const ts = data.timestamp?.toMillis?.() || data.createdAt?.toMillis?.() || data.purchasedAt?.toMillis?.() || 0;
+        all.push({ title: data.title || data.bookTitle || 'Unknown book', amount: amount, earnings: earnings, status: status, settled: settled, ts: ts });
+      });
+      document.getElementById('financeStats').innerHTML = `
+        <div class="stat"><h4>Total Sales</h4><div class="value">${totalSales}</div></div>
+        <div class="stat"><h4>Total Earnings</h4><div class="value">GHS ${totalEarnings.toFixed(2)}</div></div>
+        <div class="stat"><h4>Paid Out</h4><div class="value">GHS ${paidOut.toFixed(2)}</div></div>
+        <div class="stat"><h4>Pending</h4><div class="value">GHS ${pendingPayout.toFixed(2)}</div></div>
+      `;
+      const byBookDiv = document.getElementById('financeByBook');
+      const txDiv = document.getElementById('financeTransactions');
+      if (all.length === 0) {
+        byBookDiv.innerHTML = `<p style="color:#888; padding:10px 0;">No purchases yet.</p>`;
+        txDiv.innerHTML = `<p style="color:#888; padding:10px 0;">No transactions yet.</p>`;
+        document.getElementById('financeNote').textContent = '';
+        return;
+      }
+      const byBook = {};
+      all.forEach(t => {
+        if (!byBook[t.title]) byBook[t.title] = { count: 0, earnings: 0 };
+        byBook[t.title].count++;
+        byBook[t.title].earnings += t.earnings;
+      });
+      byBookDiv.innerHTML = Object.keys(byBook).map(k => {
+        const b = byBook[k];
+        return `
+          <div class="row">
+            <span><strong>${k}</strong></span>
+            <span style="display:flex;align-items:center;gap:8px;">
+              <span style="font-size:0.75rem;color:#888;">${b.count} sale${b.count > 1 ? 's' : ''}</span>
+              <span style="color:#15723d;">GHS ${b.earnings.toFixed(2)}</span>
+            </span>
+          </div>
+        `;
+      }).join('');
+      txDiv.innerHTML = all.sort((a, b) => b.ts - a.ts).slice(0, 10).map(t => {
+        const chip = t.settled
+          ? { label: 'Paid', bg: '#dff7e5', fg: '#15723d' }
+          : (t.status === 'attention' || t.status === 'failed')
+            ? { label: 'Review', bg: '#fdeaea', fg: '#c62828' }
+            : { label: 'Settling', bg: '#fff8e6', fg: '#a8640b' };
+        const date = t.ts ? new Date(t.ts).toLocaleDateString() : '';
+        return `
+          <div class="row">
+            <span>
+              <strong>${t.title}</strong>
+              ${date ? `<span style="font-size:0.75rem;color:#888;margin-left:8px;">${date}</span>` : ''}
+            </span>
+            <span style="display:flex;align-items:center;gap:8px;">
+              <span style="font-size:0.65rem;font-weight:600;padding:2px 8px;border-radius:20px;background:${chip.bg};color:${chip.fg};">${chip.label}</span>
+              <span style="color:#15723d;">+GHS ${t.earnings.toFixed(2)}</span>
+            </span>
+          </div>
+        `;
+      }).join('');
+      document.getElementById('financeNote').textContent = 'Earnings show 90% of each sale (10% platform commission). Legacy sales count as paid.';
+    }).catch(err => console.warn('Error loading finances:', err));
+  }
+
   function renderAnalyticsPage(books) {
     const published = books.filter(b => b.status === 'approved');
     const totalViews = books.reduce((sum, b) => sum + (b.views || 0), 0);
@@ -6359,6 +7324,7 @@ function renderStats(books) {
     renderRecentSales(authorBooks);
     renderMyBooksPage(authorBooks);
     renderSalesPage(authorBooks);
+    renderFinancesPage();
     renderAnalyticsPage(authorBooks);
     renderWishlistPage();
     renderMessages();
@@ -6379,6 +7345,7 @@ window.addEventListener('storage', function(e) {
         console.log('🔄 Purchase detected! Refreshing earnings...');
         loadEarnings(currentUser.uid);
         loadAuthorData(currentUser);
+        renderFinancesPage();
     }
 });
 
@@ -6465,6 +7432,14 @@ window.addEventListener('storage', function(e) {
       settingsGmail.value = gmail || '';
       settingsPhoneNumber.value = phoneNumber || '';
       settingsPublisherName.value = publisherName || '';
+
+      const socials = userData.socials || {};
+      settingsInstagram.value = (socials.instagram || '').replace(/^@/, '');
+      settingsTikTok.value = (socials.tiktok || '').replace(/^@/, '');
+      settingsTwitter.value = (socials.twitter || '').replace(/^@/, '');
+      settingsFacebook.value = socials.facebook || '';
+      settingsWhatsapp.value = socials.whatsapp || '';
+      settingsWebsite.value = socials.website || '';
       
       updateSetupAlert(userData);
       
@@ -6484,11 +7459,28 @@ window.addEventListener('storage', function(e) {
       
       await updatePayoutWarning(user.uid);
       
+      const navAcctName = document.getElementById('navAcctName');
+      const navAcctEmail = document.getElementById('navAcctEmail');
+      const navAcctPic = document.getElementById('navAcctPic');
+      if (navAcctName) navAcctName.textContent = username || userDisplayName || 'Author';
+      if (navAcctEmail) navAcctEmail.textContent = email || '';
+
       if (photoURL) {
         userAvatar.style.backgroundImage = `url(${photoURL})`;
         userAvatar.style.backgroundSize = 'cover';
         userAvatar.style.backgroundPosition = 'center';
         userAvatar.textContent = '';
+        const navAvatar = document.getElementById('navAvatar');
+        if (navAvatar) {
+          navAvatar.style.backgroundImage = `url(${photoURL})`;
+          navAvatar.style.backgroundSize = 'cover';
+          navAvatar.style.backgroundPosition = 'center';
+          navAvatar.textContent = '';
+        }
+        if (navAcctPic) {
+          navAcctPic.style.backgroundImage = `url(${photoURL})`;
+          navAcctPic.textContent = '';
+        }
         return;
       }
       
@@ -6510,6 +7502,17 @@ window.addEventListener('storage', function(e) {
         userAvatar.style.fontSize = '20px';
         userAvatar.style.fontWeight = 'bold';
         userAvatar.textContent = initials;
+        const navAvatar = document.getElementById('navAvatar');
+        if (navAvatar) {
+          navAvatar.style.backgroundImage = `linear-gradient(135deg, ${bgColor}, ${bgColor}dd)`;
+          navAvatar.style.backgroundSize = 'cover';
+          navAvatar.style.backgroundPosition = 'center';
+          navAvatar.textContent = initials;
+        }
+        if (navAcctPic) {
+          navAcctPic.style.backgroundImage = `linear-gradient(135deg, ${bgColor}, ${bgColor}dd)`;
+          navAcctPic.textContent = initials;
+        }
       }
     } catch (err) {
       console.warn('Error fetching user data:', err);
@@ -6594,11 +7597,31 @@ window.addEventListener('storage', function(e) {
       const page = this.dataset.page;
       if (page) {
         showPage(page, true);
+        if (page === 'messages') openMsgTab('messages');
         if (window.innerWidth <= 920) {
           toggleSidebar();
         }
       }
     });
+  });
+
+  // Messages / Notifications tabs inside the Messages page
+  function openMsgTab(tabId) {
+    document.querySelectorAll('#page-messages .msg-tab').forEach(t => {
+      t.classList.toggle('active', t.dataset.msgTab === tabId);
+    });
+    const msgPanel = document.getElementById('msgTabMessages');
+    const notifPanel = document.getElementById('msgTabNotifications');
+    if (msgPanel) msgPanel.style.display = tabId === 'messages' ? '' : 'none';
+    if (notifPanel) notifPanel.style.display = tabId === 'notifications' ? '' : 'none';
+    if (tabId === 'notifications') loadNotificationsPage();
+  }
+  document.querySelectorAll('#page-messages .msg-tab').forEach(t => {
+    t.addEventListener('click', () => openMsgTab(t.dataset.msgTab));
+  });
+  document.getElementById('notifPageMarkAll')?.addEventListener('click', () => {
+    markAllMessagesRead();
+    loadNotificationsPage();
   });
 
   // Restore last visited page on load
@@ -6744,6 +7767,14 @@ window.addEventListener('storage', function(e) {
     const gmail = settingsGmail.value.trim();
     const phoneNumber = settingsPhoneNumber.value.trim();
     const publisherName = settingsPublisherName.value.trim();
+    const socials = {
+      instagram: settingsInstagram.value.trim().replace(/^@/, ''),
+      tiktok: settingsTikTok.value.trim().replace(/^@/, ''),
+      twitter: settingsTwitter.value.trim().replace(/^@/, ''),
+      facebook: settingsFacebook.value.trim(),
+      whatsapp: settingsWhatsapp.value.trim(),
+      website: settingsWebsite.value.trim()
+    };
     let country = settingsCountry.value;
     
     if (!country || country === '') {
@@ -6791,6 +7822,7 @@ window.addEventListener('storage', function(e) {
         phoneNumber: phoneNumber,
         publisherName: publisherName,
         country: country,
+        socials: socials,
         updatedAt: new Date().toISOString()
       };
       
@@ -6838,12 +7870,30 @@ window.addEventListener('storage', function(e) {
   
   submitDeleteAccount?.addEventListener('click', submitDeletionRequest);
 
-  document.getElementById('signOutBtn')?.addEventListener('click', async () => {
+  notifBellBtn?.addEventListener('click', () => {
+    showPage('messages');
+    openMsgTab('notifications');
+  });
+
+  const navSignOut = async () => {
     try {
       await signOut(auth);
       window.location.href = 'dashboard.html';
     } catch (e) {
       showToast('Error signing out.', 'error');
+    }
+  };
+  const navAccountMenu = document.getElementById('accountMenu');
+  document.getElementById('signOutBtn')?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (!navAccountMenu) return;
+    navAccountMenu.classList.toggle('open');
+  });
+  document.getElementById('navAcctSignOut')?.addEventListener('click', navSignOut);
+  document.addEventListener('click', (e) => {
+    if (navAccountMenu && navAccountMenu.classList.contains('open') &&
+        !e.target.closest('#accountMenu') && !e.target.closest('#signOutBtn')) {
+      navAccountMenu.classList.remove('open');
     }
   });
 
