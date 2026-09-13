@@ -24,8 +24,5 @@
       "path": "/api/cleanup-notifications",
       "schedule": "0 2 * * *"
     }
-  ],
-  "env": {
-    "PAYSTACK_SECRET_KEY": "@paystack_secret_key"
-  }
+  ]
 }
