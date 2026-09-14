@@ -4236,7 +4236,7 @@ header .logo-header {
         <button class="notif-mark" id="notifMarkAll">Mark all read</button>
     </div>
     <div class="notif-list" id="notifList"></div>
-    <div class="notif-panel-footer">Notifications update automatically</div>
+    <div class="notif-panel-footer"></div>
 </div>
 
 <!-- ===== BACKDROP ===== -->
@@ -6033,7 +6033,8 @@ function notifPlatformValue(d) {
     const list = document.getElementById('notifList');
     if (!list) return;
     list.innerHTML = '<div class="notif-empty">Loading…</div>';
-    let html = '';
+    const tsMillis = (t) => t ? (t.toMillis ? t.toMillis() : (t.seconds ? t.seconds * 1000 : new Date(t).getTime())) : 0;
+    const entries = [];
     try {
         const q1 = query(collection(db, "notifications"), where("userId", "==", uid), limit(100));
         const q2 = query(collection(db, "notifications"), where("forUser", "==", uid), limit(100));
@@ -6043,37 +6044,28 @@ function notifPlatformValue(d) {
         const push = ds => { if (!seen.has(ds.id)) { seen.add(ds.id); items.push(ds); } };
         s1.forEach(push);
         s2.forEach(push);
-        const tsOf = (t) => t ? (t.toMillis ? t.toMillis() : (t.seconds ? t.seconds * 1000 : new Date(t).getTime())) : 0;
-        items.sort((a, b) => tsOf(b.data().timestamp || b.data().createdAt) - tsOf(a.data().timestamp || a.data().createdAt));
-        for (const ds of items.slice(0, 10)) {
+        items.sort((a, b) => tsMillis(b.data().timestamp || b.data().createdAt) - tsMillis(a.data().timestamp || a.data().createdAt));
+        for (const ds of items.slice(0, 25)) {
             const d = ds.data();
             const text = await notifTextHTML(d);
-            html += `<div class="notif-item ${d.read ? '' : 'unread'}" data-plat="${notifPlatformValue(d)}">
+            entries.push({ ts: tsMillis(d.timestamp || d.createdAt), html: `<div class="notif-item ${d.read ? '' : 'unread'}" data-plat="${notifPlatformValue(d)}">
                 <div class="notif-msg"><span class="notif-platform-line">${notifPlatformBadge(d)}</span><span class="notif-msg-text">${text}</span></div>
                 <div class="notif-time">${fmtNotifTime(d.timestamp || d.createdAt)}</div>
-            </div>`;
+            </div>` });
         }
     } catch (e) { /* ignore */ }
-    const msgList = [...msgSeen.values()]
-        .sort((a, b) => {
-            const ta = a.data().createdAt;
-            const tb = b.data().createdAt;
-            const ma = ta ? (ta.toMillis ? ta.toMillis() : (ta.seconds ? ta.seconds * 1000 : new Date(ta).getTime())) : 0;
-            const mb = tb ? (tb.toMillis ? tb.toMillis() : (tb.seconds ? tb.seconds * 1000 : new Date(tb).getTime())) : 0;
-            return mb - ma;
-        });
-    let msgHtml = '';
-    msgList.slice(0, 5).forEach(ds => {
+    msgSeen.forEach(ds => {
         const d = ds.data();
         const sender = escHtml(d.senderName || d.fromUserName || d.fromUserId || 'Reader');
         const subject = escHtml(d.subject || d.message || d.content || 'New message');
         const text = escHtml((d.message || d.content || '').slice(0, 60));
-        msgHtml += `<div class="notif-item unread msg-item" data-msg-id="${ds.id}">
+        entries.push({ ts: tsMillis(d.createdAt), msgDest: 'dashboard.html', html: `<div class="notif-item unread msg-item" data-msg-id="${ds.id}">
             <div class="notif-msg">📩 <strong>${sender}</strong> — ${subject}${text ? ' · ' + text : ''}</div>
             <div class="notif-time">${fmtNotifTime(d.createdAt)}</div>
-        </div>`;
+        </div>` });
     });
-    const combined = msgHtml + html;
+    entries.sort((a, b) => b.ts - a.ts);
+    const combined = entries.slice(0, 20).map(e => e.html).join('');
     if (!combined) {
         list.innerHTML = '<div class="notif-empty">No notifications yet 🎉</div>';
         return;

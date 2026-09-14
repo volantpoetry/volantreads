@@ -1375,6 +1375,9 @@
                 <i class="fas fa-hand-holding-usd"></i> Settlements
                 <span class="badge" id="settlementsBadge">0</span>
             </button>
+            <button class="tab-btn" data-tab="reviews">
+                <i class="fas fa-book-open"></i> Reviews
+            </button>
         </div>
 
         <!-- Pending Tab -->
@@ -1502,6 +1505,19 @@
                     <p>Loading settlements...</p>
                 </div>
             </div>
+        </div>
+
+        <!-- Reviews Tab -->
+        <div class="tab-content" id="tab-reviews">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:0.5rem;">
+                <h3 style="font-weight:600; color:#2d2a24;">
+                    <i class="fas fa-book-open" style="color:#b76e4b;"></i> Manage Reads Reviews
+                </h3>
+                <span style="font-size:0.7rem; color:#8a7b6a; align-self:center;">
+                    Reviews submitted by readers appear here. Delete offensive or spam reviews.
+                </span>
+            </div>
+            <iframe id="reviewsFrame" data-src="../admin/manage%20reads%20review.html" style="width:100%; min-height:1400px; border:1px solid #ede7df; border-radius:12px; background:#fff;" title="Manage Reads Reviews"></iframe>
         </div>
     </div>
 
@@ -3189,6 +3205,13 @@ ${msg.message || msg.content || ''}
             }
             if (tabName === 'settlements') {
                 loadSettlements();
+            }
+            if (tabName === 'reviews') {
+                const frame = document.getElementById('reviewsFrame');
+                if (frame && !frame.dataset.loaded) {
+                    frame.src = frame.dataset.src;
+                    frame.dataset.loaded = '1';
+                }
             }
         });
     });
