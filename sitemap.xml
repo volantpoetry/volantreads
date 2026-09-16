@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+
+
+  <url>
+    <loc>https://volantreads.vercel.app</loc>
+    <lastmod>2026-09-16T00:42:00.655Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <url>
+    <loc>https://volantreads.vercel.app/submit.html</loc>
+    <lastmod>2026-09-16T00:42:00.674Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://volantreads.vercel.app/faq.html</loc>
+    <lastmod>2026-09-16T00:42:00.653Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://volantreads.vercel.app/refund.html</loc>
+    <lastmod>2026-09-16T00:42:00.674Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://volantreads.vercel.app/details.html</loc>
+    <lastmod>2026-09-16T00:42:00.651Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://volantreads.vercel.app/details.html?id=0NHKCxiPxLRsKd9ZlTsp</loc>
+    <lastmod>2026-09-14T01:32:36.610Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://volantreads.vercel.app/details.html?id=FpYHUybFutxwiDDdHMbO</loc>
+    <lastmod>2026-08-30T04:58:36.414Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://volantreads.vercel.app/details.html?id=TjXT7MciML4rB0kAuvpu</loc>
+    <lastmod>2026-08-31T17:09:38.549Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://volantreads.vercel.app/details.html?id=lBp0Kq3NsqhpwiPnu3o6</loc>
+    <lastmod>2026-09-14T01:32:27.603Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://volantreads.vercel.app/details.html?id=o9qWTPKDZ0hJeDc3ybpn</loc>
+    <lastmod>2026-08-30T05:51:36.611Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+
+</urlset>

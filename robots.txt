@@ -1,0 +1,55 @@
+# Robots.txt for Volant Reads
+User-agent: *
+Allow: /
+
+# Root
+Allow: /$
+Allow: /index.html
+
+# Store pages
+Allow: /submit.html
+Allow: /faq.html
+Allow: /refund.html
+Allow: /details.html
+
+# Shared pages
+Allow: /shared/about.html
+Allow: /shared/contact.html
+Allow: /shared/terms.html
+Allow: /shared/privacy.html
+
+# Block admin and private pages
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /manage
+Disallow: /login
+Disallow: /signup
+Disallow: /verify
+Disallow: /reset
+Disallow: /approvals.html
+Disallow: /dashboard.html
+Disallow: /shared/verify-email.html
+Disallow: /shared/universal-login.html
+Disallow: /shared/universal-signup.html
+Disallow: /shared/users-reset.html
+Disallow: /user-profile.html
+
+# Block Google verification
+Disallow: /google*.html
+
+# Block non-HTML files
+Disallow: /*.js$
+Disallow: /*.css$
+Disallow: /*.json$
+Disallow: /*.xml$
+
+# Block node_modules
+Disallow: /node_modules/
+
+# Block images
+Disallow: /images/
+
+# Block 404
+Disallow: /404.html
+
+Sitemap: https://volantreads.vercel.app/sitemap.xml
