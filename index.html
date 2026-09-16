@@ -6691,6 +6691,7 @@ window.addEventListener('storage', (e) => {
     var deferredPrompt = null;
     var shown = false;
     var closed = false;
+    var DISMISS_EXPIRY_MS = 6 * 60 * 60 * 1000;
 
     function isInstalled() {
         return (window.matchMedia && (window.matchMedia('(display-mode: standalone)').matches ||
@@ -6698,13 +6699,20 @@ window.addEventListener('storage', (e) => {
             (window.navigator && window.navigator.standalone === true);
     }
 
-    if (isInstalled() || localStorage.getItem('volant_reads_pwa_dismissed')) return;
+    if (isInstalled()) return;
     if (!('serviceWorker' in navigator)) return;
+
+    var dismissedAt = parseInt(localStorage.getItem('volant_reads_pwa_dismissed_at') || '0', 10);
+    if (dismissedAt && (Date.now() - dismissedAt) < DISMISS_EXPIRY_MS) return;
 
     function showPop() {
         if (closed || shown) return;
         shown = true;
         setTimeout(function () { popEl.classList.add('show'); }, 1200);
+    }
+
+    function rememberDismiss() {
+        localStorage.setItem('volant_reads_pwa_dismissed_at', String(Date.now()));
     }
 
     window.addEventListener('beforeinstallprompt', function (e) {
@@ -6718,7 +6726,7 @@ window.addEventListener('storage', (e) => {
         deferredPrompt.prompt();
         deferredPrompt.userChoice.then(function (choice) {
             if (choice && choice.outcome === 'dismissed') {
-                localStorage.setItem('volant_reads_pwa_dismissed', '1');
+                rememberDismiss();
                 popEl.classList.remove('show');
             }
             deferredPrompt = null;
@@ -6727,7 +6735,7 @@ window.addEventListener('storage', (e) => {
 
     closeEl.addEventListener('click', function () {
         closed = true;
-        localStorage.setItem('volant_reads_pwa_dismissed', '1');
+        rememberDismiss();
         popEl.classList.remove('show');
     });
 
