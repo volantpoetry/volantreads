@@ -31,6 +31,25 @@ const allowedPages = [
   'shared/privacy.html'
 ];
 
+// 🚫 PAGES THAT MUST NEVER APPEAR IN THE SITEMAP
+// These are private / admin pages. They are also blocked in robots.txt.
+const blockedPaths = [
+  '/admin',
+  '/dashboard',
+  '/manage',
+  '/login',
+  '/signup',
+  '/verify',
+  '/reset',
+  '/approvals.html',
+  '/dashboard.html',
+  '/shared/verify-email.html',
+  '/shared/universal-login.html',
+  '/shared/universal-signup.html',
+  '/shared/users-reset.html',
+  '/user-profile.html'
+];
+
 // ❌ NO EXTERNAL URLS
 // A sitemap can only contain URLs from the same domain as the sitemap itself.
 const externalUrls = [];
@@ -44,6 +63,12 @@ function escapeXml(str) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&apos;');
+}
+
+// ---- SAFETY: is this URL blocked? ----
+function isBlocked(url) {
+  const lower = url.toLowerCase();
+  return blockedPaths.some(p => lower.includes(p.toLowerCase()));
 }
 
 // ============================================================
@@ -169,6 +194,12 @@ function generateBookUrls(books) {
 
     const url = `${domain}/details.html?id=${encodeURIComponent(book.id)}`;
 
+    // Skip if somehow blocked
+    if (isBlocked(url)) {
+      console.log(`🚫 Skipping blocked URL: ${url}`);
+      continue;
+    }
+
     let lastmod = new Date().toISOString();
     if (book.timestamp) {
       try {
@@ -240,21 +271,8 @@ Allow: /shared/contact.html
 Allow: /shared/terms.html
 Allow: /shared/privacy.html
 
-# Block admin and private
-Disallow: /admin
-Disallow: /dashboard
-Disallow: /manage
-Disallow: /login
-Disallow: /signup
-Disallow: /verify
-Disallow: /reset
-Disallow: /approvals.html
-Disallow: /dashboard.html
-Disallow: /shared/verify-email.html
-Disallow: /shared/universal-login.html
-Disallow: /shared/universal-signup.html
-Disallow: /shared/users-reset.html
-Disallow: /user-profile.html
+# Block admin and private pages
+${blockedPaths.map(p => `Disallow: ${p}`).join('\n')}
 
 # Block Google verification
 Disallow: /google*.html
@@ -286,6 +304,7 @@ async function generateSitemap() {
     console.log("🧠 Generating SEO sitemap for Volant Reads...");
     console.log(`📁 Domain: ${domain}`);
     console.log(`📄 Targeting ${allowedPages.length} static pages...`);
+    console.log(`🚫 ${blockedPaths.length} blocked paths excluded`);
 
     // 1. Static pages
     const staticResults = [];
@@ -299,6 +318,12 @@ async function generateSitemap() {
       const stats = fs.statSync(fullPath);
       const urlPath = getUrlWithHtml(page);
       const url = urlPath === '' ? domain : `${domain}/${urlPath}`;
+
+      // Safety: skip if blocked
+      if (isBlocked(url)) {
+        console.log(`🚫 Skipping blocked static page: ${url}`);
+        continue;
+      }
 
       let priority = '0.8';
 
