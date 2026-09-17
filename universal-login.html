@@ -561,7 +561,7 @@
   const platformConfig = {
     poetry: { name: 'Volant Poetry', badge: 'poetry', homeUrl: '../index.html', color: '#4b2aad' },
     reads: { name: 'Volant Reads', badge: 'reads', homeUrl: 'index.html', color: '#d4a574' },
-    foundry: { name: 'Volant Foundry', badge: 'foundry', homeUrl: '../volant_foundry/volant_foundry/index.html', color: '#2c3e50' }
+    foundry: { name: 'Volant Foundry', badge: 'foundry', homeUrl: 'https://volantfoundry.vercel.app/', color: '#2c3e50' }
   };
   const currentPlatform = platformConfig[platform] || platformConfig.poetry;
 
@@ -1043,7 +1043,7 @@
         const platformConfig = {
             poetry: { homeUrl: '/index.html' },
             reads: { homeUrl: '/index.html' },
-            foundry: { homeUrl: '/volant_foundry/index.html' }
+            foundry: { homeUrl: 'https://volantfoundry.vercel.app/' }
         };
         const defaultHome = platformConfig[platform]?.homeUrl || '/index.html';
         
