@@ -2,7 +2,10 @@ import { initializeApp } from "firebase/app";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
 
 const CLOUD_NAME = "dzoq4pgjn";
-const BOOK_PAGE_URL = "https://volantreads.vercel.app/details.html";
+
+function bookPageUrl(bookId) {
+  return `${window.location.origin}${window.location.pathname}?id=${encodeURIComponent(bookId)}`;
+}
 
 const firebaseConfig = {
   apiKey: "AIzaSyC4DHI8aBVY4JjTvJ-r-TGIDPsewtEWxzU",
@@ -47,7 +50,7 @@ function pickImage(data) {
 }
 
 function buildBookSchema(data, bookId) {
-  const pageUrl = `${BOOK_PAGE_URL}?id=${encodeURIComponent(bookId)}`;
+  const pageUrl = bookPageUrl(bookId);
 
   const schema = {
     "@context": "https://schema.org",
