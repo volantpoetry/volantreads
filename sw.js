@@ -1,29 +1,25 @@
 // store/sw.js
-const CACHE_NAME = 'volant-reads-v4';
+const CACHE_NAME = 'volant-reads-v5';
 
+// Pages that change with the signed-in user and must always hit the network.
 const NO_CACHE_PAGES = [
-    'index.html',
-    'details.html',
     'dashboard.html',
-    'submit.html',
     'profile.html'
+];
+
+// App shell cached at install so the bookstore opens offline even on first launch.
+const APP_SHELL = [
+    './index.html',
+    './details.html',
+    './reader.html'
 ];
 
 self.addEventListener('install', event => {
     event.waitUntil(
         caches.open(CACHE_NAME)
-            .then(cache => {
-                // ✅ FIX: Use relative path './reader.html'
-                // Since sw.js and reader.html are in the same folder
-                console.log('📦 Caching reader.html');
-                return cache.addAll([
-                    './reader.html'
-                    // OR use the full path that matches your structure
-                    // '/store/reader.html'
-                ]);
-            })
+            .then(cache => cache.addAll(APP_SHELL))
             .catch(err => {
-                console.warn('⚠️ Cache install failed:', err);
+                console.warn('⚠️ App shell cache partial:', err);
             })
     );
     self.skipWaiting();
@@ -49,19 +45,37 @@ self.addEventListener('fetch', event => {
         event.respondWith(fetch(event.request));
         return;
     }
-    
+
     const url = new URL(event.request.url);
     const pathname = url.pathname;
-    
-    // Pages that should NEVER be cached
+
+    // Pages that should NEVER be cached (signed-in / private views)
     const isNoCachePage = NO_CACHE_PAGES.some(page => pathname.endsWith(page));
-    const isRoot = pathname === '/store/' || pathname === '/';
-    
-    if (isNoCachePage || isRoot) {
+
+    // --- Page navigations: cache each URL under its own key so a user who
+    // opens a page while online can return to THAT page after closing the app. ---
+    if (event.request.mode === 'navigate' && !isNoCachePage) {
+        event.respondWith(
+            fetch(event.request)
+                .then(response => {
+                    const copy = response.clone();
+                    caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
+                    return response;
+                })
+                .catch(async () => {
+                    const hit = await caches.match(event.request);
+                    if (hit) return hit;
+                    return caches.match('./index.html');
+                })
+        );
+        return;
+    }
+
+    if (isNoCachePage) {
         event.respondWith(fetch(event.request));
         return;
     }
-    
+
     // PDF files - cache for offline
     if (event.request.url.includes('.pdf')) {
         event.respondWith(
@@ -75,15 +89,17 @@ self.addEventListener('fetch', event => {
         );
         return;
     }
-    
+
     // Static assets - cache first
-    const isStaticAsset = pathname.includes('.css') || 
-                          pathname.includes('.js') || 
-                          pathname.includes('.png') || 
-                          pathname.includes('.jpg') || 
+    const isStaticAsset = pathname.includes('.css') ||
+                          pathname.includes('.js') ||
+                          pathname.includes('.png') ||
+                          pathname.includes('.jpg') ||
                           pathname.includes('.svg') ||
-                          pathname.includes('.webp');
-    
+                          pathname.includes('.webp') ||
+                          pathname.includes('.woff') ||
+                          pathname.includes('.woff2');
+
     if (isStaticAsset) {
         event.respondWith(
             caches.match(event.request)
@@ -96,8 +112,8 @@ self.addEventListener('fetch', event => {
         );
         return;
     }
-    
-    // Everything else - network first
+
+    // Everything else - network first with cache fallback
     event.respondWith(
         fetch(event.request).catch(() => caches.match(event.request))
             .catch(() => new Response('Content not available.', { status: 503 }))

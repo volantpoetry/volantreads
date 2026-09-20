@@ -6418,7 +6418,7 @@ return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt
       readBtn.style.background = '#4b2aad';
       readBtn.addEventListener('click', function(e) {
         e.stopPropagation();
-        window.open(`reader.html?id=${book.id}`, '_blank');
+        window.location.href = `reader.html?id=${book.id}`;
       });
       btnGroup.appendChild(readBtn);
     } else if (book.pdfUrl && preorderLocked) {

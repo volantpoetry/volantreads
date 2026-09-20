@@ -1016,7 +1016,7 @@
             <button onclick="downloadBook()" id="readerDownloadBtn">
                 <i class="fas fa-download"></i>
             </button>
-            <button onclick="window.close()" class="primary">
+            <button onclick="closeReader()" class="primary">
                 <i class="fas fa-times"></i>
             </button>
         </div>
@@ -1282,6 +1282,15 @@
             const baseUrl = window.location.origin + window.location.pathname.replace('reader.html', 'details.html');
             return `${baseUrl}?id=${bookId}`;
         }
+
+        function closeReader() {
+            if (window.history.length > 1) {
+                window.history.back();
+            } else {
+                window.location.href = `${window.location.origin}${window.location.pathname.replace('reader.html', 'details.html')}?id=${bookId}`;
+            }
+        }
+        window.closeReader = closeReader;
         
         function getShareText() {
             const title = currentBook?.title || 'a book';

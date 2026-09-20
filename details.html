@@ -6386,9 +6386,9 @@ function goToLogin() {
         return;
       }
       
-      // Open the reader in a new tab
+      // Open the reader in the same tab
       const readerUrl = `reader.html?id=${currentBook.id}`;
-      window.open(readerUrl, '_blank');
+      window.location.href = readerUrl;
     });
 
     // ===== PAY BUTTON =====
