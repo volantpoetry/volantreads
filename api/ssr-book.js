@@ -66,7 +66,7 @@ function pickImage(data) {
 }
 
 function buildBookSchema(data, bookId, protocol, host) {
-  const pageUrl = `${protocol}://${host}/details.html?id=${encodeURIComponent(bookId)}`;
+  const pageUrl = `${protocol}://${host}/details?id=${encodeURIComponent(bookId)}`;
 
   const schema = {
     "@context": "https://schema.org",
