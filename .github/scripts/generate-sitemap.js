@@ -22,13 +22,11 @@ const allowedPages = [
   'submit.html',
   'faq.html',
   'refund.html',
-  'details.html',
+  // 'details.html' intentionally omitted — only valid with ?id=<book-id>
 
-  // Shared pages (if they exist in this repo)
-  'shared/about.html',
-  'shared/contact.html',
-  'shared/terms.html',
-  'shared/privacy.html'
+  // NOTE: shared/* pages (about, contact, terms, privacy) live on
+  // volantpoetry.vercel.app/shared/* — NOT on this domain.
+  // Each sitemap can only list its own domain's URLs.
 ];
 
 // 🚫 PAGES THAT MUST NEVER APPEAR IN THE SITEMAP
@@ -265,11 +263,8 @@ Allow: /faq.html
 Allow: /refund.html
 Allow: /details.html
 
-# Shared pages
-Allow: /shared/about.html
-Allow: /shared/contact.html
-Allow: /shared/terms.html
-Allow: /shared/privacy.html
+# NOTE: Shared pages (about, contact, terms, privacy) live on
+# volantpoetry.vercel.app/shared/* — not on this domain.
 
 # Block admin and private pages
 ${blockedPaths.map(p => `Disallow: ${p}`).join('\n')}
@@ -306,6 +301,19 @@ async function generateSitemap() {
     console.log(`📄 Targeting ${allowedPages.length} static pages...`);
     console.log(`🚫 ${blockedPaths.length} blocked paths excluded`);
 
+    // 🔥 SELF-HEALING: always remove old files first.
+    // Prevents any chance of duplicate/stacked content from a prior bad run.
+    const sitemapPath = path.join(publicFolder, 'sitemap.xml');
+    const robotsPath = path.join(publicFolder, 'robots.txt');
+    if (fs.existsSync(sitemapPath)) {
+      fs.unlinkSync(sitemapPath);
+      console.log('🧹 Removed old sitemap.xml');
+    }
+    if (fs.existsSync(robotsPath)) {
+      fs.unlinkSync(robotsPath);
+      console.log('🧹 Removed old robots.txt');
+    }
+
     // 1. Static pages
     const staticResults = [];
     for (const page of allowedPages) {
@@ -332,16 +340,12 @@ async function generateSitemap() {
         priority = '1.0';
       }
       // Core store pages
-      else if (page === 'details.html' || page === 'submit.html') {
+      else if (page === 'submit.html') {
         priority = '0.9';
       }
       // Secondary
       else if (page === 'faq.html' || page === 'refund.html') {
         priority = '0.8';
-      }
-      // Legal / contact
-      else if (page.startsWith('shared/')) {
-        priority = '0.6';
       }
 
       staticResults.push({
@@ -377,6 +381,25 @@ async function generateSitemap() {
 
     // 4. Build sitemap
     const xml = buildXML(allUrls);
+
+    // 🛡️ SANITY CHECK: each <url> block must contain exactly ONE <lastmod>.
+    // Catches any accidental stacking before it reaches the repo.
+    const urlBlocks = xml.split('<url>').slice(1);
+    let badBlocks = 0;
+    for (const block of urlBlocks) {
+      const lastmodCount = (block.match(/<lastmod>/g) || []).length;
+      if (lastmodCount !== 1) {
+        badBlocks++;
+        console.error(`❌ URL block has ${lastmodCount} <lastmod> tags (expected 1):`);
+        console.error(block.trim().split('\n').slice(0, 4).join('\n'));
+      }
+    }
+    if (badBlocks > 0) {
+      console.error(`\n❌ FATAL: ${badBlocks} URL block(s) have invalid <lastmod> counts — aborting.`);
+      process.exit(1);
+    }
+    console.log(`✅ Validated ${urlBlocks.length} URL blocks — each has exactly one <lastmod>`);
+
     fs.writeFileSync(path.join(publicFolder, 'sitemap.xml'), xml, 'utf8');
     console.log('✅ sitemap.xml generated');
 
