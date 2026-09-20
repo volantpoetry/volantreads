@@ -12,11 +12,8 @@ Allow: /faq.html
 Allow: /refund.html
 Allow: /details.html
 
-# Shared pages
-Allow: /shared/about.html
-Allow: /shared/contact.html
-Allow: /shared/terms.html
-Allow: /shared/privacy.html
+# NOTE: Shared pages (about, contact, terms, privacy) live on
+# volantpoetry.vercel.app/shared/* — not on this domain.
 
 # Block admin and private pages
 Disallow: /admin
