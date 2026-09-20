@@ -2,9 +2,7 @@
   "functions": {
     "api/*.js": {
       "memory": 1024,
-      "maxDuration": 10
-    },
-    "api/ssr-book.js": {
+      "maxDuration": 10,
       "includeFiles": "details.html"
     }
   },
