@@ -1,4 +1,6 @@
 {
+  "cleanUrls": true,
+  "trailingSlash": false,
   "functions": {
     "api/*.js": {
       "memory": 1024,
@@ -6,6 +8,22 @@
       "includeFiles": "details.html"
     }
   },
+  "headers": [
+    {
+      "source": "/sitemap.xml",
+      "headers": [
+        { "key": "Content-Type", "value": "application/xml; charset=utf-8" },
+        { "key": "Cache-Control", "value": "public, max-age=3600, s-maxage=3600" }
+      ]
+    },
+    {
+      "source": "/robots.txt",
+      "headers": [
+        { "key": "Content-Type", "value": "text/plain; charset=utf-8" },
+        { "key": "Cache-Control", "value": "public, max-age=3600, s-maxage=3600" }
+      ]
+    }
+  ],
   "rewrites": [
     {
       "source": "/api/(.*)",
@@ -20,6 +38,10 @@
         }
       ],
       "destination": "/api/ssr-book"
+    },
+    {
+      "source": "/((?!sitemap\\.xml|robots\\.txt|.*\\.(?:png|jpg|jpeg|gif|svg|webp|ico|css|js|json|xml|txt|woff|woff2|ttf|eot|html|htm)).*)",
+      "destination": "/index.html"
     }
   ],
   "crons": [
