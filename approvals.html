@@ -651,6 +651,76 @@
             transition: 0.2s;
             white-space: nowrap;
         }
+
+        /* ===== COUPONS TAB ===== */
+        .coupon-form {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 0.6rem;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        .coupon-form input,
+        .coupon-form select {
+            padding: 0.55rem 0.7rem;
+            border: 1px solid #d9d2c6;
+            border-radius: 8px;
+            font-size: 0.8rem;
+        }
+        .coupon-form input:focus,
+        .coupon-form select:focus {
+            outline: none;
+            border-color: #b76e4b;
+        }
+        .btn-admin {
+            background: #b76e4b;
+            color: white;
+            border: none;
+            padding: 0.6rem 1rem;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+        .btn-admin:hover { background: #9f5e3f; }
+        .btn-admin:disabled { background: #ccc; cursor: not-allowed; }
+        .coupon-msg {
+            font-size: 0.8rem;
+            color: #c62828;
+            min-height: 1rem;
+            margin-top: 0.2rem;
+        }
+        .bg-success {
+            background: #e6f4ea !important;
+            color: #1d7a3a !important;
+        }
+        .bg-danger {
+            background: #fdecea !important;
+            color: #b3261e !important;
+        }
+        .bg-outline {
+            background: #f0ece6 !important;
+            color: #6b6152 !important;
+        }
+        .coupon-action {
+            border: 1px solid #d9d2c6;
+            background: #fff;
+            color: #333;
+            padding: 0.25rem 0.6rem;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .coupon-action:hover { background: #f0ece6; }
+        .coupon-action.danger { color: #c62828; }
+        .coupon-action.danger:hover { background: #fdecea; }
+        @media (max-width: 980px) {
+            .coupon-form { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 520px) {
+            .coupon-form { grid-template-columns: 1fr; }
+        }
         .manage-table .btn-delete-manage:hover {
             background: #b71c1c;
             transform: scale(1.05);
@@ -1378,6 +1448,17 @@
             <button class="tab-btn" data-tab="reviews">
                 <i class="fas fa-book-open"></i> Reviews
             </button>
+            <button class="tab-btn" data-tab="coupons">
+                <i class="fas fa-tags"></i> Coupons
+            </button>
+            <button class="tab-btn" data-tab="emails">
+                <i class="fas fa-paper-plane"></i> Emails
+                <span class="badge" id="emailsBadge">0</span>
+            </button>
+            <button class="tab-btn" data-tab="analytics">
+                <i class="fas fa-chart-line"></i> Analytics
+                <span class="badge" id="analyticsBadge">0</span>
+            </button>
         </div>
 
         <!-- Pending Tab -->
@@ -1519,6 +1600,78 @@
             </div>
             <iframe id="reviewsFrame" data-src="../admin/manage%20reads%20review.html" style="width:100%; min-height:1400px; border:1px solid #ede7df; border-radius:12px; background:#fff;" title="Manage Reads Reviews"></iframe>
         </div>
+
+        <!-- Coupons Tab -->
+        <div class="tab-content" id="tab-coupons">
+            <div class="summary-grid" id="couponsSummary">
+                <div class="summary-card">
+                    <div class="number purple" id="couponTotal">0</div>
+                    <div class="label">Total Coupons</div>
+                </div>
+                <div class="summary-card">
+                    <div class="number green" id="couponActive">0</div>
+                    <div class="label">Active</div>
+                </div>
+                <div class="summary-card">
+                    <div class="number orange" id="couponUsed">0</div>
+                    <div class="label">Total Uses</div>
+                </div>
+            </div>
+
+            <div class="manage-table-wrap" style="margin-top:1.2rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:0.5rem;">
+                    <h3 style="font-weight:600; color:#2d2a24;">
+                        <i class="fas fa-tags" style="color:#b76e4b;"></i> Create Coupon
+                    </h3>
+                    <span style="font-size:0.7rem; color:#8a7b6a; align-self:center;">
+                        Storewide codes apply to all books. Authors also create their own single-book promos.
+                    </span>
+                </div>
+                <div class="coupon-form">
+                    <input type="text" id="couponCodeInput" placeholder="Code (e.g. LAUNCH20)" maxlength="30" />
+                    <select id="couponTypeSelect">
+                        <option value="percent">Percentage (%)</option>
+                        <option value="fixed">Fixed (GHS)</option>
+                    </select>
+                    <input type="number" id="couponValueInput" min="0" placeholder="Value" />
+                    <input type="number" id="couponMaxUsesInput" min="0" placeholder="Max uses (0 = unlimited)" />
+                    <input type="date" id="couponExpiresInput" />
+                    <button class="btn-admin" id="createCouponBtn"><i class="fas fa-plus"></i> Create</button>
+                </div>
+                <div class="coupon-msg" id="couponAdminMsg"></div>
+            </div>
+
+            <div class="manage-table-wrap" style="margin-top:1rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:0.5rem;">
+                    <h3 style="font-weight:600; color:#2d2a24;">
+                        <i class="fas fa-list" style="color:#b76e4b;"></i> All Coupons
+                    </h3>
+                    <span style="font-size:0.7rem; color:#8a7b6a; align-self:center;" id="couponListHint"></span>
+                </div>
+                <div id="couponsContainer">
+                    <div class="loading-state">
+                        <div class="spinner"></div>
+                        <p>Loading coupons...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Email Campaigns Tab -->
+        <div class="tab-content" id="tab-emails">
+            <div class="loading-state">
+                <div class="spinner"></div>
+                <p>Loading email lists...</p>
+            </div>
+        </div>
+
+        <!-- Real-time Analytics Tab -->
+        <div class="tab-content" id="tab-analytics">
+            <div class="loading-state">
+                <div class="spinner"></div>
+                <p>Loading analytics...</p>
+            </div>
+        </div>
     </div>
 
     <div id="loadingState" class="loading-state">
@@ -1610,7 +1763,7 @@
     import { initializeApp } from "firebase/app";
     import { 
         getFirestore, collection, query, where, getDocs, 
-        doc, updateDoc, deleteDoc, orderBy, getDoc, writeBatch, addDoc, serverTimestamp
+        doc, updateDoc, deleteDoc, orderBy, getDoc, writeBatch, addDoc, serverTimestamp, limit, increment
     } from "firebase/firestore";
     import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 
@@ -3187,6 +3340,160 @@ ${msg.message || msg.content || ''}
         }
     }
 
+    // ========== COUPONS (ADMIN PROMO CODES) ==========
+    function couponStatus(c) {
+        const now = Date.now();
+        let exp = 0;
+        if (c.expiresAt) {
+            if (c.expiresAt.toDate) exp = c.expiresAt.toDate().getTime();
+            else if (c.expiresAt.seconds) exp = c.expiresAt.seconds * 1000;
+        }
+        if (c.active === false) return { label: 'Paused', cls: 'bg-danger' };
+        if (exp > 0 && exp < now) return { label: 'Expired', cls: 'bg-outline' };
+        if (c.maxUses > 0 && (Number(c.uses) || 0) >= Number(c.maxUses)) return { label: 'Max uses', cls: 'bg-outline' };
+        return { label: 'Active', cls: 'bg-success' };
+    }
+
+    async function loadCoupons() {
+        const container = document.getElementById('couponsContainer');
+        const hint = document.getElementById('couponListHint');
+        if (!container) return;
+        container.innerHTML = '<div class="loading-state"><div class="spinner"></div><p>Loading coupons...</p></div>';
+        try {
+            const q = query(collection(db, "coupons"), orderBy("createdAt", "desc"), limit(100));
+            const snap = await getDocs(q);
+            const coupons = [];
+            snap.forEach(d => coupons.push({ id: d.id, ...d.data() }));
+
+            const totalEl = document.getElementById('couponTotal');
+            const activeEl = document.getElementById('couponActive');
+            const usedEl = document.getElementById('couponUsed');
+            if (totalEl) totalEl.textContent = coupons.length;
+            const activeCount = coupons.filter(c => couponStatus(c).cls !== 'bg-danger' && couponStatus(c).cls !== 'bg-outline').length;
+            if (activeEl) activeEl.textContent = activeCount;
+            const totalUses = coupons.reduce((s, c) => s + (Number(c.uses) || 0), 0);
+            if (usedEl) usedEl.textContent = totalUses;
+
+            if (coupons.length === 0) {
+                container.innerHTML = '<p style="color:#888;padding:1rem 0;">No coupons yet. Create your first storewide coupon above.</p>';
+                return;
+            }
+
+            const scopeLabel = (c) => c.scope === 'book' ? `Book${(c.bookIds || []).length > 1 ? 's' : ''}` : c.scope === 'author' ? 'Author' : 'Storewide';
+            const expiryLabel = (c) => {
+                if (!c.expiresAt) return '—';
+                const dte = c.expiresAt.toDate ? c.expiresAt.toDate() : new Date(c.expiresAt.seconds ? c.expiresAt.seconds * 1000 : c.expiresAt);
+                return dte.toLocaleDateString();
+            };
+
+            let rows = `<table class="manage-table">
+                <thead>
+                    <tr><th>Code</th><th>Discount</th><th>Scope</th><th>Uses</th><th>Expires</th><th>Status</th><th>Actions</th></tr>
+                </thead><tbody>`;
+
+            for (const c of coupons) {
+                const st = couponStatus(c);
+                const discountLabel = c.type === 'fixed' ? `GHS ${Number(c.value) || 0}` : `${Number(c.value) || 0}%`;
+                rows += `<tr>
+                    <td><strong>${c.code || '—'}</strong>${c.createdByName ? `<br><small style="color:#999;">by ${c.createdByName}</small>` : ''}</td>
+                    <td>${discountLabel}</td>
+                    <td>${scopeLabel(c)}${c.bookIds && c.bookIds.length ? `<br><small style="color:#999;">${(c.bookTitles || []).join(', ') || c.bookIds.join(', ')}</small>` : ''}</td>
+                    <td>${(c.uses || 0)} / ${c.maxUses > 0 ? c.maxUses : '∞'}</td>
+                    <td>${expiryLabel(c)}</td>
+                    <td><span class="${st.cls}" style="padding:2px 8px;border-radius:999px;font-size:0.7rem;font-weight:700;">${st.label}</span></td>
+                    <td>
+                        <button class="coupon-action" data-toggle="${c.id}" data-active="${c.active === false ? '0' : '1'}">${c.active === false ? 'Activate' : 'Pause'}</button>
+                        <button class="coupon-action danger" data-delete="${c.id}"><i class="fas fa-trash-alt"></i></button>
+                    </td>
+                </tr>`;
+            }
+            rows += '</tbody></table>';
+            container.innerHTML = rows;
+
+            container.querySelectorAll('[data-toggle]').forEach(btn => {
+                btn.addEventListener('click', async function() {
+                    const id = this.dataset.toggle;
+                    const isActive = this.dataset.active === '1';
+                    try {
+                        await updateDoc(doc(db, "coupons", id), { active: isActive ? false : true });
+                        showToast(`Coupon ${isActive ? 'paused' : 'activated'}.`);
+                        loadCoupons();
+                    } catch (err) {
+                        console.error(err);
+                        alert('Error updating coupon.');
+                    }
+                });
+            });
+            container.querySelectorAll('[data-delete]').forEach(btn => {
+                btn.addEventListener('click', async function() {
+                    if (!confirm('Delete this coupon?')) return;
+                    try {
+                        await deleteDoc(doc(db, "coupons", this.dataset.delete));
+                        showToast('Coupon deleted.');
+                        loadCoupons();
+                    } catch (err) {
+                        console.error(err);
+                        alert('Error deleting coupon.');
+                    }
+                });
+            });
+
+            if (hint) hint.textContent = `Showing ${coupons.length} coupons (newest first).`;
+        } catch (err) {
+            console.error('Error loading coupons:', err);
+            container.innerHTML = '<p style="color:#c62828;padding:1rem 0;">Failed to load coupons.</p>';
+        }
+    }
+
+    document.getElementById('createCouponBtn')?.addEventListener('click', async function() {
+        const msg = document.getElementById('couponAdminMsg');
+        if (!msg) return;
+        msg.textContent = '';
+        const code = document.getElementById('couponCodeInput').value.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+        const type = document.getElementById('couponTypeSelect').value;
+        const value = parseFloat(document.getElementById('couponValueInput').value);
+        const maxUses = parseInt(document.getElementById('couponMaxUsesInput').value) || 0;
+        const expiresVal = document.getElementById('couponExpiresInput').value;
+
+        if (!code) { msg.textContent = 'Enter a coupon code (letters/numbers only).'; return; }
+        if (!value || value <= 0) { msg.textContent = 'Enter a value greater than 0.'; return; }
+        if (type === 'percent' && value > 100) { msg.textContent = 'Percentage cannot exceed 100%.'; return; }
+
+        try {
+            const dup = await getDocs(query(collection(db, "coupons"), where("code", "==", code), limit(1)));
+            if (!dup.empty) { msg.textContent = 'That code already exists.'; return; }
+
+            this.disabled = true;
+            await addDoc(collection(db, "coupons"), {
+                code: code,
+                type: type,
+                value: value,
+                scope: 'storewide',
+                bookIds: [],
+                bookTitles: [],
+                authorId: null,
+                createdBy: 'admin',
+                createdByName: 'Admin',
+                maxUses: maxUses,
+                uses: 0,
+                active: true,
+                expiresAt: expiresVal ? new Date(expiresVal + 'T23:59:59') : null,
+                createdAt: serverTimestamp()
+            });
+            msg.style.color = '#2d7d46';
+            msg.textContent = `✅ Coupon "${code}" created (storewide).`;
+            document.getElementById('couponCodeInput').value = '';
+            document.getElementById('couponValueInput').value = '';
+            document.getElementById('couponExpiresInput').value = '';
+            loadCoupons();
+        } catch (err) {
+            console.error(err);
+            msg.style.color = '#c62828';
+            msg.textContent = '❌ Error creating coupon.';
+        }
+        this.disabled = false;
+    });
+
     // ========== TAB SWITCHING ==========
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', function() {
@@ -3212,6 +3519,9 @@ ${msg.message || msg.content || ''}
                     frame.src = frame.dataset.src;
                     frame.dataset.loaded = '1';
                 }
+            }
+            if (tabName === 'coupons') {
+                loadCoupons();
             }
         });
     });
@@ -3270,5 +3580,6 @@ ${msg.message || msg.content || ''}
 </script>
 
 <script src="../shared/return-url-handler.js"></script>
+<script type="module" src="./admin-ops.js"></script>
 </body>
 </html>

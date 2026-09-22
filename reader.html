@@ -1677,6 +1677,7 @@
             const btn = document.getElementById('readerDownloadBtn');
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            showToast('⬇️ Downloading... this will continue in the background.', 'info');
             
             let fileName = '';
             const title = currentBook.title ? currentBook.title.trim() : 'Untitled';
@@ -1909,9 +1910,10 @@
             return mobileRegex.test(userAgent) || smallScreen;
         }
         
-        function getPdfJsViewerUrl(pdfUrl, embedded) {
+function getPdfJsViewerUrl(pdfUrl, embedded, startPage) {
             if (!pdfUrl) return '';
-            return `pdfjs/local-viewer.html?embedded=${embedded ? '1' : '0'}&file=${encodeURIComponent(pdfUrl)}`;
+            const startParam = startPage > 1 ? `&startPage=${startPage}` : '';
+            return `/store/pdfjs/local-viewer.html?embedded=${embedded ? '1' : '0'}&file=${encodeURIComponent(pdfUrl)}${startParam}`;
         }
         
         function clickEmbeddedReaderControl(controlId) {
@@ -2034,7 +2036,7 @@
 
             if (currentBook.pdfUrl) {
                 const isMobile = isPhoneDevice();
-                const embeddedUrl = getPdfJsViewerUrl(currentBook.pdfUrl, !isMobile);
+                const embeddedUrl = getPdfJsViewerUrl(currentBook.pdfUrl, !isMobile, currentPage);
                 
                 content.innerHTML = `
                     <div class="pdf-viewer-wrapper" style="${isMobile ? 'height:96vh; min-height:420px;' : ''}">

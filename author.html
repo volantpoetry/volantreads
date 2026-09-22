@@ -603,7 +603,7 @@ function renderHeader(user) {
               </div>
               <hr>
               <a class="acct-item" href="dashboard.html#library" style="text-decoration:none;"><i class="fas fa-book-open"></i> My Library</a>
-              <a class="acct-item" href="dashboard.html" id="navAcctDashboard" style="display:none;text-decoration:none;"><i class="fas fa-gauge-high"></i> My Dashboard</a>
+              <a class="acct-item" href="dashboard.html" id="navAcctDashboard" style="display:none;text-decoration:none;" onclick="sessionStorage.setItem('volant_reads_current_page','dashboard');"><i class="fas fa-gauge-high"></i> My Dashboard</a>
               <button class="acct-item" id="navAcctSignOut" type="button"><i class="fas fa-sign-out-alt"></i> Sign out</button>
               <small class="acct-foot">Signed in on Volant Reads</small>
             </div>

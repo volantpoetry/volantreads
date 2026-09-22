@@ -35,6 +35,16 @@
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="icon" type="image/png" href="https://volantpoetry.vercel.app/images/volant-reads-favicon.png" />
   <link rel="apple-touch-icon" href="https://volantpoetry.vercel.app/images/volant-reads-favicon.png" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#4b2aad" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <script>
+    if ('serviceWorker' in navigator && location.protocol === 'https:') {
+      navigator.serviceWorker.register('./sw.js').catch(function() {});
+    }
+  </script>
 
   <style>
     /* ===== ALL YOUR EXISTING CSS (KEPT THE SAME) ===== */
@@ -1011,6 +1021,22 @@ header {
       font-size: 0.85em;
       margin-left: 3px;
       vertical-align: middle;
+    }
+    .verified-badge {
+      background: #e8f4fd;
+      color: #1976d2;
+      border: 1px solid #b8dcf6;
+      border-radius: 20px;
+      padding: 1px 8px;
+      font-size: 0.72em;
+      font-weight: 600;
+      margin-left: 6px;
+      white-space: nowrap;
+    }
+    .mini-rating {
+      margin: 2px 0 4px;
+      font-size: 0.78rem;
+      line-height: 1.2;
     }
 
     .book-details .book-body {
@@ -2434,6 +2460,73 @@ header {
     border-top: 1px solid #ede7df !important;
 }
 
+/* ===== COUPON / PROMO CODE ===== */
+.cart-coupon-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0.5rem 1rem 0;
+}
+.cart-coupon-row .coupon-input {
+    flex: 1;
+    padding: 0.55rem 0.75rem;
+    border: 1px solid #e2dacf;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    background: #fff;
+}
+.cart-coupon-row .coupon-input:focus {
+    outline: none;
+    border-color: #3b5bdb;
+}
+.coupon-apply {
+    flex-shrink: 0;
+}
+.btn-coupon-apply {
+    padding: 0.55rem 0.9rem;
+    border: none;
+    background: #5c2d91;
+    color: #fff;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+.btn-coupon-apply:hover { background: #4a2473; }
+.btn-coupon-apply:disabled { opacity: 0.6; cursor: not-allowed; }
+.coupon-remove {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0.4rem 1rem 0;
+    font-size: 0.8rem;
+    color: #4a2473;
+}
+.btn-coupon-remove {
+    border: none;
+    background: none;
+    color: #d64545;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+.btn-coupon-remove:hover { text-decoration: underline; }
+.coupon-msg {
+    margin: 0.35rem 1rem 0;
+    font-size: 0.78rem;
+    color: #d64545;
+    min-height: 1rem;
+}
+.cart-discount {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.15rem 1rem;
+    font-size: 0.85rem;
+    color: #2e7d32;
+    font-weight: 600;
+}
+.cart-discount-row.hidden { display: none !important; }
+
 .cart-overlay .cart-header {
     flex-shrink: 0 !important;
 }
@@ -3748,6 +3841,156 @@ header .logo-header {
     color: var(--wishlist-grey, #bdc3c7);
     transition: var(--transition);
 }
+.btn-share {
+    background: transparent;
+    color: var(--text-dark);
+    border: 2px solid var(--border-light);
+    padding: 0.9rem 1.5rem;
+    border-radius: 40px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    flex: 1 1 auto;
+    justify-content: center;
+}
+.btn-share:hover {
+    border-color: var(--secondary);
+    background: #fbf7f3;
+    transform: translateY(-2px);
+}
+.btn-share i {
+    font-size: 1.1rem;
+    color: var(--secondary);
+}
+
+/* ===== SHARE BOOK MODAL ===== */
+.share-modal {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.55);
+    z-index: 3000;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+.share-modal.active {
+    display: flex;
+}
+.share-modal-content {
+    background: #fff;
+    border-radius: 16px;
+    max-width: 420px;
+    width: 100%;
+    padding: 2rem 1.5rem 1.5rem;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+}
+.share-modal-close {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    font-size: 1.6rem;
+    cursor: pointer;
+    color: #aaa;
+    line-height: 1;
+}
+.share-modal-close:hover { color: #555; }
+.share-book-preview {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    margin: 1.2rem 0;
+}
+.share-cover {
+    width: 70px;
+    height: 100px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--primary-soft, #efe9df);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary);
+    font-size: 1.6rem;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+}
+.share-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.share-meta { min-width: 0; }
+.share-title {
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: var(--text-dark);
+    line-height: 1.3;
+}
+.share-author {
+    font-size: 0.85rem;
+    color: #888;
+    margin-top: 2px;
+}
+.share-link-box {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+.share-link-box input {
+    flex: 1;
+    padding: 0.6rem 0.75rem;
+    border: 1px solid #e2dacf;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    color: #555;
+}
+.btn-copy-link {
+    padding: 0.6rem 0.9rem;
+    border: none;
+    background: var(--secondary, #5c2d91);
+    color: #fff;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.8rem;
+    white-space: nowrap;
+}
+.btn-copy-link:hover { opacity: 0.9; }
+.share-options {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0.5rem;
+}
+.share-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    padding: 0.8rem 0.3rem;
+    border-radius: 12px;
+    text-decoration: none;
+    color: #fff;
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-align: center;
+    transition: transform 0.2s;
+}
+.share-option:hover { transform: translateY(-3px); }
+.share-option i { font-size: 1.2rem; }
+.share-option.whatsapp { background: #25D366; }
+.share-option.telegram { background: #229ED9; }
+.share-option.facebook { background: #1877F2; }
+.share-option.twitter { background: #000; }
+.share-option.email { background: #7b6f9e; }
 .btn-reading-list.active {
     border-color: var(--secondary);
     background: #f8efe8;
@@ -3810,6 +4053,19 @@ function goToLogin() {
       <!-- rendered by JS -->
     </div>
     <div class="cart-footer">
+      <div class="cart-coupon-row" id="cartCouponRow">
+        <input type="text" id="couponInput" placeholder="Promo code (e.g. WELCOME10)" maxlength="40" autocomplete="off" class="coupon-input" />
+        <button class="btn-coupon-apply" id="couponApplyBtn">Apply</button>
+      </div>
+      <div class="coupon-remove" id="couponRemoveRow" style="display:none;">
+        <span id="couponCodeLabel"></span>
+        <button class="btn-coupon-remove" id="couponRemoveBtn"><i class="fas fa-times-circle"></i> Remove</button>
+      </div>
+      <div class="coupon-msg" id="couponMsg"></div>
+      <div class="cart-discount" id="cartDiscountRow" style="display:none;">
+        <span><i class="fas fa-gift"></i> Coupon savings</span>
+        <span>- GHS <span id="cartDiscountAmount">0.00</span></span>
+      </div>
       <div class="cart-total">
         <span>Total</span>
         <span id="cartTotalAmount">GHS 0.00</span>
@@ -3838,6 +4094,32 @@ function goToLogin() {
     </div>
     <div class="wishlist-footer">
       <button class="btn-add-all-cart" id="addAllWishlistToCartBtn">🛒 Add All to Cart</button>
+    </div>
+  </div>
+
+  <!-- ===== SHARE BOOK MODAL ===== -->
+  <div class="share-modal" id="shareModal">
+    <div class="share-modal-content">
+      <span class="share-modal-close" id="shareModalClose">&times;</span>
+      <h3><i class="fas fa-share-alt" style="color:var(--secondary);margin-right:8px;"></i>Share This Book</h3>
+      <div class="share-book-preview">
+        <div class="share-cover" id="shareCover"><i class="fas fa-book-open"></i></div>
+        <div class="share-meta">
+          <div class="share-title" id="shareTitle">Book Title</div>
+          <div class="share-author" id="shareAuthor"></div>
+        </div>
+      </div>
+      <div class="share-link-box">
+        <input type="text" id="shareLinkInput" readonly />
+        <button class="btn-copy-link" id="shareCopyBtn"><i class="fas fa-copy"></i> Copy</button>
+      </div>
+      <div class="share-options">
+        <a href="#" class="share-option whatsapp" id="shareWhatsApp" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i><span>WhatsApp</span></a>
+        <a href="#" class="share-option telegram" id="shareTelegram" target="_blank" rel="noopener"><i class="fab fa-telegram-plane"></i><span>Telegram</span></a>
+        <a href="#" class="share-option facebook" id="shareFacebook" target="_blank" rel="noopener"><i class="fab fa-facebook-f"></i><span>Facebook</span></a>
+        <a href="#" class="share-option twitter" id="shareTwitter" target="_blank" rel="noopener"><i class="fab fa-x-twitter"></i><span>X</span></a>
+        <a href="#" class="share-option email" id="shareEmail"><i class="fas fa-envelope"></i><span>Email</span></a>
+      </div>
     </div>
   </div>
 
@@ -3971,6 +4253,9 @@ function goToLogin() {
                 </button>
                 <button class="btn-reading-list" id="readingListBtn" title="Add to reading list">
                   <i class="fas fa-bookmark"></i> Save for later
+                </button>
+                <button class="btn-share" id="shareBtn" title="Share this book">
+                  <i class="fas fa-share-alt"></i> Share
                 </button>
                 
                 <div id="paymentStatusContainer" style="width:100%;">
@@ -4163,6 +4448,7 @@ function goToLogin() {
       limit
     } from "firebase/firestore";
     import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
+    import { logEvent, logPageView, captureCampaignEmail, clearAbandonedCart } from "./store-ops.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyC4DHI8aBVY4JjTvJ-r-TGIDPsewtEWxzU",
@@ -4176,6 +4462,7 @@ function goToLogin() {
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const auth = getAuth(app);
+    logPageView('details');
 
     // ===== PAYSTACK CONFIGURATION =====
     const PAYSTACK_PUBLIC_KEY = 'pk_live_8296b2ad3250800c9846bb2368be1bbda3933cd8';
@@ -4263,6 +4550,23 @@ function goToLogin() {
     const readingListBtn = document.getElementById('readingListBtn');
     const bookTopRating = document.getElementById('bookTopRating');
 
+    // ===== CART + COUPON DOM REFS =====
+    const cartOverlay = document.getElementById('cartOverlay');
+    const cartBackdrop = document.getElementById('cartBackdrop');
+    const cartBody = document.getElementById('cartBody');
+    const cartTotalAmount = document.getElementById('cartTotalAmount');
+    const checkoutBtn = document.getElementById('checkoutBtn');
+    const cartPaymentProcessing = document.getElementById('cartPaymentProcessing');
+    const cartCloseBtn = document.getElementById('cartCloseBtn');
+    const couponInput = document.getElementById('couponInput');
+    const couponApplyBtn = document.getElementById('couponApplyBtn');
+    const couponRemoveBtn = document.getElementById('couponRemoveBtn');
+    const couponRemoveRow = document.getElementById('couponRemoveRow');
+    const couponCodeLabel = document.getElementById('couponCodeLabel');
+    const couponMsg = document.getElementById('couponMsg');
+    const cartDiscountRow = document.getElementById('cartDiscountRow');
+    const cartDiscountAmount = document.getElementById('cartDiscountAmount');
+
     let selectedRating = 0;
     let currentUser = null;
     let currentBook = null;
@@ -4325,6 +4629,124 @@ function goToLogin() {
     }
 
     let cartCount = getCartCount();
+
+    // ===== COUPON / PROMO SYSTEM =====
+    const COUPON_KEY = 'volant_coupon_code';
+    function round2(n) { return Math.round((Number(n) || 0) * 100) / 100; }
+
+    function getAppliedCouponCode() {
+      try { return (localStorage.getItem(COUPON_KEY) || '').trim().toUpperCase(); } catch { return ''; }
+    }
+    function saveAppliedCouponCode(code) {
+      try {
+        if (code && code.trim()) localStorage.setItem(COUPON_KEY, code.trim().toUpperCase());
+        else localStorage.removeItem(COUPON_KEY);
+      } catch {}
+    }
+
+    async function fetchCouponByCode(code) {
+      const normalized = (code || '').trim().toUpperCase();
+      if (!normalized) return null;
+      try {
+        const snap = await getDocs(query(collection(db, "coupons"), where("code", "==", normalized), limit(1)));
+        if (snap.empty) return null;
+        return { id: snap.docs[0].id, ...snap.docs[0].data() };
+      } catch (err) {
+        console.warn('Coupon lookup failed:', err);
+        return null;
+      }
+    }
+
+    function couponExpiryTime(coupon) {
+      if (!coupon || !coupon.expiresAt) return 0;
+      if (coupon.expiresAt.toDate) return coupon.expiresAt.toDate().getTime();
+      if (coupon.expiresAt.seconds) return coupon.expiresAt.seconds * 1000;
+      if (coupon.expiresAt instanceof Date) return coupon.expiresAt.getTime();
+      return 0;
+    }
+
+    function couponIsLive(coupon) {
+      if (!coupon) return false;
+      if (coupon.active === false) return false;
+      const exp = couponExpiryTime(coupon);
+      if (exp > 0 && exp < Date.now()) return false;
+      if (coupon.maxUses > 0 && (Number(coupon.uses) || 0) >= Number(coupon.maxUses)) return false;
+      return true;
+    }
+
+    function couponScopeMatches(coupon, item) {
+      if (coupon.scope === 'book') return (coupon.bookIds || []).includes(item.id);
+      if (coupon.scope === 'author') return !!coupon.authorId && coupon.authorId === item.authorId;
+      return true;
+    }
+
+    async function computeCouponDiscount(code, items) {
+      if (!code || !items || !items.length) return { ok: false, error: 'No coupon applied.' };
+      const coupon = await fetchCouponByCode(code);
+      if (!coupon) return { ok: false, error: 'Coupon not found. Check the code and try again.' };
+      if (!couponIsLive(coupon)) return { ok: false, error: 'This coupon is invalid, expired, or has reached its usage limit.' };
+      const eligible = items.filter(item => couponScopeMatches(coupon, item));
+      if (!eligible.length) return { ok: false, error: "This coupon doesn't apply to any books in your cart." };
+      const itemDiscounts = {};
+      let discount = 0;
+      if (coupon.type === 'fixed') {
+        const eligibleTotal = round2(eligible.reduce((s, it) => s + (Number(it.priceInGHS) || 0), 0));
+        let remaining = Math.min(Math.max(Number(coupon.value) || 0, 0), eligibleTotal);
+        discount = round2(remaining);
+        eligible.forEach((it, idx) => {
+          const last = idx === eligible.length - 1;
+          let d = last ? round2(remaining) : round2((Number(it.priceInGHS || 0) / (eligibleTotal || 1)) * discount);
+          if (d > (Number(it.priceInGHS) || 0)) d = Number(it.priceInGHS) || 0;
+          if (d < 0) d = 0;
+          itemDiscounts[it.id] = round2(d);
+          remaining = round2(remaining - d);
+        });
+      } else {
+        for (const it of eligible) {
+          const d = round2((Number(it.priceInGHS) || 0) * ((Number(coupon.value) || 0) / 100));
+          itemDiscounts[it.id] = d;
+          discount += d;
+        }
+        discount = round2(discount);
+      }
+      return { ok: true, coupon, eligible, itemDiscounts, discount };
+    }
+
+    async function refreshCouponUI(items) {
+      if (!couponInput || !couponMsg || !couponRemoveRow) return;
+      const code = getAppliedCouponCode();
+      if (!code) {
+        couponRemoveRow.style.display = 'none';
+        cartDiscountRow.style.display = 'none';
+        cartDiscountAmount.textContent = '0.00';
+        couponMsg.textContent = '';
+        return;
+      }
+      const priced = [];
+      for (const item of items || []) {
+        let authorId = item.authorId || '';
+        if (!authorId) {
+          try {
+            const s = await getDoc(doc(db, "books", item.id));
+            if (s.exists()) authorId = s.data().submittedBy || '';
+          } catch (e) {}
+        }
+        priced.push({ id: item.id, title: item.title, priceInGHS: item.price || 0, authorId });
+      }
+      const res = await computeCouponDiscount(code, priced);
+      if (res.ok) {
+        couponRemoveRow.style.display = 'flex';
+        couponCodeLabel.textContent = res.coupon.code + ' • ' + (res.coupon.type === 'fixed' ? `GHS ${round2(res.coupon.value)} off` : `${round2(res.coupon.value || 0)}% off`);
+        cartDiscountRow.style.display = 'flex';
+        cartDiscountAmount.textContent = res.discount.toFixed(2);
+        couponMsg.textContent = '';
+      } else {
+        saveAppliedCouponCode('');
+        couponRemoveRow.style.display = 'none';
+        cartDiscountRow.style.display = 'none';
+        couponMsg.textContent = res.error;
+      }
+    }
 
     function showToast(message, type = 'info') {
       toast.textContent = message;
@@ -4664,6 +5086,9 @@ function goToLogin() {
           addedAt: new Date().toISOString(),
           bookRef: doc(db, "books", bookId)
         });
+        if (typeof captureCampaignEmail === 'function') {
+          captureCampaignEmail('wishlist', { bookId: bookId, bookTitle: bookData.title || 'Untitled', author: bookData.authorName || 'Anonymous', price: bookData.pricing?.amount || 0, currency: bookData.pricing?.currency || 'GHS' });
+        }
         return true;
       } catch { return false; }
     }
@@ -4900,7 +5325,7 @@ function goToLogin() {
               </div>
               <hr>
               <a class="acct-item" href="dashboard.html#library" style="text-decoration:none;"><i class="fas fa-book-open"></i> My Library</a>
-              <a class="acct-item" href="dashboard.html" id="navAcctDashboard" style="display:none;text-decoration:none;"><i class="fas fa-gauge-high"></i> My Dashboard</a>
+              <a class="acct-item" href="dashboard.html" id="navAcctDashboard" style="display:none;text-decoration:none;" onclick="sessionStorage.setItem('volant_reads_current_page','dashboard');"><i class="fas fa-gauge-high"></i> My Dashboard</a>
               <button class="acct-item" id="navAcctSignOut" type="button"><i class="fas fa-sign-out-alt"></i> Sign out</button>
               <small class="acct-foot">Signed in on Volant Reads</small>
             </div>
@@ -5178,6 +5603,8 @@ function goToLogin() {
         `;
         cartTotalAmount.textContent = 'GHS 0.00';
         checkoutBtn.disabled = true;
+        if (couponMsg) couponMsg.textContent = '';
+        if (cartDiscountRow) cartDiscountRow.style.display = 'none';
         return;
       }
 
@@ -5196,20 +5623,17 @@ function goToLogin() {
         
         if (currency.toUpperCase() === 'GHS') {
           priceDisplay = `GHS ${amount.toFixed(2)}`;
-          totalGHS += amount;
         } else {
-          hasNonGHSCurrency = true;
           try {
-            ghsAmount = await convertToGHS(amount, currency);
-            totalGHS += ghsAmount;
+            ghsAmount = await convertToGHS(amount, currency) || amount;
             priceDisplay = `
               ${currency} ${amount.toFixed(2)}
               <span class="conversion-info">(≈ GHS ${ghsAmount.toFixed(2)})</span>
             `;
           } catch (error) {
             console.warn('Conversion failed:', error);
+            ghsAmount = amount;
             priceDisplay = `${currency} ${amount.toFixed(2)}`;
-            totalGHS += amount;
           }
         }
         
@@ -5227,6 +5651,14 @@ function goToLogin() {
               const canDownload = await canUserDownload(currentUser.uid, item.id, limit);
               limitReached = !canDownload;
             }
+          }
+        }
+        
+        // Already-owned books with downloads remaining are excluded from the total.
+        if (!(isOwned && !limitReached)) {
+          totalGHS += ghsAmount;
+          if (currency.toUpperCase() !== 'GHS') {
+            hasNonGHSCurrency = true;
           }
         }
         
@@ -5259,6 +5691,7 @@ function goToLogin() {
       }
 
       cartBody.innerHTML = html;
+      refreshCouponUI(items).catch(() => {});
       
       let totalDisplay = `GHS ${totalGHS.toFixed(2)}`;
       if (hasNonGHSCurrency) {
@@ -5333,6 +5766,52 @@ function goToLogin() {
     cartCloseBtn.addEventListener('click', closeCart);
     cartBackdrop.addEventListener('click', closeCart);
 
+    if (couponApplyBtn) {
+      couponApplyBtn.addEventListener('click', async function() {
+        const code = couponInput.value.trim();
+        if (!code) {
+          couponMsg.textContent = 'Enter a promo code first.';
+          return;
+        }
+        couponApplyBtn.disabled = true;
+        couponMsg.textContent = 'Checking code...';
+        const priced = [];
+        for (const item of getCartItems()) {
+          let authorId = item.authorId || '';
+          if (!authorId) {
+            try {
+              const s = await getDoc(doc(db, "books", item.id));
+              if (s.exists()) authorId = s.data().submittedBy || '';
+            } catch (e) {}
+          }
+          priced.push({ id: item.id, title: item.title, priceInGHS: item.price || 0, authorId });
+        }
+        const res = await computeCouponDiscount(code, priced);
+couponApplyBtn.disabled = false;
+        couponInput.value = '';
+        if (!res.ok) {
+          couponMsg.textContent = res.error;
+          couponMsg.style.color = '#d64545';
+          saveAppliedCouponCode('');
+          showToast('❌ ' + res.error, 'error');
+        } else {
+          saveAppliedCouponCode(code);
+          couponMsg.textContent = '✅ Code applied!';
+          couponMsg.style.color = '#2e7d32';
+          showToast('✅ Code applied! You\'ll see your discount at checkout.', 'success');
+        }
+        renderCart();
+      });
+    }
+    if (couponRemoveBtn) {
+      couponRemoveBtn.addEventListener('click', function() {
+        saveAppliedCouponCode('');
+        couponMsg.textContent = '';
+        renderCart();
+        showToast('Coupon removed.', 'info');
+      });
+    }
+
     // ===== LOAD ALL BOOKS =====
     async function loadAllBooks() {
       try {
@@ -5345,11 +5824,11 @@ function goToLogin() {
 
     // ===== POPULARITY BADGE FUNCTIONS =====
     function getPopularityBadge(downloads) {
-      if (!downloads || downloads === 0) return { label: '📖 New Release', className: 'new', icon: 'fa-book-open' };
-      if (downloads >= 500) return { label: '⭐ Bestseller', className: 'bestseller', icon: 'fa-star' };
-      if (downloads >= 100) return { label: '📈 Popular', className: 'popular', icon: 'fa-arrow-up' };
-      if (downloads >= 50) return { label: '🔥 Trending', className: 'trending', icon: 'fa-fire' };
-      return { label: '📖 New Release', className: 'new', icon: 'fa-book-open' };
+      if (!downloads || downloads === 0) return { label: 'New Release', className: 'new', icon: 'fa-book-open' };
+      if (downloads >= 500) return { label: 'Bestseller', className: 'bestseller', icon: 'fa-star' };
+      if (downloads >= 100) return { label: 'Popular', className: 'popular', icon: 'fa-arrow-up' };
+      if (downloads >= 50) return { label: 'Trending', className: 'trending', icon: 'fa-fire' };
+      return { label: 'New Release', className: 'new', icon: 'fa-book-open' };
     }
 
     function getPublicDownloadDisplay(downloads) {
@@ -5420,7 +5899,10 @@ function goToLogin() {
             releasedAt: paymentData.releasedAt || null,
             authorSettled: true,
             settlementStatus: 'pending',
-            settlementDate: nextSettlementDate()
+            settlementDate: nextSettlementDate(),
+            couponCode: paymentData.couponCode || null,
+            discountGHS: paymentData.discountGHS || 0,
+            chargedTotalGHS: paymentData.chargedTotalGHS || 0
           });
         } else {
           await setDoc(purchaseRef, {
@@ -5446,8 +5928,15 @@ function goToLogin() {
             releasedAt: paymentData.releasedAt || null,
             authorSettled: true,
             settlementStatus: 'pending',
-            settlementDate: nextSettlementDate()
+            settlementDate: nextSettlementDate(),
+            couponCode: paymentData.couponCode || null,
+            discountGHS: paymentData.discountGHS || 0,
+chargedTotalGHS: paymentData.chargedTotalGHS || 0
           });
+          if (typeof logEvent === 'function') {
+            logEvent('purchase_completed', { bookId: bookId, amount: paymentData.chargedTotalGHS || paymentData.amount || 0, couponCode: paymentData.couponCode || null });
+            clearAbandonedCart();
+          }
         }
         console.log('✅ Purchase recorded successfully');
         return true;
@@ -5781,7 +6270,7 @@ function goToLogin() {
     // ================================================================
     // ===== CART PAYMENT WITH CURRENCY CONVERSION =====
     // ================================================================
-    async function initiateCartPayment(amount, email, items) {
+    async function initiateCartPayment(amount, email, items, couponData = null) {
       if (isProcessingPayment) return;
       if (!checkPaystackReady()) return;
       if (!PAYSTACK_PUBLIC_KEY || PAYSTACK_PUBLIC_KEY.includes('xxxxxxxx')) {
@@ -5935,11 +6424,26 @@ function goToLogin() {
 
       const bookTitles = items.map(item => item.title).join(', ');
 
+      let discountGHS = 0;
+      if (couponData && couponData.discountGHS > 0) discountGHS = Number(couponData.discountGHS) || 0;
+      if (discountGHS > totalGHS) discountGHS = totalGHS;
+      const chargedTotalGHS = Math.round((totalGHS - discountGHS) * 100) / 100;
+
+      // ===== 100% DISCOUNT (free via coupon) → RECORD DIRECTLY, NO PAYMENT NEEDED =====
+      if (chargedTotalGHS <= 0) {
+        const freeResponse = {
+          reference: 'coupon_' + (couponData && couponData.code ? couponData.code : 'free') + '_' + Date.now(),
+          customer: { email: email }
+        };
+        await handleCartPaymentCallback(freeResponse, { items, chargedTotalGHS: 0, couponData: couponData && couponData.res ? { code: couponData.code, coupon: couponData.res.coupon, itemDiscounts: couponData.res.itemDiscounts, discount: discountGHS } : null });
+        return;
+      }
+
       try {
         const paymentConfig = {
           key: PAYSTACK_PUBLIC_KEY,
           email: email,
-          amount: Math.round(totalGHS * 100),
+          amount: Math.max(Math.round(chargedTotalGHS * 100), 1),
           currency: 'GHS',
           bearer: 'account',
           metadata: {
@@ -5951,7 +6455,7 @@ function goToLogin() {
             ]
           },
           callback: function(response) {
-            handleCartPaymentCallback(response, items);
+            handleCartPaymentCallback(response, { items, chargedTotalGHS, couponData: couponData && couponData.res ? { code: couponData.code, coupon: couponData.res.coupon, itemDiscounts: couponData.res.itemDiscounts, discount: discountGHS } : null });
           },
           onClose: function() {
             isProcessingPayment = false;
@@ -5990,7 +6494,12 @@ function goToLogin() {
     }
 
     // ===== CART PAYMENT CALLBACK =====
-    async function handleCartPaymentCallback(response, items) {
+async function handleCartPaymentCallback(response, ctx) {
+      const items = (ctx && ctx.items) || [];
+      const chargedTotalGHS = (ctx && ctx.chargedTotalGHS) || 0;
+      const couponData = (ctx && ctx.couponData) || null;
+      const couponCode = couponData ? (couponData.code || '') : '';
+
       if (!currentUser) {
         showToast('⚠️ User not found. Please try again.', 'error');
         isProcessingPayment = false;
@@ -6001,85 +6510,36 @@ function goToLogin() {
         return;
       }
 
-      let allValid = true;
-      const invalidItems = [];
-      const authorIds = {};
-      const bookTitles = {};
-      
-      for (const item of items) {
+      // ===== VERIFY ONCE WITH THE ACTUAL CHARGED TOTAL (supports multi-book carts + coupons) =====
+      let verified = false;
+      if (chargedTotalGHS > 0) {
         try {
-          const bookRef = doc(db, "books", item.id);
-          const bookSnap = await getDoc(bookRef);
-          
-          if (!bookSnap.exists()) {
-            allValid = false;
-            invalidItems.push(item.title || 'Unknown');
-            continue;
-          }
-          
-          const bookData = bookSnap.data();
-          authorIds[item.id] = bookData.submittedBy;
-          bookTitles[item.id] = bookData.title || item.title || 'Unknown';
-          
-        } catch (error) {
-          console.error('Error getting book data:', error);
-          allValid = false;
-          invalidItems.push(item.title || 'Unknown');
-        }
-      }
-      
-      if (!allValid) {
-        showToast(`⚠️ Some books not found: ${invalidItems.join(', ')}`, 'error');
-        isProcessingPayment = false;
-        isCartCheckout = false;
-        cartPaymentProcessing.classList.remove('active');
-        checkoutBtn.disabled = false;
-        checkoutBtn.innerHTML = '<i class="fas fa-credit-card"></i> Checkout with Paystack';
-        return;
-      }
-
-      for (const item of items) {
-        try {
-          const bookRef = doc(db, "books", item.id);
-          const bookSnap = await getDoc(bookRef);
-          
-          if (!bookSnap.exists()) {
-            allValid = false;
-            invalidItems.push(item.title || 'Unknown');
-            continue;
-          }
-          
-          const bookData = bookSnap.data();
-          
           const verificationResponse = await fetch('https://volantpoetry.vercel.app/api/verify-paystack-transaction', {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               reference: response.reference,
-              amount: effectiveBookPrice(bookData),
+              amount: chargedTotalGHS,
               email: currentUser.email,
-              bookId: item.id,
-              authorId: bookData.submittedBy
+              bookId: items[0] ? items[0].id : '',
+              authorId: ''
             })
           });
-
           const verificationResult = await verificationResponse.json();
-          
-          if (!verificationResult.success) {
-            allValid = false;
-            invalidItems.push(bookData.title || 'Unknown');
+          verified = verificationResult.success === true;
+          if (!verified) {
+            console.warn('Verification failed:', verificationResult);
           }
         } catch (error) {
-          console.error('Verification error for item:', item.id, error);
-          allValid = false;
-          invalidItems.push(item.title || 'Unknown');
+          console.error('Verification error:', error);
+          verified = false;
         }
+      } else {
+        verified = true;
       }
-      
-      if (!allValid) {
-        showToast(`⚠️ Payment verification failed for: ${invalidItems.join(', ')}. Please contact support.`, 'error');
+
+      if (!verified) {
+        showToast('⚠️ Payment verification failed. Please contact support.', 'error');
         isProcessingPayment = false;
         isCartCheckout = false;
         cartPaymentProcessing.classList.remove('active');
@@ -6089,13 +6549,20 @@ function goToLogin() {
       }
 
       const transactionRef = response.reference || 'paystack_' + Date.now();
+
+      // ===== RECORD PURCHASE FOR EACH ITEM =====
       let allSuccess = true;
       const successfulItems = [];
-      
+
       for (const item of items) {
         try {
-          const authorId = authorIds[item.id] || null;
-          const bookTitle = bookTitles[item.id] || item.title || 'Unknown';
+          const bookRef = doc(db, "books", item.id);
+          const bookSnap = await getDoc(bookRef);
+          if (!bookSnap.exists()) continue;
+          const bookData = bookSnap.data();
+          const authorId = bookData.submittedBy || null;
+          const bookTitle = bookData.title || item.title || 'Unknown';
+
           let poPreorder = item.preorder === true && item.released !== true;
           let poReleaseDate = item.preorderReleaseDate || null;
           try {
@@ -6106,21 +6573,34 @@ function goToLogin() {
               poReleaseDate = bd.preorderReleaseDate || null;
             }
           } catch (e) { /* use cart values */ }
-          
+
+          let amount = item.price || 0;
+          let currency = item.currency || 'GHS';
+          let discountGHS = 0;
+          if (couponData && couponData.itemDiscounts && couponData.itemDiscounts[item.id]) {
+            discountGHS = round2(Number(couponData.itemDiscounts[item.id]) || 0);
+            amount = round2(amount - discountGHS);
+            currency = 'GHS';
+            if (amount < 0) amount = 0;
+          }
+
           const success = await recordPurchase(
-            currentUser.uid, 
-            item.id, 
+            currentUser.uid,
+            item.id,
             transactionRef,
             {
-              amount: item.price || 0,
-              currency: item.currency || 'GHS',
+              amount: amount,
+              currency: currency,
               customerEmail: response.customer?.email || currentUser.email,
               verifiedBy: 'serverless-api',
               authorId: authorId,
               bookTitle: bookTitle,
               preorder: poPreorder,
               preorderReleaseDate: poReleaseDate,
-              released: false
+              released: false,
+              couponCode: couponCode || null,
+              discountGHS: discountGHS,
+              chargedTotalGHS: chargedTotalGHS
             }
           );
           if (success) {
@@ -6133,23 +6613,35 @@ function goToLogin() {
           allSuccess = false;
         }
       }
-      
+
+      // ===== INCREMENT COUPON USAGE =====
+      if (couponData && couponData.coupon && couponData.coupon.id) {
+        try {
+          await updateDoc(doc(db, "coupons", couponData.coupon.id), {
+            uses: increment(1),
+            lastUsedAt: serverTimestamp()
+          });
+        } catch (err) {
+          console.warn('Could not increment coupon usage:', err);
+        }
+      }
+
       if (allSuccess) {
-        showToast(`✅ Payment verified! ${successfulItems.length} book(s) added to your library. 🎉`, 'success');
+        showToast(`✅ ${chargedTotalGHS > 0 ? 'Payment verified! ' : 'Coupon applied! '}${successfulItems.length} book(s) added to your library. 🎉`, 'success');
+        saveAppliedCouponCode('');
         saveCartItems([]);
         cartCount = 0;
         updateCartBadge();
         await renderCart();
         closeCart();
-        
-        // 👈 REFRESH EARNINGS AFTER PURCHASE
+
         if (currentUser) {
           await loadEarnings(currentUser.uid);
         }
       } else {
         showToast('⚠️ Some purchases failed to save. Please contact support.', 'error');
       }
-      
+
       isProcessingPayment = false;
       isCartCheckout = false;
       cartPaymentProcessing.classList.remove('active');
@@ -6332,6 +6824,7 @@ function goToLogin() {
       const originalText = downloadBtnText.textContent;
       downloadBtn.disabled = true;
       downloadBtnText.textContent = 'Downloading...';
+      showToast('⬇️ Downloading... this will continue in the background.', 'info');
 
       try {
         const bookRef = doc(db, "books", currentBook.id);
@@ -6481,7 +6974,38 @@ function goToLogin() {
       }
 
       const email = getUserEmail();
-      await initiateCartPayment(total, email, purchasableItems);
+
+      // ===== VALIDATE APPLIED COUPON & COMPUTE DISCOUNT =====
+      let couponData = null;
+      const couponCode = getAppliedCouponCode();
+      if (couponCode) {
+        const pricedItems = [];
+        for (const item of purchasableItems) {
+          let authorId = item.authorId || '';
+          if (!authorId) {
+            try {
+              const s = await getDoc(doc(db, "books", item.id));
+              if (s.exists()) authorId = s.data().submittedBy || '';
+            } catch (e) {}
+          }
+          pricedItems.push({ id: item.id, title: item.title, priceInGHS: item.price || 0, authorId });
+        }
+        const res = await computeCouponDiscount(couponCode, pricedItems);
+        if (res.ok) {
+          if (res.discount > 0) {
+            couponData = { code: res.coupon.code, res, discountGHS: res.discount };
+            showToast(`🎟️ Coupon applied: ${res.coupon.code} (GHS ${res.discount.toFixed(2)} off)`, 'success');
+          } else {
+            showToast('🎟️ Coupon applied — this order is free!', 'success');
+          }
+        } else {
+          saveAppliedCouponCode('');
+          couponMsg.textContent = res.error;
+          showToast(`❌ ${res.error}`, 'error');
+        }
+      }
+
+      await initiateCartPayment(total, email, purchasableItems, couponData);
     });
 
     // ===== DOWNLOAD BUTTON =====
@@ -6501,6 +7025,7 @@ function goToLogin() {
         }
         const book = { id: docSnap.id, ...docSnap.data() };
         currentBook = book;
+        if (typeof logEvent === 'function') logEvent('view_book', { bookId: book.id });
         renderBook(book);
         renderMoreByAuthor(book);
         await updateUIForBook();
@@ -6548,6 +7073,14 @@ function goToLogin() {
         title.className = 'book-title';
         title.textContent = book.title || 'Untitled';
         info.appendChild(title);
+        if ((Number(book.reviewCount) || 0) > 0 && (Number(book.averageRating) || 0) > 0) {
+          const avg = (Number(book.averageRating) || 0) / (Number(book.reviewCount) || 1);
+          const full = Math.round(avg);
+          const rating = document.createElement('div');
+          rating.className = 'mini-rating';
+          rating.innerHTML = `<span style="color:#f5b342;letter-spacing:1px;">${'★'.repeat(full)}${'☆'.repeat(5 - full)}</span> <span style="color:#888;font-size:0.72rem;">${avg.toFixed(1)} (${book.reviewCount})</span>`;
+          info.appendChild(rating);
+        }
         const price = document.createElement('div');
         price.className = 'book-price';
         const currency = book.pricing?.currency || 'GHS';
@@ -6643,7 +7176,8 @@ function goToLogin() {
       }
       const popularityBadge = document.createElement('span');
       popularityBadge.className = `popularity-badge ${popularity.className}`;
-      popularityBadge.innerHTML = `<i class="fas ${popularity.icon}"></i> ${popularity.label} · ${displayText}`;
+      const popularitySuffix = totalDownloads > 0 ? ` · ${displayText}` : '';
+      popularityBadge.innerHTML = `<i class="fas ${popularity.icon}"></i> ${popularity.label}${popularitySuffix}`;
       bookBadges.appendChild(popularityBadge);
 
       const limit = book.downloadLimit || book.downloads || 5;
@@ -7193,6 +7727,32 @@ function goToLogin() {
           return dateB - dateA;
         });
         
+        // Re-derive verified-purchase status for older reviews that predate the flag.
+        const needCheck = reviews.some(r => r.userId && !r.verified);
+        const verifiedSet = new Set();
+        if (needCheck) {
+          try {
+            const pq = query(collection(db, "purchases"), where("bookId", "==", bookId), where("status", "==", "completed"));
+            const psnap = await getDocs(pq);
+            psnap.forEach(d => {
+              const data = d.data();
+              if (data.verified === true && data.userId) verifiedSet.add(data.userId);
+            });
+          } catch (err) {}
+          const backfill = [];
+          reviews.forEach(r => {
+            if (!r.verified && r.userId && verifiedSet.has(r.userId)) {
+              r.verified = true;
+              backfill.push(doc(db, "reviews", r.id));
+            }
+          });
+          if (backfill.length > 0) {
+            const batch = writeBatch(db);
+            backfill.forEach(ref => batch.update(ref, { verified: true }));
+            batch.commit().catch(err => console.warn('Verified backfill failed:', err));
+          }
+        }
+        
         let reviewHTML = '';
         let totalRating = 0;
         
@@ -7217,7 +7777,7 @@ function goToLogin() {
               <div class="review-header">
                 <span class="reviewer-name">
                   ${avatarHtml}${reviewerName}
-                  ${review.verified ? ` <span class="verified-badge" title="Verified buyer"><i class="fas fa-check-circle"></i></span>` : ''}
+                  ${review.verified ? ` <span class="verified-badge" title="Confirmed buyer"><i class="fas fa-check-circle"></i> Bought this book</span>` : ''}
                 </span>
                 <span class="review-stars">${stars}</span>
                 <span class="review-date">${date.toLocaleDateString()}</span>
@@ -7242,6 +7802,31 @@ function goToLogin() {
         const fullStars = Math.round(avg);
         const emptyStars = 5 - fullStars;
         avgStars.textContent = '★'.repeat(fullStars) + '☆'.repeat(emptyStars);
+
+        // Ratings breakdown bars
+        const starCounts = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+        reviews.forEach(r => {
+          const s = Math.round(r.rating);
+          if (starCounts[s] != null) starCounts[s]++;
+        });
+        const existingBreakdown = reviewsSummary.querySelector('.ratings-breakdown');
+        if (existingBreakdown) existingBreakdown.remove();
+        if (count > 0) {
+          const breakdownHtml = `
+            <div class="ratings-breakdown">
+              ${[5, 4, 3, 2, 1].map(star => {
+                const cnt = starCounts[star];
+                const pct = count > 0 ? Math.round(100 * cnt / count) : 0;
+                return `
+                <div class="rating-row">
+                  <span class="rating-label">${star}<i class="fas fa-star"></i></span>
+                  <div class="rating-bar"><div class="rating-fill" style="width:${pct}%"></div></div>
+                  <span class="rating-count">${cnt}</span>
+                </div>`;
+              }).join('')}
+            </div>`;
+          reviewsSummary.insertAdjacentHTML('beforeend', breakdownHtml);
+        }
         
         reviewsList.innerHTML = reviewHTML || `
           <div class="no-reviews">
@@ -7395,13 +7980,81 @@ function goToLogin() {
         currency: currentBook.pricing?.currency || 'GHS',
         image: currentBook.imageUrl || '',
         preorder: currentBook.preorder === true && currentBook.released !== true,
-        preorderReleaseDate: currentBook.preorderReleaseDate || null
+        preorderReleaseDate: currentBook.preorderReleaseDate || null,
+        authorId: currentBook.submittedBy || ''
       });
       saveCartItems(items);
       cartCount = items.length;
       updateCartBadge();
       showToast(`✅ "${currentBook.title}" added to cart!`, 'success');
     });
+
+    // ===== SHARE BOOK (COVER + UNIQUE LINK) =====
+    const shareModal = document.getElementById('shareModal');
+    const shareModalClose = document.getElementById('shareModalClose');
+    const shareCover = document.getElementById('shareCover');
+    const shareTitle = document.getElementById('shareTitle');
+    const shareAuthor = document.getElementById('shareAuthor');
+    const shareLinkInput = document.getElementById('shareLinkInput');
+    const shareCopyBtn = document.getElementById('shareCopyBtn');
+    const shareWhatsApp = document.getElementById('shareWhatsApp');
+    const shareTelegram = document.getElementById('shareTelegram');
+    const shareFacebook = document.getElementById('shareFacebook');
+    const shareTwitter = document.getElementById('shareTwitter');
+    const shareEmail = document.getElementById('shareEmail');
+    const shareBtn = document.getElementById('shareBtn');
+
+    function openShareModal() {
+      if (!currentBook) { showToast('❌ Book not loaded.', 'error'); return; }
+      const link = window.location.href;
+      const title = currentBook.title || 'Untitled';
+      const author = currentBook.authorName || 'Anonymous';
+      const cover = currentBook.imageUrl || '';
+      const text = `${title} by ${author} — available on Volant Reads`;
+
+      shareTitle.textContent = title;
+      shareAuthor.textContent = author;
+      shareLinkInput.value = link;
+      if (cover) {
+        shareCover.innerHTML = `<img src="${cover}" alt="${title}" />`;
+      } else {
+        shareCover.innerHTML = '<i class="fas fa-book-open"></i>';
+      }
+
+      shareWhatsApp.href = 'https://wa.me/?text=' + encodeURIComponent(text + ' ' + link);
+      shareTelegram.href = 'https://t.me/share/url?url=' + encodeURIComponent(link) + '&text=' + encodeURIComponent(text);
+      shareFacebook.href = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(link);
+      shareTwitter.href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(text) + '&url=' + encodeURIComponent(link);
+      shareEmail.href = 'mailto:?subject=' + encodeURIComponent(title + ' by ' + author + ' on Volant Reads') + '&body=' + encodeURIComponent(text + '\n\n' + link);
+
+      shareModal.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeShareModal() {
+      shareModal.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    if (shareBtn) shareBtn.addEventListener('click', openShareModal);
+    if (shareModalClose) shareModalClose.addEventListener('click', closeShareModal);
+    if (shareModal) shareModal.addEventListener('click', function(e) {
+      if (e.target === shareModal) closeShareModal();
+    });
+    if (shareCopyBtn) {
+      shareCopyBtn.addEventListener('click', async function() {
+        try {
+          await navigator.clipboard.writeText(shareLinkInput.value);
+          shareCopyBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+          showToast('✅ Book link copied to clipboard!', 'success');
+          setTimeout(() => { shareCopyBtn.innerHTML = '<i class="fas fa-copy"></i> Copy'; }, 2000);
+        } catch (err) {
+          shareLinkInput.select();
+          document.execCommand('copy');
+          showToast('✅ Book link copied to clipboard!', 'success');
+        }
+      });
+    }
 
     // ===== READING LIST BUTTON (LOCAL WISHLIST) =====
     readingListBtn.addEventListener('click', function() {
@@ -7470,5 +8123,14 @@ function goToLogin() {
   </script>
 <script src="https://volantpoetry.vercel.app/shared/return-url-handler.js"></script>
   <script type="module" src="./book-schema.js"></script>
+<style>
+      .ratings-breakdown { margin: 0.9rem 0 0.2rem; padding-top: 0.8rem; border-top: 1px solid #ede7df; }
+      .rating-row { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.4rem; }
+      .rating-label { font-size: 0.78rem; color: #6b5f52; min-width: 34px; }
+      .rating-label i { font-size: 0.6rem; color: #f5a623; margin-left: 2px; }
+      .rating-bar { flex: 1; background: #f1ece4; border-radius: 20px; height: 8px; overflow: hidden; }
+      .rating-fill { height: 100%; background: linear-gradient(90deg, #4b2aad, #b76e4b); border-radius: 20px; transition: width 0.4s ease; }
+      .rating-count { font-size: 0.75rem; color: #8a7b6a; min-width: 18px; text-align: right; }
+    </style>
 </body>
 </html>

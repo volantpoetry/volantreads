@@ -248,6 +248,7 @@
     if (params.get('embedded') === '1') {
       document.body.classList.add('embedded');
     }
+    var startPage = Math.max(1, parseInt(params.get('startPage')) || 1);
 
     // State variables
     var pdfDoc = null;
@@ -496,6 +497,9 @@
         }
         updatePageStatus();
         await renderDocument();
+        if (startPage > 1) {
+          scrollToPage(Math.min(startPage, pageCount));
+        }
       } catch (error) {
         console.error('PDF load failed:', error);
         emptyState.innerHTML = '<div class="empty-state">This PDF could not be opened.<br><small>' + error.message + '</small></div>';

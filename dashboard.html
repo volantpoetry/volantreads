@@ -1003,6 +1003,25 @@ body { background:#f7f7fb; color:#1d1833; }
   display:block;
   margin-top:0.4rem;
 }
+
+.modal .publish-now-btn {
+  background: linear-gradient(135deg, #27ae60, #2d8f4e);
+  color: #fff;
+  border: none;
+  padding: 12px 28px;
+  border-radius: 40px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: 0.2s;
+  text-align: center;
+}
+.modal .publish-now-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(39, 174, 96, 0.35); }
+.modal .publish-now-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+@media (max-width: 600px) {
+  .modal .publish-now-btn { width: 100%; }
+}
 .modal .custom-download-input input {
   width:100%;
   max-width:150px;
@@ -1393,6 +1412,102 @@ nav {
 }
 .msg-tab i { margin-right: 6px; }
 .msg-tab-panel { margin-bottom: 0; }
+
+/* ===== PROMOS PAGE ===== */
+.promo-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.promo-form .form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.promo-form .form-group label {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #444;
+  margin-bottom: 6px;
+  display: block;
+}
+.promo-form .form-group input,
+.promo-form .form-group select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid #e2dcf0;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  background: #fff;
+}
+.promo-form .form-group input:focus,
+.promo-form .form-group select:focus {
+  outline: none;
+  border-color: #6a34ff;
+}
+.promo-form .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 0.8rem 1.2rem;
+  border: none;
+  border-radius: 10px;
+  background: #6a34ff;
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.promo-form .btn:hover { background: #5629d6; transform: translateY(-1px); }
+.promo-form .btn:active { transform: translateY(0); }
+.promo-form .btn:disabled { background: #ccc; cursor: not-allowed; transform: none; }
+.promo-msg {
+  font-size: 0.85rem;
+  color: #d64545;
+  min-height: 1rem;
+}
+.promo-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid #e8e3f5;
+  border-radius: 12px;
+  background: #faf9ff;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+.promo-status {
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  letter-spacing: 0.3px;
+}
+.promo-status.status-active { background: #e2f5e6; color: #1d7a3a; }
+.promo-status.status-paused { background: #fff3d6; color: #9a6700; }
+.promo-status.status-expired { background: #fde8e8; color: #b3261e; }
+.promo-action {
+  border: 1px solid #d9d1ee;
+  background: #fff;
+  color: #5b4bb7;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.promo-action:hover { background: #f0eaff; }
+.promo-action.danger { color: #b3261e; }
+.promo-action.danger:hover { background: #fde8e8; }
+.promo-card .promo-actions-col { display: flex; flex-direction: column; gap: 6px; }
+@media (max-width: 560px) {
+  .promo-form .form-row { grid-template-columns: 1fr; }
+}
 
 /* ===== NOTIFICATIONS FEED (inside Messages tab) ===== */
 .notif-page-actions {
@@ -3095,6 +3210,130 @@ body:has(#page-mylibrary.active) #setupAlertBanner {
 
 /* Hide email notification settings until a verified sending domain is configured (remove this block once live) */
         #emailNotifGroup { display: none; }
+
+  /* ===== SHARE BOOK MODAL ===== */
+  .share-modal {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.55);
+    z-index: 3000;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+  }
+  .share-modal.active {
+    display: flex;
+  }
+  .share-modal-content {
+    background: #fff;
+    border-radius: 16px;
+    max-width: 420px;
+    width: 100%;
+    padding: 2rem 1.5rem 1.5rem;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+  }
+  .share-modal-close {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    font-size: 1.6rem;
+    cursor: pointer;
+    color: #aaa;
+    line-height: 1;
+  }
+  .share-modal-close:hover { color: #555; }
+  .share-book-preview {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    margin: 1.2rem 0;
+  }
+  .share-cover {
+    width: 70px;
+    height: 100px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--primary-soft, #efe9df);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary, #5c2d91);
+    font-size: 1.6rem;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  }
+  .share-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .share-meta { min-width: 0; }
+  .share-title {
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: var(--text-dark, #222);
+    line-height: 1.3;
+  }
+  .share-author {
+    font-size: 0.85rem;
+    color: #888;
+    margin-top: 2px;
+  }
+  .share-link-box {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+  .share-link-box input {
+    flex: 1;
+    padding: 0.6rem 0.75rem;
+    border: 1px solid #e2dacf;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    color: #555;
+  }
+  .btn-copy-link {
+    padding: 0.6rem 0.9rem;
+    border: none;
+    background: var(--secondary, #5c2d91);
+    color: #fff;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.8rem;
+    white-space: nowrap;
+  }
+  .btn-copy-link:hover { opacity: 0.9; }
+  .share-options {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0.5rem;
+  }
+  .share-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    padding: 0.8rem 0.3rem;
+    border-radius: 12px;
+    text-decoration: none;
+    color: #fff;
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-align: center;
+    transition: transform 0.2s;
+  }
+  .share-option:hover { transform: translateY(-3px); }
+  .share-option i { font-size: 1.2rem; }
+  .share-option.whatsapp { background: #25D366; }
+  .share-option.telegram { background: #229ED9; }
+  .share-option.facebook { background: #1877F2; }
+  .share-option.twitter { background: #000; }
+  .share-option.email { background: #7b6f9e; }
   </style>
         
 </head>
@@ -3156,6 +3395,7 @@ body:has(#page-mylibrary.active) #setupAlertBanner {
       <a data-page="sales"><i class="fas fa-chart-simple"></i> Sales</a>
       <a data-page="finances"><i class="fas fa-coins"></i> Finances</a>
       <a data-page="analytics"><i class="fas fa-chart-line"></i> Analytics</a>
+      <a data-page="promos"><i class="fas fa-tags"></i> Promos</a>
       <a data-page="wishlist"><i class="fas fa-heart"></i> Wishlist <span class="wishlist-badge" id="wishlistNavBadge">0</span></a>
       <a data-page="messages"><i class="fas fa-comment-dots"></i> Messages <span class="message-badge" id="messageNavBadge">0</span></a>
       <a data-page="settings"><i class="fas fa-gear"></i> Settings</a>
@@ -3420,6 +3660,63 @@ body:has(#page-mylibrary.active) #setupAlertBanner {
     <div class="panel" style="margin-top:20px;">
       <h3 style="margin-bottom:16px;">Sales Performance</h3>
       <div class="chart" id="analyticsChart" style="height:180px;"></div>
+    </div>
+  </div>
+
+  <!-- PROMOS PAGE -->
+  <div class="page-section" id="page-promos">
+    <div class="page-header">
+      <h2>🏷️ Promos</h2>
+      <p>Create discount promo codes for your books to boost sales. Share the code with your readers.</p>
+    </div>
+    <div class="msg-tabs">
+      <button type="button" class="msg-tab active" data-promo-tab="create"><i class="fas fa-plus-circle"></i> Create Promo</button>
+      <button type="button" class="msg-tab" data-promo-tab="mycodes"><i class="fas fa-tags"></i> My Promo Codes</button>
+    </div>
+    <div class="panel msg-tab-panel" id="promoTabCreate">
+      <div class="promo-form">
+        <div class="form-group">
+          <label>Promo Code</label>
+          <input type="text" id="promoCodeInput" placeholder="e.g. READER10, JULYSAVE" maxlength="30" autocomplete="off" />
+          <small style="color:#888;">Letters &amp; numbers only, max 30 characters. Leave blank to auto-generate.</small>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Discount</label>
+            <select id="promoTypeSelect">
+              <option value="percent">Percentage (%)</option>
+              <option value="fixed">Fixed (GHS)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Value</label>
+            <input type="number" id="promoValueInput" min="0" max="100" step="1" placeholder="e.g. 20" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Apply to Book</label>
+          <select id="promoBookSelect">
+            <option value="">— Select a book —</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Max Uses <small>(0 = unlimited)</small></label>
+            <input type="number" id="promoMaxUsesInput" min="0" value="0" />
+          </div>
+          <div class="form-group">
+            <label>Expires On <small>(optional)</small></label>
+            <input type="date" id="promoExpiresInput" />
+          </div>
+        </div>
+        <button class="btn" id="createPromoBtn"><i class="fas fa-ticket"></i> Create Promo Code</button>
+        <div class="promo-msg" id="promoMsg"></div>
+      </div>
+    </div>
+    <div class="panel msg-tab-panel" id="promoTabMyCodes" style="display:none;">
+      <div id="myPromoCodes">
+        <!-- populated by JS -->
+      </div>
     </div>
   </div>
 
@@ -3963,6 +4260,27 @@ body:has(#page-mylibrary.active) #setupAlertBanner {
         </div>
       </div>
 
+      <!-- ===== PRE-ORDER RELEASE (show only while the book is actively in pre-order) ===== -->
+      <div id="preorderReleaseGroup" style="display:none;">
+        <div style="background:#f8f5f0; border-radius:16px; padding:0.8rem 1rem; border:1px solid #ede7df; margin-bottom:14px;">
+          <div style="font-weight:600; color:#1d1833; margin-bottom:0.6rem; display:flex; align-items:center; gap:6px; font-size:0.85rem;"><i class="fas fa-hourglass-half" style="color:#6a34ff;"></i> Pre-Order Settings</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="updatePreorderReleaseDate">Release Date</label>
+              <input type="date" id="updatePreorderReleaseDate" />
+              <div class="hint" id="preorderReleaseHint" style="font-size:0.65rem; color:#8a7b6a; padding-left:4px; margin-top:4px;"></div>
+            </div>
+            <div class="form-group" style="display:flex; flex-direction:column;">
+              <label>&nbsp;</label>
+              <button type="button" id="publishNowBtn" class="publish-now-btn">
+                <i class="fas fa-rocket"></i> Publish Now
+              </button>
+              <div class="hint" style="font-size:0.65rem; color:#8a7b6a; padding-left:4px; margin-top:4px;">Unlocks the book for all pre-order buyers immediately.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="form-group">
         <label>Keywords <span class="required">*</span> (comma separated, min 3)</label>
         <input type="text" id="updateKeywords" placeholder="e.g. poetry, love, nature" required />
@@ -4077,6 +4395,32 @@ body:has(#page-mylibrary.active) #setupAlertBanner {
 
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
+
+<!-- ===== SHARE BOOK MODAL ===== -->
+<div class="share-modal" id="shareModal">
+    <div class="share-modal-content">
+      <span class="share-modal-close" id="shareModalClose">&times;</span>
+      <h3><i class="fas fa-share-alt" style="color:#6a34ff;margin-right:8px;"></i>Share This Book</h3>
+      <div class="share-book-preview">
+        <div class="share-cover" id="shareCover"><i class="fas fa-book-open"></i></div>
+        <div class="share-meta">
+          <div class="share-title" id="shareTitle">Book Title</div>
+          <div class="share-author" id="shareAuthor"></div>
+        </div>
+      </div>
+      <div class="share-link-box">
+        <input type="text" id="shareLinkInput" readonly />
+        <button class="btn-copy-link" id="shareCopyBtn"><i class="fas fa-copy"></i> Copy</button>
+      </div>
+      <div class="share-options">
+        <a href="#" class="share-option whatsapp" id="shareWhatsApp" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i><span>WhatsApp</span></a>
+        <a href="#" class="share-option telegram" id="shareTelegram" target="_blank" rel="noopener"><i class="fab fa-telegram-plane"></i><span>Telegram</span></a>
+        <a href="#" class="share-option facebook" id="shareFacebook" target="_blank" rel="noopener"><i class="fab fa-facebook-f"></i><span>Facebook</span></a>
+        <a href="#" class="share-option twitter" id="shareTwitter" target="_blank" rel="noopener"><i class="fab fa-x-twitter"></i><span>X</span></a>
+        <a href="#" class="share-option email" id="shareEmail"><i class="fas fa-envelope"></i><span>Email</span></a>
+      </div>
+    </div>
+  </div>
 
 <script type="importmap">
   {
@@ -5281,6 +5625,10 @@ body:has(#page-mylibrary.active) #setupAlertBanner {
       markAllMessagesRead();
     }
     
+    if (pageId === 'promos') {
+      if (typeof loadPromosPage === 'function') loadPromosPage();
+    }
+    
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -5301,9 +5649,209 @@ body:has(#page-mylibrary.active) #setupAlertBanner {
     return `hsl(${hue}, 65%, 50%)`;
   }
 
+  // ===== PROMOS (SELLER PROMO CODES) =====
+  function loadPromosPage() {
+    const select = document.getElementById('promoBookSelect');
+    if (select) {
+      const opts = authorBooks.map(b => `<option value="${b.id}">${(b.title || 'Untitled').replace(/"/g, '&quot;')}</option>`).join('');
+      select.innerHTML = '<option value="">— Select a book —</option>' + opts;
+    }
+    renderMyPromoCodes();
+  }
+
+  function promoStatus(coupon) {
+    const now = Date.now();
+    let exp = 0;
+    if (coupon.expiresAt) {
+      if (coupon.expiresAt.toDate) exp = coupon.expiresAt.toDate().getTime();
+      else if (coupon.expiresAt.seconds) exp = coupon.expiresAt.seconds * 1000;
+    }
+    if (coupon.active === false) return { label: 'Paused', cls: 'status-paused' };
+    if (exp > 0 && exp < now) return { label: 'Expired', cls: 'status-expired' };
+    if (coupon.maxUses > 0 && (Number(coupon.uses) || 0) >= Number(coupon.maxUses)) return { label: 'Max uses', cls: 'status-expired' };
+    return { label: 'Active', cls: 'status-active' };
+  }
+
+  async function renderMyPromoCodes() {
+    const el = document.getElementById('myPromoCodes');
+    if (!el) return;
+    if (!currentUser) { el.innerHTML = '<p style="color:#888;">Sign in to view your promo codes.</p>'; return; }
+    try {
+      const q = query(collection(db, "coupons"), where("createdBy", "==", currentUser.uid), orderBy("createdAt", "desc"), limit(50));
+      const snap = await getDocs(q);
+      if (snap.empty) {
+        el.innerHTML = '<p style="color:#888;">No promo codes yet. Create your first one above!</p>';
+        return;
+      }
+      const rows = [];
+      snap.forEach(d => {
+        const c = { id: d.id, ...d.data() };
+        const st = promoStatus(c);
+        const discountLabel = c.type === 'fixed' ? `GHS ${Number(c.value) || 0}` : `${Number(c.value) || 0}%`;
+        const scopeLabel = c.scope === 'book' ? `1 book` : c.scope === 'author' ? 'All my books' : 'Storewide';
+        let expiry = '—';
+        if (c.expiresAt) {
+          const dte = c.expiresAt.toDate ? c.expiresAt.toDate() : new Date(c.expiresAt.seconds ? c.expiresAt.seconds * 1000 : c.expiresAt);
+          expiry = dte.toLocaleDateString();
+        }
+        rows.push(`
+          <div class="promo-card">
+            <div style="flex:1;min-width:0;">
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                <strong style="font-size:1rem;letter-spacing:0.5px;">${c.code || '—'}</strong>
+                <span class="promo-status ${st.cls}">${st.label}</span>
+              </div>
+              <div style="color:#888;font-size:0.82rem;margin-top:4px;">
+                ${discountLabel} off · ${scopeLabel} · ${(c.uses || 0)}/${c.maxUses > 0 ? c.maxUses : '∞'} uses · expires ${expiry}
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">
+              <button class="promo-action" data-copy="${c.code}"><i class="fas fa-copy"></i> Copy</button>
+              <button class="promo-action danger" data-toggle="${c.id}" data-active="${c.active === false ? '0' : '1'}">${c.active === false ? 'Activate' : 'Pause'}</button>
+              <button class="promo-action danger" data-delete="${c.id}"><i class="fas fa-trash-alt"></i> Delete</button>
+            </div>
+          </div>
+        `);
+      });
+      el.innerHTML = rows.join('');
+
+      el.querySelectorAll('[data-copy]').forEach(btn => {
+        btn.addEventListener('click', async function() {
+          try {
+            await navigator.clipboard.writeText(this.dataset.copy);
+            showToast(`✅ Promo code "${this.dataset.copy}" copied! Share it with your readers.`, 'success');
+          } catch (e) { prompt(`📋 Promo code "${this.dataset.copy}":`, this.dataset.copy); }
+        });
+      });
+      el.querySelectorAll('[data-toggle]').forEach(btn => {
+        btn.addEventListener('click', async function() {
+          const id = this.dataset.toggle;
+          const isActive = this.dataset.active === '1';
+          try {
+            await updateDoc(doc(db, "coupons", id), { active: isActive ? false : true });
+            showToast(isActive ? '⏸️ Promo code paused.' : '✅ Promo code activated.', 'info');
+            renderMyPromoCodes();
+          } catch (err) {
+            console.error(err);
+            showToast('❌ Error updating promo code.', 'error');
+          }
+        });
+      });
+      el.querySelectorAll('[data-delete]').forEach(btn => {
+        btn.addEventListener('click', async function() {
+          if (!confirm('Delete this promo code?')) return;
+          try {
+            await deleteDoc(doc(db, "coupons", this.dataset.delete));
+            showToast('🗑️ Promo code deleted.', 'info');
+            renderMyPromoCodes();
+          } catch (err) {
+            console.error(err);
+            showToast('❌ Error deleting promo code.', 'error');
+          }
+        });
+      });
+    } catch (err) {
+      console.warn('Error loading promo codes:', err);
+      el.innerHTML = '<p style="color:#888;">Could not load promo codes.</p>';
+    }
+  }
+
+  function genPromoCode() {
+    const letters = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let code = '';
+    for (let i = 0; i < 8; i++) code += letters[Math.floor(Math.random() * letters.length)];
+    return code;
+  }
+
+  async function initPromos() {
+    document.querySelectorAll('[data-promo-tab]').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('[data-promo-tab]').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        const t = this.dataset.promoTab;
+        document.getElementById('promoTabCreate').style.display = t === 'create' ? 'block' : 'none';
+        document.getElementById('promoTabMyCodes').style.display = t === 'mycodes' ? 'block' : 'none';
+        if (t === 'mycodes') renderMyPromoCodes();
+      });
+    });
+
+    const createBtn = document.getElementById('createPromoBtn');
+    if (createBtn) {
+      createBtn.addEventListener('click', async function() {
+        const msg = document.getElementById('promoMsg');
+        if (!msg) return;
+        msg.textContent = '';
+        if (!currentUser) { msg.textContent = 'Please sign in first.'; return; }
+
+        let code = document.getElementById('promoCodeInput').value.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+        const bookId = document.getElementById('promoBookSelect').value;
+        const type = document.getElementById('promoTypeSelect').value;
+        const value = parseFloat(document.getElementById('promoValueInput').value);
+        const maxUses = parseInt(document.getElementById('promoMaxUsesInput').value) || 0;
+        const expiresVal = document.getElementById('promoExpiresInput').value;
+
+        if (!bookId) { msg.textContent = 'Please select a book for this promo.'; return; }
+        if (!value || value <= 0) { msg.textContent = 'Please enter a discount value greater than 0.'; return; }
+        if (type === 'percent' && value > 100) { msg.textContent = 'Percentage can\'t exceed 100%.'; return; }
+        if (!code) code = genPromoCode();
+
+        // Ensure the code is unique
+        const dupSnap = await getDocs(query(collection(db, "coupons"), where("code", "==", code), limit(1)));
+        if (!dupSnap.empty) { msg.textContent = 'That code already exists. Try another.'; return; }
+
+        const bookSnap = await getDoc(doc(db, "books", bookId));
+        const bookTitle = bookSnap.exists() ? (bookSnap.data().title || 'Untitled') : '';
+
+        this.disabled = true;
+        try {
+          await addDoc(collection(db, "coupons"), {
+            code: code,
+            type: type,
+            value: value,
+            scope: 'book',
+            bookIds: [bookId],
+            bookTitles: [bookTitle],
+            authorId: currentUser.uid,
+            createdBy: currentUser.uid,
+            createdByName: currentUser.displayName || currentUser.email || 'Author',
+            maxUses: maxUses,
+            uses: 0,
+            active: true,
+            expiresAt: expiresVal ? new Date(expiresVal + 'T23:59:59') : null,
+            createdAt: serverTimestamp()
+          });
+          msg.style.color = '#2e7d32';
+          msg.textContent = `✅ Promo code "${code}" created! Share it with your readers.`;
+          document.getElementById('promoCodeInput').value = '';
+          document.getElementById('promoValueInput').value = '';
+          document.getElementById('promoBookSelect').value = '';
+          renderMyPromoCodes();
+        } catch (err) {
+          console.error(err);
+          msg.style.color = '#d64545';
+          msg.textContent = '❌ Error creating promo code. Please try again.';
+        }
+        this.disabled = false;
+      });
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', initPromos);
+
   // ===== SHARE BOOK FUNCTION =====
-  function shareBook(bookId, bookTitle) {
+  function shareBook(bookId, bookTitle, bookCover) {
     const bookUrl = `${window.location.origin}${window.location.pathname.replace('dashboard.html', 'details.html')}?id=${bookId}`;
+    const text = `${bookTitle || 'This book'} on Volant Reads`;
+    
+    // Prefer the native share sheet on mobile (includes cover + link)
+    if (navigator.share && window.matchMedia('(max-width: 900px)').matches) {
+      navigator.share({
+        title: bookTitle || 'Volant Reads',
+        text: text,
+        url: bookUrl
+      }).catch(() => {});
+      return;
+    }
     
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(bookUrl).then(() => {
@@ -5335,6 +5883,72 @@ body:has(#page-mylibrary.active) #setupAlertBanner {
     }
     document.body.removeChild(tempInput);
   }
+
+  // ===== SHARE MODAL (like details page) =====
+  function setShareHref(id, url) {
+    const el = document.getElementById(id);
+    if (el && url) el.href = url;
+  }
+
+  function openBookShareModal(book) {
+    const modal = document.getElementById('shareModal');
+    if (!modal || !book) return;
+    const link = `${window.location.origin}${window.location.pathname.replace('dashboard.html', 'details.html')}?id=${book.id}`;
+    const title = book.title || 'Untitled';
+    const author = book.authorName || book.author || (currentUser && currentUser.displayName) || '';
+    const cover = book.imageUrl || '';
+    const text = `${title}${author ? ' by ' + author : ''} — available on Volant Reads`;
+
+    const t = document.getElementById('shareTitle');
+    const a = document.getElementById('shareAuthor');
+    const c = document.getElementById('shareCover');
+    const l = document.getElementById('shareLinkInput');
+    if (t) t.textContent = title;
+    if (a) a.textContent = author;
+    if (l) l.value = link;
+    if (c) c.innerHTML = cover ? `<img src="${cover}" alt="${title}" />` : '<i class="fas fa-book-open"></i>';
+
+    setShareHref('shareWhatsApp', 'https://wa.me/?text=' + encodeURIComponent(text + ' ' + link));
+    setShareHref('shareTelegram', 'https://t.me/share/url?url=' + encodeURIComponent(link) + '&text=' + encodeURIComponent(text));
+    setShareHref('shareFacebook', 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(link));
+    setShareHref('shareTwitter', 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(text) + '&url=' + encodeURIComponent(link));
+    setShareHref('shareEmail', 'mailto:?subject=' + encodeURIComponent(title + (author ? ' by ' + author : '') + ' on Volant Reads') + '&body=' + encodeURIComponent(text + '\n\n' + link));
+
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeBookShareModal() {
+    const modal = document.getElementById('shareModal');
+    if (modal) modal.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+
+  (function initDashboardShareModal() {
+    const modal = document.getElementById('shareModal');
+    if (!modal) return;
+    const closeBtn = document.getElementById('shareModalClose');
+    if (closeBtn) closeBtn.addEventListener('click', closeBookShareModal);
+    modal.addEventListener('click', function(e) {
+      if (e.target === modal) closeBookShareModal();
+    });
+    const copyBtn = document.getElementById('shareCopyBtn');
+    if (copyBtn) {
+      copyBtn.addEventListener('click', async function() {
+        const input = document.getElementById('shareLinkInput');
+        try {
+          await navigator.clipboard.writeText(input.value);
+          copyBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+          showToast('✅ Book link copied to clipboard!', 'success');
+          setTimeout(() => { copyBtn.innerHTML = '<i class="fas fa-copy"></i> Copy'; }, 2000);
+        } catch (err) {
+          input.select();
+          document.execCommand('copy');
+          showToast('✅ Book link copied to clipboard!', 'success');
+        }
+      });
+    }
+  })();
 
   // ===== CREATE BOOK CARD =====
   function createBookCard(book, showStatus = false, showSales = false) {
@@ -5406,9 +6020,17 @@ body:has(#page-mylibrary.active) #setupAlertBanner {
         'draft': '📄 Draft',
         'hidden': '🙈 Delisted'
       };
-      const statusText = statusLabels[book.status] || book.status.charAt(0).toUpperCase() + book.status.slice(1);
-      statusBadge.className = `badge-status ${book.status}`;
-      statusBadge.textContent = statusText;
+
+      const isPreorder = book.status === 'approved' && (book.preorder === true || book.preorder === 'true') && !(book.released === true || book.released === 'true');
+
+      if (isPreorder) {
+        statusBadge.className = 'badge-status pending';
+        statusBadge.innerHTML = `<i class="fas fa-hourglass-half"></i> Pre-Order · unlocks ${book.preorderReleaseDate || 'on release date'}`;
+      } else {
+        const statusText = statusLabels[book.status] || book.status.charAt(0).toUpperCase() + book.status.slice(1);
+        statusBadge.className = `badge-status ${book.status}`;
+        statusBadge.textContent = statusText;
+      }
       body.appendChild(statusBadge);
     }
 
@@ -5441,10 +6063,10 @@ body:has(#page-mylibrary.active) #setupAlertBanner {
     const shareBtn = document.createElement('button');
     shareBtn.className = 'share-book-btn';
     shareBtn.innerHTML = '<i class="fas fa-link"></i> Share';
-    shareBtn.title = 'Copy book link to share';
+    shareBtn.title = 'Share this book';
     shareBtn.addEventListener('click', function(e) {
       e.stopPropagation();
-      shareBook(book.id, book.title || 'Untitled');
+      openBookShareModal(book);
     });
     btnGroup.appendChild(shareBtn);
 
@@ -5526,6 +6148,45 @@ body:has(#page-mylibrary.active) #setupAlertBanner {
       updateKeywords.value = (data.keywords || []).join(', ');
       updateSeriesName.value = data.series || '';
       updateSeriesOrder.value = data.seriesOrder || '';
+
+      // ===== PRE-ORDER RELEASE BLOCK =====
+      const preorderReleaseGroup = document.getElementById('preorderReleaseGroup');
+      const preorderReleaseInput = document.getElementById('updatePreorderReleaseDate');
+      const preorderReleaseHint = document.getElementById('preorderReleaseHint');
+      const publishNowBtn = document.getElementById('publishNowBtn');
+
+      if (preorderReleaseGroup) {
+        const isActivePreorder = (data.preorder === true || data.preorder === 'true') && data.released !== true;
+        preorderReleaseGroup.style.display = isActivePreorder ? '' : 'none';
+
+        if (isActivePreorder && preorderReleaseInput) {
+          const current = data.preorderReleaseDate || '';
+          preorderReleaseInput.value = current;
+          preorderReleaseInput.min = new Date().toISOString().split('T')[0];
+
+          let locked = false;
+          let daysLeft = null;
+          if (current) {
+            const today = new Date(); today.setHours(0, 0, 0, 0);
+            const release = new Date(String(current) + 'T00:00:00');
+            if (!isNaN(release)) {
+              daysLeft = Math.ceil((release - today) / 86400000);
+              if (daysLeft <= 7) locked = true;
+            }
+          }
+
+          preorderReleaseInput.disabled = locked;
+          if (publishNowBtn) publishNowBtn.disabled = false;
+
+          if (preorderReleaseHint) {
+            if (locked) {
+              preorderReleaseHint.innerHTML = '<span style="color:#c0392b;"><i class="fas fa-lock"></i> ' + (daysLeft === null ? 'Release date is locked.' : (daysLeft < 0 ? 'This release date has passed and is locked.' : 'This book releases in ' + daysLeft + ' day' + (daysLeft === 1 ? '' : 's') + ' (7 days or less). The date can no longer be changed. Use Publish Now to release it early.')) + '</span>';
+            } else {
+              preorderReleaseHint.innerHTML = '<span style="color:#888;"><i class="fas fa-info-circle"></i> You can change the release date until <strong>7 days</strong> before release.</span>';
+            }
+          }
+        }
+      }
       
       const downloadLimit = data.downloadLimit || data.downloads || 5;
       setUpdateDownloadsValue(downloadLimit);
@@ -5572,6 +6233,23 @@ async function updateBook() {
   const price = parseFloat(updatePrice.value);
   const currency = updateCurrency.value;
   const keywordsStr = updateKeywords.value.trim();
+
+  // ===== PRE-ORDER RELEASE DATE =====
+  const preorderReleaseGroup = document.getElementById('preorderReleaseGroup');
+  const preorderReleaseInput = document.getElementById('updatePreorderReleaseDate');
+  let preorderReleaseDate = null;
+  if (preorderReleaseGroup && preorderReleaseGroup.style.display !== 'none') {
+    if (preorderReleaseInput && !preorderReleaseInput.disabled && preorderReleaseInput.value) {
+      const newRelease = new Date(preorderReleaseInput.value + 'T00:00:00');
+      const today = new Date(); today.setHours(0, 0, 0, 0);
+      if (isNaN(newRelease) || newRelease < today) {
+        showToast('❌ Release date must be today or later.', 'error');
+        preorderReleaseInput.focus();
+        return;
+      }
+      preorderReleaseDate = preorderReleaseInput.value;
+    }
+  }
 
   if (!authorName) { showToast('❌ Author name is required', 'error'); return; }
   if (!title) { showToast('❌ Book title is required', 'error'); return; }
@@ -5651,6 +6329,7 @@ async function updateBook() {
       updateData.pdfUrl = pdfUrl;
       updateData.bookFormat = 'pdf';
     }
+    if (preorderReleaseDate) updateData.preorderReleaseDate = preorderReleaseDate;
 
     await updateDoc(doc(db, "books", bookId), updateData);
 
@@ -5682,6 +6361,35 @@ async function updateBook() {
     updateBookBtn.innerHTML = '<i class="fas fa-save"></i> Update Book';
   }
 }
+
+  // ===== PUBLISH PRE-ORDER BOOK NOW =====
+  async function publishBookNow() {
+    const bookId = updateBookId.value;
+    if (!bookId) {
+      showToast('❌ No book selected', 'error');
+      return;
+    }
+    if (!confirm('Publish this book now?\n\nIt will unlock immediately for all pre-order buyers and go live in the bookstore.')) return;
+
+    const btn = document.getElementById('publishNowBtn');
+    try {
+      if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Publishing...'; }
+      await updateDoc(doc(db, "books", bookId), {
+        released: true,
+        releasedAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      });
+      const localBook = authorBooks.find(b => b.id === bookId);
+      if (localBook) localBook.released = true;
+      showToast('🚀 Book published! Pre-orders are now unlocked.', 'success');
+      await renderAll();
+      closeModal();
+    } catch (err) {
+      console.error('Publish error:', err);
+      showToast('❌ Error publishing book: ' + err.message, 'error');
+      if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-rocket"></i> Publish Now'; }
+    }
+  }
 
   // ===== DELETE BOOK =====
   async function deleteBook() {
@@ -6184,8 +6892,45 @@ return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt
   // ====== LIBRARY FUNCTIONS - INCLUDES READS ======
   // ============================================================
 
+  function getLibraryCacheKey() {
+    return 'volant_reads_library_' + (currentUser ? currentUser.uid : 'anon');
+  }
+
+  function restoreLibraryCache() {
+    try {
+      const raw = sessionStorage.getItem(getLibraryCacheKey());
+      if (!raw) return false;
+      const parsed = JSON.parse(raw);
+      if (!parsed || !Array.isArray(parsed.books) || parsed.books.length === 0) return false;
+      purchasedBooks = parsed.books.map(function(b) {
+        if (b.addedAt) { try { b.addedAt = new Date(b.addedAt); } catch (e) {} }
+        if (b.lastReadAt) { try { b.lastReadAt = new Date(b.lastReadAt); } catch (e) {} }
+        return b;
+      });
+      renderLibrary();
+      const totalEl = document.getElementById('libraryTotalBooks');
+      const ownedEl = document.getElementById('libraryOwnedBooks');
+      if (totalEl) totalEl.textContent = purchasedBooks.length;
+      if (ownedEl) ownedEl.textContent = purchasedBooks.filter(b => b.status === 'owned').length + ' owned';
+      return true;
+    } catch (err) {
+      return false;
+    }
+  }
+
+  function saveLibraryCache() {
+    try {
+      sessionStorage.setItem(getLibraryCacheKey(), JSON.stringify({ ts: Date.now(), books: purchasedBooks }));
+    } catch (err) {
+      // Cache is optional
+    }
+  }
+
   async function loadLibrary() {
     if (!currentUser) return;
+
+    // ✅ Render cached library instantly, then refresh in the background
+    restoreLibraryCache();
     
     try {
         // Get all purchases for this user
@@ -6259,7 +7004,12 @@ return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt
                         page: readData.page || 0,
                         preorder: bookData.preorder === true || bookData.preorder === 'true',
                         preorderReleaseDate: bookData.preorderReleaseDate || null,
-                        released: bookData.released === true || bookData.released === 'true'
+                        released: bookData.released === true || bookData.released === 'true',
+                        purchasedAt: purchaseData.purchasedAt || null,
+                        transactionRef: purchaseData.transactionRef || '',
+                        chargedTotalGHS: purchaseData.chargedTotalGHS || 0,
+                        amount: purchaseData.amount || 0,
+                        customerEmail: purchaseData.customerEmail || ''
                     };
                 }
                 return null;
@@ -6284,6 +7034,7 @@ return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt
         // Update total books count in stats
         document.getElementById('libraryTotalBooks').textContent = purchasedBooks.length;
         document.getElementById('libraryOwnedBooks').textContent = purchasedBooks.filter(b => b.status === 'owned').length + ' owned';
+        saveLibraryCache();
         
     } catch (err) {
         console.warn('Error loading library:', err);
@@ -6434,16 +7185,131 @@ return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt
     const shareBtn = document.createElement('button');
     shareBtn.className = 'share-book-btn';
     shareBtn.innerHTML = '<i class="fas fa-link"></i> Share';
-    shareBtn.title = 'Copy book link to share';
+    shareBtn.title = 'Share this book';
     shareBtn.addEventListener('click', function(e) {
       e.stopPropagation();
-      shareBook(book.id, book.title || 'Untitled');
+      openBookShareModal(book);
     });
     btnGroup.appendChild(shareBtn);
+
+    if (book.status === 'owned') {
+      const receiptBtn = document.createElement('button');
+      receiptBtn.className = 'share-book-btn';
+      receiptBtn.innerHTML = '<i class="fas fa-receipt"></i> Receipt PDF';
+      receiptBtn.title = 'Download payment receipt as PDF';
+      receiptBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        printReceipt(book);
+      });
+      btnGroup.appendChild(receiptBtn);
+    }
 
     body.appendChild(btnGroup);
     card.appendChild(body);
     return card;
+  }
+
+  function printReceipt(book) {
+    try {
+      if (!window.jspdf) {
+        showToast('⬇️ Preparing receipt generator...', 'info');
+        const scriptTag = document.createElement('script');
+        scriptTag.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+        scriptTag.onload = function() { generateReceiptPdf(book); };
+        scriptTag.onerror = function() { showToast('⚠️ Receipt generator unavailable offline. Check your connection and try again.', 'error'); };
+        document.head.appendChild(scriptTag);
+        return;
+      }
+      generateReceiptPdf(book);
+    } catch (err) {
+      console.warn('Receipt error:', err);
+      showToast('Could not generate receipt.', 'error');
+    }
+  }
+
+  function sanitizeReceiptText(s) {
+    return String(s == null ? '' : s)
+      .replace(/\u2013|\u2014/g, '-')
+      .replace(/[\u2018\u2019]/g, "'")
+      .replace(/[\u201C\u201D]/g, '"')
+      .replace(/[^\x20-\x7E]/g, '');
+  }
+
+  function generateReceiptPdf(book) {
+    showToast('⬇️ Generating receipt... this will continue in the background.', 'info');
+    setTimeout(function() {
+      try {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+        const pageWidth = 210;
+        const margin = 14;
+        const right = pageWidth - margin;
+
+        doc.setFillColor(75, 42, 173);
+        doc.rect(0, 0, pageWidth, 24, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(18);
+        doc.text('Volant Reads', margin, 11);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(10);
+        doc.text('Official Payment Receipt', right, 9, { align: 'right' });
+        doc.setFontSize(8.5);
+        doc.setTextColor(206, 196, 255);
+        doc.text('Receipt of payment', right, 15, { align: 'right' });
+
+        let y = 36;
+        doc.setTextColor(90, 90, 90);
+        doc.setFont('helvetica', 'italic');
+        doc.setFontSize(11);
+        doc.text('Thank you for your purchase. Keep this receipt for your records.', margin, y);
+        y += 10;
+
+        y += 10;
+
+        const currency = book.currency || 'GHS';
+        const amount = (Number(book.chargedTotalGHS) || Number(book.amount) || 0).toFixed(2);
+        const paid = (Number(book.chargedTotalGHS) || 0) === 0 ? 'Free' : 'Paystack';
+        const date = book.purchasedAt?.toDate?.() ? book.purchasedAt.toDate().toLocaleString() : (book.purchasedAt ? new Date(book.purchasedAt).toLocaleString() : 'N/A');
+        const userEmail = (currentUser && currentUser.email) || book.customerEmail || '';
+
+        const rows = [
+          ['Book', sanitizeReceiptText(book.title || 'Untitled')],
+          ['Author', sanitizeReceiptText(book.authorName || '')],
+          ['Date', date],
+          ['Amount', currency + ' ' + amount],
+          ['Paid via', paid],
+          ['Transaction Ref', sanitizeReceiptText(book.transactionRef || 'paystack')],
+          ['Email', sanitizeReceiptText(userEmail)]
+        ];
+
+        rows.forEach(function(r) {
+          const lines = doc.splitTextToSize(r[1], right - margin - 52);
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(10.5);
+          doc.setTextColor(130, 130, 130);
+          doc.text(r[0], margin, y);
+          doc.setFont('helvetica', 'normal');
+          doc.setTextColor(25, 25, 25);
+          doc.text(lines, margin + 46, y);
+          y += 6 * lines.length + 3.5;
+        });
+
+        y += 5;
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9);
+        doc.setTextColor(150, 150, 150);
+        doc.text('Volant Reads - volantpoetry.vercel.app', pageWidth / 2, y + 7, { align: 'center' });
+
+        const titlePart = sanitizeReceiptText(book.title || 'Untitled').replace(/\s+/g, ' ').trim();
+        const fileName = 'volant_reads_receipt_' + (titlePart ? titlePart.replace(/[^a-z0-9 _\-,\.]/gi, '_') : 'book').split(' ').join('-').toLowerCase() + '.pdf';
+        doc.save(fileName);
+        showToast('✅ Receipt downloaded!', 'success');
+      } catch (err) {
+        console.warn('Receipt generation error:', err);
+        showToast('⚠️ Could not generate receipt.', 'error');
+      }
+    }, 60);
   }
 
   // ============================================================
@@ -7020,6 +7886,9 @@ allBooksData.forEach(data => {
     views: data.views || 0,
     rating: data.rating || 0,
     approvedAt: data.approvedAt || data.createdAt || null,
+    preorder: data.preorder === true || data.preorder === 'true',
+    released: data.released === true || data.released === 'true',
+    preorderReleaseDate: data.preorderReleaseDate || '',
   });
 });
 
@@ -7689,10 +8558,20 @@ window.addEventListener('storage', function(e) {
     loadNotificationsPage();
   });
 
+  // Resolve which page to show: explicit intent from the URL wins over the saved tab
+  function getRequestedPage() {
+    const pageParam = new URLSearchParams(window.location.search).get('page');
+    if (pageParam) return pageParam;
+    const hash = (window.location.hash || '').toLowerCase();
+    if (hash === '#library' || hash === '#mylibrary') return 'mylibrary';
+    if (hash === '#dashboard') return 'dashboard';
+    return null;
+  }
+
   // Restore last visited page on load
   document.addEventListener('DOMContentLoaded', function() {
-    const lastPage = sessionStorage.getItem('volant_reads_current_page') || 'mylibrary';
-    showPage(lastPage, false);
+    const page = getRequestedPage() || sessionStorage.getItem('volant_reads_current_page') || 'mylibrary';
+    showPage(page, false);
   });
 
   document.getElementById('manageBooksLink')?.addEventListener('click', (e) => {
@@ -7987,6 +8866,8 @@ window.addEventListener('storage', function(e) {
 
   deleteBookBtn?.addEventListener('click', deleteBook);
 
+  document.getElementById('publishNowBtn')?.addEventListener('click', publishBookNow);
+
   updateDownloadsSelect?.addEventListener('change', toggleUpdateCustomDownloadInput);
 
   // ===== SETUP VALIDATION =====
@@ -7999,9 +8880,9 @@ window.addEventListener('storage', function(e) {
       await updateUserUI(user);
       await loadAuthorData(user);
       
-      // ✅ Restore last visited page
-      const lastPage = sessionStorage.getItem('volant_reads_current_page') || 'mylibrary';
-      showPage(lastPage, false);
+      // ✅ Restore last visited page (explicit URL intent wins over the saved tab)
+      const page = getRequestedPage() || sessionStorage.getItem('volant_reads_current_page') || 'mylibrary';
+      showPage(page, true);
       
       sessionStorage.removeItem('auth_redirect_attempted');
     } else {
@@ -8041,5 +8922,6 @@ window.addEventListener('storage', function(e) {
 });
 </script>
 <script src="https://volantpoetry.vercel.app/shared/return-url-handler.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </body>
 </html>

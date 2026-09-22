@@ -1,5 +1,5 @@
 // store/sw.js
-const CACHE_NAME = 'volant-reads-v5';
+const CACHE_NAME = 'volant-reads-v6';
 
 // Pages that change with the signed-in user and must always hit the network.
 const NO_CACHE_PAGES = [

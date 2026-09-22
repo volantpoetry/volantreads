@@ -2199,7 +2199,7 @@
                 <div class="form-group">
                     <label for="keywordInput"><i class="fas fa-hashtag"></i> Keywords <span style="color:#b76e4b;">*</span></label>
                     <div class="keyword-input-wrapper">
-                        <input type="text" id="keywordInput" placeholder="Enter a keyword (e.g., poetry, love, nature)" />
+                        <input type="text" id="keywordInput" placeholder="Add keywords separated by commas (e.g., poetry, love, nature)" />
                         <button type="button" id="addKeywordBtn" class="add-keyword-btn"><i class="fas fa-plus"></i> Add</button>
                     </div>
                     <div class="keyword-tags" id="keywordTags"></div>
@@ -2207,7 +2207,7 @@
                         <span id="keywordCountDisplay">0</span> keywords added
                         <span class="count-required">(minimum 3, maximum 5)</span>
                     </div>
-                    <span class="hint">Add at least 3 and up to 5 keywords to help readers find your book.</span>
+                    <span class="hint">Add at least 3 and up to 5 keywords — separate multiple keywords with commas.</span>
                 </div>
 
                 <!-- BOOK FILE UPLOAD (PDF) -->
@@ -3007,17 +3007,24 @@ document.addEventListener('DOMContentLoaded', setupBackLink);
         }
 
         function addKeyword() {
-            const val = keywordInput.value.trim();
-            if (!val) { keywordInput.focus(); return; }
-            if (keywords.some(k => k.toLowerCase() === val.toLowerCase())) {
-                keywordInput.value = '';
+            const raw = keywordInput.value;
+            const parts = raw.split(',').map(p => p.trim()).filter(p => p.length > 0);
+            if (parts.length === 0) { keywordInput.focus(); return; }
+
+            let addedAny = false;
+            let dupeAny = false;
+            for (const part of parts) {
+                if (keywords.some(k => k.toLowerCase() === part.toLowerCase())) { dupeAny = true; continue; }
+                if (keywords.length >= 5) { alert('Maximum 5 keywords allowed.'); break; }
+                keywords.push(part);
+                addedAny = true;
+            }
+
+            keywordInput.value = '';
+            if (!addedAny && dupeAny) {
                 keywordInput.placeholder = 'Keyword already added';
                 setTimeout(() => { keywordInput.placeholder = 'Enter a keyword'; }, 1500);
-                return;
             }
-            if (keywords.length >= 5) { alert('Maximum 5 keywords allowed.'); return; }
-            keywords.push(val);
-            keywordInput.value = '';
             updateKeywordUI();
             keywordInput.focus();
         }
