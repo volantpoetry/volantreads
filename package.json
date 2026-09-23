@@ -6,6 +6,9 @@
   "engines": {
     "node": ">=18"
   },
+  "scripts": {
+    "generate-sitemap": "node .github/scripts/generate-sitemap.js"
+  },
   "optionalDependencies": {
     "firebase-admin": "^11.11.1"
   }
