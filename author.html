@@ -825,7 +825,7 @@ ${followerCount > 0 ? `<div class="stat stat-followers"><span class="num">${form
 
       /* Share */
       document.getElementById('shareBtn')?.addEventListener('click', () => {
-        const url = `${location.origin}/store1/author.html?uid=${encodeURIComponent(uid)}`;
+        const url = `${location.origin}${location.pathname.replace(/[?#].*$/, '')}?uid=${encodeURIComponent(uid)}`;
         if (navigator.share) {
           navigator.share({ title: `${name} on Volant Reads`, url });
         } else {

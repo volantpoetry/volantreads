@@ -2137,7 +2137,7 @@ Volant Reads Team
                     day: 'numeric' 
                 })
                 : 'Unknown date',
-            '[Book Link]': window.location.origin + '/store/volant-reads.html'
+            '[Book Link]': `${window.location.origin}/details.html?id=${encodeURIComponent(book.id)}`
         };
 
         for (const [key, value] of Object.entries(substitutions)) {

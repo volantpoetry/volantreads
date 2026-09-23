@@ -1913,7 +1913,7 @@
 function getPdfJsViewerUrl(pdfUrl, embedded, startPage) {
             if (!pdfUrl) return '';
             const startParam = startPage > 1 ? `&startPage=${startPage}` : '';
-            return `/store/pdfjs/local-viewer.html?embedded=${embedded ? '1' : '0'}&file=${encodeURIComponent(pdfUrl)}${startParam}`;
+            return `pdfjs/local-viewer.html?embedded=${embedded ? '1' : '0'}&file=${encodeURIComponent(pdfUrl)}${startParam}`;
         }
         
         function clickEmbeddedReaderControl(controlId) {
