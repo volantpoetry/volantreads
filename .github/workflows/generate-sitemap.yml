@@ -2,8 +2,8 @@ name: Generate Sitemap
 
 on:
   schedule:
-    - cron: '0 2 * * *'  # Runs daily at 2:00 AM UTC
-  workflow_dispatch:      # Allows manual trigger from GitHub UI
+    - cron: '0 2 * * *'
+  workflow_dispatch:
   push:
     branches:
       - main
@@ -23,55 +23,49 @@ jobs:
 
     steps:
       - name: 📥 Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: 🔧 Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
-          node-version: '18'
+          node-version: '24'
 
       - name: 📦 Install dependencies
         run: npm install
 
       - name: 🗺️ Generate sitemap
         env:
-          # Firebase service account (JSON string or base64 encoded)
           FIREBASE_KEY: ${{ secrets.FIREBASE_KEY }}
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
-        run: npm run generate-sitemap
+        run: node .github/scripts/generate-sitemap.js
 
       - name: ✅ Verify sitemap
         run: |
           echo "🔍 Verifying generated files..."
 
-          # Check if sitemap.xml exists
           if [ ! -f sitemap.xml ]; then
             echo "❌ sitemap.xml not generated!"
             exit 1
           fi
 
-          # Check if robots.txt exists
           if [ ! -f robots.txt ]; then
             echo "⚠️ robots.txt not generated"
           else
             echo "✅ robots.txt generated"
           fi
 
-          # Count URLs
           URL_COUNT=$(grep -c "<loc>" sitemap.xml || echo "0")
           echo ""
           echo "📊 Sitemap Statistics:"
           echo "   Total URLs: $URL_COUNT"
 
-          # Count dynamic book URLs
           BOOK_COUNT=$(grep -c "details.html?id=" sitemap.xml || echo "0")
           echo "   Book URLs: $BOOK_COUNT"
 
           STATIC_COUNT=$((URL_COUNT - BOOK_COUNT))
           echo "   Static URLs: $STATIC_COUNT"
 
-          # Ensure NO cross-domain URLs slipped in
           EXTERNAL_COUNT=$(grep -c "volantpoetry.vercel.app" sitemap.xml || echo "0")
           if [ "$EXTERNAL_COUNT" -gt 0 ]; then
             echo "❌ Found $EXTERNAL_COUNT volantpoetry URLs — sitemap must only contain volantreads URLs!"
@@ -84,7 +78,6 @@ jobs:
           echo "📄 First 15 lines of sitemap.xml:"
           head -15 sitemap.xml
 
-          # Validate XML
           echo ""
           echo "🔍 Validating XML..."
           if command -v xmllint &> /dev/null; then
@@ -100,7 +93,6 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
 
-          # Check if there are changes to commit
           git add sitemap.xml robots.txt
 
           if git diff --staged --quiet; then
@@ -110,27 +102,3 @@ jobs:
             git push
             echo "✅ Changes pushed successfully"
           fi
-
-      - name: 📊 Sitemap Summary
-        run: |
-          echo ""
-          echo "═══════════════════════════════════════════════"
-          echo "✅ Sitemap Generation Complete!"
-          echo "═══════════════════════════════════════════════"
-          echo ""
-          echo "📁 Files generated:"
-          echo "   - sitemap.xml"
-          echo "   - robots.txt"
-          echo ""
-          echo "🌐 Sitemap URL:"
-          echo "   https://volantreads.vercel.app/sitemap.xml"
-          echo ""
-          echo "📋 robots.txt URL:"
-          echo "   https://volantreads.vercel.app/robots.txt"
-          echo ""
-          echo "📚 Indexed content:"
-          echo "   - Bookstore homepage"
-          echo "   - Book detail pages"
-          echo "   - Submit / FAQ / Refund pages"
-          echo ""
-          echo "═══════════════════════════════════════════════"
