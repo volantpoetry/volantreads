@@ -1,0 +1,1387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Volant Reads | My Library</title>
+
+  <script>
+    // Simple console blocker - production only
+    (function() {
+        if (window.location.hostname.includes('localhost') || 
+            window.location.hostname.includes('127.0.0.1')) {
+            return; // Allow in development
+        }
+        
+        // Block all console methods
+        var methods = ['log', 'info', 'warn', 'error', 'debug', 'trace', 'table', 'group', 'groupEnd', 'dir'];
+        methods.forEach(function(m) {
+            console[m] = function() {};
+            try {
+                Object.defineProperty(console, m, { configurable: false, writable: false });
+            } catch(e) {}
+        });
+        
+        window.onerror = function() { return true; };
+        window.onunhandledrejection = function() { return true; };
+    })();
+</script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="icon" type="image/png" href="https://volantpoetry.vercel.app/images/volant-reads-favicon.png" />
+  <link rel="apple-touch-icon" href="https://volantpoetry.vercel.app/images/volant-reads-favicon.png" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#4b2aad" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Volant Reads" />
+
+  <script>
+        if ('serviceWorker' in navigator && location.protocol === 'https:') {
+            navigator.serviceWorker.register('/sw.js?v=8', { scope: '/' }).catch(function() {});
+        }
+    </script>
+
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter',sans-serif; }
+    body { background:#f7f7fb; color:#1d1833; }
+
+    .lib-shell { max-width:1120px; margin:0 auto; padding:16px 20px 80px; }
+
+    /* ===== HEADER ===== */
+    .lib-header {
+      background:#fff; border:1px solid #ececec; border-radius:16px;
+      padding:14px 22px; display:flex; align-items:center; justify-content:space-between;
+      gap:16px; flex-wrap:wrap; margin-bottom:22px;
+      box-shadow:0 1px 3px rgba(0,0,0,0.03);
+    }
+    .lib-brand { display:flex; align-items:center; gap:12px; min-width:0; }
+    .lib-logo {
+      width:46px; height:46px; border-radius:12px; flex-shrink:0;
+      background:linear-gradient(135deg,#6a34ff,#4b2aad);
+      display:flex; align-items:center; justify-content:center;
+      color:#fff; font-size:1.4rem;
+    }
+    .lib-brand-text .name { font-family:'Playfair Display',serif; font-weight:700; font-size:1.15rem; color:#1d1833; }
+    .lib-brand-text .sub { font-size:0.72rem; color:#888; margin-top:1px; }
+    .lib-actions { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+    .lib-user { display:flex; align-items:center; gap:10px; margin-right:2px; }
+    .lib-avatar {
+      width:36px; height:36px; border-radius:50%; color:#fff;
+      display:flex; align-items:center; justify-content:center; font-size:0.8rem; font-weight:600; flex-shrink:0;
+    }
+    .lib-user-name { font-size:0.82rem; font-weight:600; max-width:160px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .btn-pill {
+      display:inline-flex; align-items:center; gap:7px; padding:9px 15px; border-radius:999px;
+      font-size:0.82rem; font-weight:600; cursor:pointer; text-decoration:none; border:1px solid #e3e0ee;
+      background:#fff; color:#1d1833; transition:all 0.15s ease; white-space:nowrap;
+    }
+    .btn-pill:hover { border-color:#6a34ff; color:#6a34ff; }
+    .btn-primary { background:#6a34ff; border-color:#6a34ff; color:#fff; }
+    .btn-primary:hover { background:#4b2aad; border-color:#4b2aad; color:#fff; }
+
+    /* ===== PAGE HEADER ===== */
+    .page-header { margin-bottom:20px; }
+    .page-header h2 { font-family:'Playfair Display',serif; font-size:1.55rem; color:#1d1833; }
+    .page-header p { color:#6f6252; font-size:0.87rem; margin-top:4px; }
+
+    /* ===== READING STATS ===== */
+    .reading-stats-grid {
+      display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:20px;
+    }
+    .reading-stat-card {
+      background:#fff; border:1px solid #eee; border-radius:16px; padding:16px; text-align:center;
+    }
+    .reading-stat-card .stat-icon { font-size:1.4rem; }
+    .reading-stat-card .stat-number { font-size:1.5rem; font-weight:700; color:#1d1833; margin-top:4px; }
+    .reading-stat-card .stat-label { font-size:0.72rem; color:#888; margin-top:2px; text-transform:uppercase; letter-spacing:0.4px; }
+    .reading-stat-card .stat-sub { font-size:0.72rem; color:#b0a8c4; margin-top:3px; }
+
+    /* ===== PANEL ===== */
+    .lib-panel {
+      background:#fff; border:1px solid #eee; border-radius:16px; padding:16px 20px; margin-bottom:20px;
+    }
+    .lib-panel-head { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px; }
+    .lib-panel-head h4 { font-size:1rem; font-weight:600; color:#1d1833; }
+    .lib-panel-head .muted { font-size:0.75rem; color:#888; }
+
+    /* ===== CONTINUE READING / RECOMMENDATIONS ===== */
+    .continue-reading-grid, .recommendations-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
+    .continue-book-card {
+      display:flex; gap:12px; background:#faf9ff; border:1px solid #efecfa; border-radius:12px; padding:12px; cursor:pointer; transition:all 0.15s ease;
+    }
+    .continue-book-card:hover { border-color:#c9baff; box-shadow:0 2px 8px rgba(106,52,255,0.08); }
+    .continue-book-card .continue-cover {
+      width:64px; height:92px; border-radius:8px; overflow:hidden; background:#efe9ff; flex-shrink:0;
+      display:flex; align-items:center; justify-content:center; color:#6a34ff; font-size:1.1rem;
+    }
+    .continue-book-card .continue-cover img { width:100%; height:100%; object-fit:cover; }
+    .continue-book-card .continue-body { flex:1; min-width:0; display:flex; flex-direction:column; }
+    .continue-book-card .book-title { font-weight:600; font-size:0.85rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .continue-book-card .book-author { font-size:0.75rem; color:#888; margin-top:2px; }
+    .continue-book-card .progress-wrapper { margin-top:8px; }
+    .continue-book-card .progress-bar { height:5px; background:#eee; border-radius:999px; overflow:hidden; }
+    .continue-book-card .progress-fill { height:100%; background:#6a34ff; border-radius:999px; }
+    .continue-book-card .progress-text { display:flex; justify-content:space-between; font-size:0.65rem; color:#888; margin-top:3px; }
+    .continue-btn {
+      margin-top:auto; padding-top:8px; font-size:0.75rem; color:#6a34ff; text-decoration:none; font-weight:600;
+    }
+    .recommend-book-card {
+      display:flex; gap:12px; background:#faf9ff; border:1px solid #efecfa; border-radius:12px; padding:12px; cursor:pointer; transition:all 0.15s ease;
+    }
+    .recommend-book-card:hover { border-color:#c9baff; box-shadow:0 2px 8px rgba(106,52,255,0.08); }
+    .recommend-book-card .recommend-cover {
+      width:64px; height:92px; border-radius:8px; overflow:hidden; background:#efe9ff; flex-shrink:0;
+      display:flex; align-items:center; justify-content:center; color:#6a34ff; font-size:1.1rem;
+    }
+    .recommend-book-card .recommend-cover img { width:100%; height:100%; object-fit:cover; }
+    .recommend-book-card .recommend-body { flex:1; min-width:0; display:flex; flex-direction:column; justify-content:center; }
+    .recommend-book-card .book-title { font-weight:600; font-size:0.85rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .recommend-book-card .book-author { font-size:0.75rem; color:#888; margin-top:2px; }
+    .recommend-book-card .book-price { font-size:0.82rem; font-weight:600; color:#4b2aad; margin-top:5px; }
+
+    /* ===== FILTER BAR ===== */
+    .library-filter-bar { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:16px; }
+    .library-filter-bar input[type="text"] {
+      flex:1; min-width:200px; padding:11px 15px; border-radius:999px; border:1px solid #e3e0ee;
+      font-size:0.85rem; background:#fff; color:#1d1833; outline:none; transition:border-color 0.15s ease;
+    }
+    .library-filter-bar input[type="text"]:focus { border-color:#6a34ff; }
+    .library-filter-bar select {
+      padding:11px 14px; border-radius:999px; border:1px solid #e3e0ee; font-size:0.82rem; background:#fff; color:#1d1833; outline:none; cursor:pointer;
+    }
+    .library-count-badge {
+      background:#efe9ff; color:#6a34ff; font-size:0.75rem; font-weight:600; padding:7px 13px; border-radius:999px; white-space:nowrap;
+    }
+
+    /* ===== LIBRARY GRID / CARDS ===== */
+    .page-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(225px,1fr)); gap:18px; }
+    .page-card { background:#fff; border:1px solid #eee; border-radius:14px; overflow:hidden; display:flex; flex-direction:column; transition:box-shadow 0.15s ease, border-color 0.15s ease; }
+    .page-card:hover { border-color:#c9baff; box-shadow:0 4px 14px rgba(106,52,255,0.10); }
+    .page-card .cover-wrapper {
+      aspect-ratio:3/4; background:#efe9ff; cursor:pointer; position:relative; overflow:hidden;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .page-card .cover-wrapper img { width:100%; height:100%; object-fit:cover; display:block; }
+    .page-card .no-image { display:flex; align-items:center; justify-content:center; color:#6a34ff; font-size:2rem; height:100%; }
+    .page-card .book-body { padding:14px; display:flex; flex-direction:column; flex:1; }
+    .page-card .book-title { font-weight:600; font-size:0.92rem; line-height:1.25; }
+    .page-card .book-subtitle { font-size:0.78rem; color:#b0a8c4; margin-top:2px; }
+    .page-card .book-author { font-size:0.8rem; color:#6f6252; margin-top:3px; }
+    .badge-status { display:inline-flex; align-items:center; gap:5px; margin-top:8px; font-size:0.7rem; font-weight:600; padding:4px 9px; border-radius:999px; width:fit-content; }
+    .badge-status.approved { background:#e5f6ec; color:#2d7d46; }
+    .badge-status.pending { background:#fff3e0; color:#c27b1a; }
+    .sales-badge { display:inline-flex; align-items:center; gap:6px; margin-top:7px; font-size:0.68rem; color:#888; }
+    .page-card .btn-group { display:flex; gap:8px; flex-wrap:wrap; margin-top:auto; padding-top:12px; }
+    .update-book-btn {
+      flex:1; background:#4b2aad; color:#fff; border:none; border-radius:999px; padding:9px 12px;
+      font-size:0.75rem; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:6px; transition:background 0.15s ease;
+    }
+    .update-book-btn:hover { background:#3a1f86; }
+    .share-book-btn {
+      background:#fff; color:#6f6252; border:1px solid #e3e0ee; border-radius:999px; padding:9px 12px;
+      font-size:0.75rem; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:6px; transition:all 0.15s ease;
+    }
+    .share-book-btn:hover { border-color:#6a34ff; color:#6a34ff; }
+
+    /* ===== EMPTY STATE ===== */
+    .library-empty-state { grid-column:1/-1; text-align:center; padding:60px 20px; color:#6f6252; }
+    .library-empty-state i { font-size:2.6rem; color:#c9baff; display:block; margin-bottom:14px; }
+    .library-empty-state h3 { font-size:1.1rem; color:#1d1833; margin-bottom:6px; }
+    .library-empty-state p { font-size:0.85rem; margin-bottom:18px; }
+    .btn-browse {
+      display:inline-flex; align-items:center; gap:8px; background:#6a34ff; color:#fff; padding:11px 20px; border-radius:999px;
+      text-decoration:none; font-weight:600; font-size:0.85rem; transition:background 0.15s ease;
+    }
+    .btn-browse:hover { background:#4b2aad; }
+
+    /* ===== BADGES ===== */
+    .badges-container { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; }
+    .badge-item {
+      display:flex; align-items:center; gap:12px; background:#faf9ff; border:1px solid #efecfa; border-radius:12px; padding:12px 14px;
+    }
+    .badge-item .badge-icon { font-size:1.5rem; width:38px; height:38px; display:flex; align-items:center; justify-content:center; background:#fff; border-radius:10px; border:1px solid #eee; flex-shrink:0; }
+    .badge-item .badge-info { flex:1; min-width:0; }
+    .badge-item .badge-name { font-size:0.85rem; font-weight:600; }
+    .badge-item .badge-desc { font-size:0.72rem; color:#888; margin-top:1px; }
+    .badge-item .badge-requirement { font-size:0.68rem; color:#c0bad4; margin-top:2px; }
+    .badge-item .badge-earned-date { font-size:0.68rem; color:#2d7d46; margin-top:2px; font-weight:600; }
+    .badge-item .badge-check { flex-shrink:0; }
+
+    /* ===== SIGN-IN GATE ===== */
+    .lib-gate {
+      background:#fff; border:1px solid #eee; border-radius:20px; max-width:520px; margin:70px auto; padding:48px 36px; text-align:center;
+      box-shadow:0 8px 30px rgba(0,0,0,0.04);
+    }
+    .lib-gate .gate-icon {
+      width:76px; height:76px; margin:0 auto 20px; border-radius:22px; background:linear-gradient(135deg,#6a34ff,#4b2aad);
+      color:#fff; font-size:2rem; display:flex; align-items:center; justify-content:center;
+    }
+    .lib-gate h2 { font-family:'Playfair Display',serif; font-size:1.4rem; color:#1d1833; margin-bottom:8px; }
+    .lib-gate p { color:#6f6252; font-size:0.87rem; margin-bottom:6px; line-height:1.55; }
+    .lib-gate .gate-btn {
+      display:inline-flex; align-items:center; gap:9px; margin-top:18px; background:#6a34ff; color:#fff;
+      padding:13px 26px; border:none; border-radius:999px; font-size:0.9rem; font-weight:600; cursor:pointer; transition:background 0.15s ease;
+    }
+    .lib-gate .gate-btn:hover { background:#4b2aad; }
+    .lib-gate .gate-alt { display:block; margin-top:16px; font-size:0.8rem; color:#6a34ff; text-decoration:none; }
+    .lib-gate .gate-note { margin-top:22px; padding-top:16px; border-top:1px solid #eee; font-size:0.73rem; color:#b0a8c4; }
+
+    /* ===== SHARE MODAL ===== */
+    .share-modal { position:fixed; inset:0; background:rgba(20,12,60,0.55); display:none; align-items:center; justify-content:center; z-index:1000; padding:20px; }
+    .share-modal.active { display:flex; }
+    .share-modal-content { background:#fff; border-radius:18px; width:100%; max-width:430px; padding:26px; position:relative; }
+    .share-modal-close { position:absolute; top:14px; right:18px; font-size:1.5rem; color:#999; cursor:pointer; line-height:1; }
+    .share-modal-content h3 { font-size:1.05rem; display:flex; align-items:center; }
+    .share-book-preview { display:flex; gap:14px; background:#faf9ff; border-radius:12px; padding:12px; margin-top:16px; }
+    .share-book-preview .share-cover {
+      width:58px; height:84px; border-radius:8px; background:#efe9ff; color:#6a34ff; overflow:hidden; flex-shrink:0;
+      display:flex; align-items:center; justify-content:center; font-size:1rem;
+    }
+    .share-book-preview .share-cover img { width:100%; height:100%; object-fit:cover; }
+    .share-book-preview .share-meta { display:flex; flex-direction:column; justify-content:center; min-width:0; }
+    .share-book-preview .share-title { font-weight:600; font-size:0.92rem; }
+    .share-book-preview .share-author { font-size:0.78rem; color:#888; margin-top:2px; }
+    .share-link-box { display:flex; gap:8px; margin-top:16px; }
+    .share-link-box input { flex:1; padding:11px 13px; border:1px solid #e3e0ee; border-radius:999px; font-size:0.78rem; color:#1d1833; outline:none; }
+    .share-link-box input:focus { border-color:#6a34ff; }
+    .btn-copy-link { background:#6a34ff; color:#fff; border:none; border-radius:999px; padding:0 18px; font-size:0.8rem; font-weight:600; cursor:pointer; }
+    .btn-copy-link:hover { background:#4b2aad; }
+    .share-options { display:grid; grid-template-columns:repeat(5,1fr); gap:8px; margin-top:16px; }
+    .share-option {
+      display:flex; flex-direction:column; align-items:center; gap:6px; font-size:0.62rem; color:#6f6252; text-decoration:none;
+      background:#faf9ff; border:1px solid #efecfa; border-radius:10px; padding:10px 4px; transition:all 0.15s ease;
+    }
+    .share-option i { font-size:1.05rem; }
+    .share-option.whatsapp i { color:#25d366; } .share-option.telegram i { color:#2AABEE; }
+    .share-option.facebook i { color:#1877F2; } .share-option.twitter i { color:#1D1D1F; }
+    .share-option.email i { color:#6a34ff; }
+    .share-option:hover { border-color:#6a34ff; }
+
+    /* ===== TOAST ===== */
+    .toast {
+      position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px);
+      background:#1d1833; color:#fff; padding:13px 22px; border-radius:999px; font-size:0.82rem;
+      box-shadow:0 6px 24px rgba(0,0,0,0.22); opacity:0; pointer-events:none; transition:all 0.3s ease; z-index:2000; max-width:90vw; text-align:center;
+    }
+    .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+    .toast.success { background:#2d7d46; }
+    .toast.error { background:#c0392b; }
+    .toast.info { background:#4b2aad; }
+
+    /* ===== FOOTER ===== */
+    .lib-footer { text-align:center; padding:26px 0 0; color:#b0a8c4; font-size:0.75rem; }
+    .lib-footer a { color:#6a34ff; text-decoration:none; margin:0 8px; }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 760px) {
+      .reading-stats-grid { grid-template-columns:repeat(2,1fr); }
+      .continue-reading-grid, .recommendations-grid, .badges-container { grid-template-columns:1fr; }
+      .lib-header { flex-direction:column; align-items:flex-start; }
+      .lib-actions { width:100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="lib-shell">
+
+    <!-- ===== HEADER ===== -->
+    <header class="lib-header">
+      <div class="lib-brand">
+        <div class="lib-logo"><i class="fas fa-book-open"></i></div>
+        <div class="lib-brand-text">
+          <div class="name">Volant Reads</div>
+          <div class="sub">My Library</div>
+        </div>
+      </div>
+      <div class="lib-actions">
+        <div class="lib-user" id="libUserBox" style="display:none;">
+          <div class="lib-avatar" id="libAvatar" style="background:#6a34ff;">?</div>
+          <span class="lib-user-name" id="libUserName"></span>
+        </div>
+        <a class="btn-pill" href="index.html"><i class="fas fa-store"></i> Browse Store</a>
+        <a class="btn-pill" href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+        <button class="btn-pill btn-primary" id="libSignOutBtn" style="display:none;"><i class="fas fa-sign-out-alt"></i> Sign Out</button>
+      </div>
+    </header>
+
+    <!-- ===== SIGNED-IN LIBRARY CONTENT ===== -->
+    <div class="lib-content" id="libContent">
+      <div class="page-header">
+        <h2>📚 My Library</h2>
+        <p>All the books you've purchased and own. Read, download, and manage your collection — available offline after your first visit.</p>
+      </div>
+
+      <!-- 1. QUICK READING STATS -->
+      <div class="reading-stats-grid" id="readingStatsGrid">
+        <div class="reading-stat-card">
+          <div class="stat-icon">🔥</div>
+          <div class="stat-number" id="libraryStreak">0</div>
+          <div class="stat-label">Day Streak</div>
+          <div class="stat-sub" id="libraryLongestStreak">Longest: 0</div>
+        </div>
+        <div class="reading-stat-card">
+          <div class="stat-icon">📖</div>
+          <div class="stat-number" id="libraryBooksRead">0</div>
+          <div class="stat-label">Books Read</div>
+          <div class="stat-sub" id="libraryReadingTime">0 min</div>
+        </div>
+        <div class="reading-stat-card">
+          <div class="stat-icon">🏆</div>
+          <div class="stat-number" id="libraryBadges">0</div>
+          <div class="stat-label">Badges Earned</div>
+          <div class="stat-sub" id="libraryNextBadge">Next: 7 days</div>
+        </div>
+        <div class="reading-stat-card">
+          <div class="stat-icon">📚</div>
+          <div class="stat-number" id="libraryTotalBooks">0</div>
+          <div class="stat-label">Total Books</div>
+          <div class="stat-sub" id="libraryOwnedBooks">0 owned</div>
+        </div>
+      </div>
+
+      <!-- 2. CONTINUE READING -->
+      <div class="lib-panel">
+        <div class="lib-panel-head">
+          <h4><i class="fas fa-book-open" style="color:#6a34ff;"></i> Continue Reading</h4>
+          <button class="btn-pill" onclick="reloadContinueReading()" style="padding:6px 13px; font-size:0.72rem;"><i class="fas fa-sync-alt"></i> Refresh</button>
+        </div>
+        <div class="continue-reading-grid" id="continueReadingGrid">
+          <p style="color:#6f6252; grid-column:1/-1; text-align:center; padding:20px;">No books in progress. Start reading today!</p>
+        </div>
+      </div>
+
+      <!-- 3. OWNED BOOKS & SEARCH -->
+      <div class="library-filter-bar">
+        <input type="text" id="librarySearchInput" placeholder="🔍 Search your library..." />
+        <select id="librarySortSelect">
+          <option value="recent">Most Recent</option>
+          <option value="title">Alphabetical (A-Z)</option>
+          <option value="title-desc">Alphabetical (Z-A)</option>
+          <option value="author">By Author</option>
+        </select>
+        <span class="library-count-badge" id="libraryCountBadge">0 books</span>
+      </div>
+
+      <div class="page-grid" id="libraryGrid" style="margin-bottom: 30px;">
+        <!-- populated by JS -->
+      </div>
+
+      <!-- 4. BADGES -->
+      <div class="lib-panel">
+        <div class="lib-panel-head">
+          <h4><i class="fas fa-trophy" style="color:#f5b342;"></i> Your Badges</h4>
+          <span class="muted" id="badgeProgressText">0/4 badges earned</span>
+        </div>
+        <div class="badges-container" id="badgesContainer">
+          <p style="color:#6f6252; font-size:0.85rem; padding:8px 0;">No badges yet. Keep reading to earn them!</p>
+        </div>
+      </div>
+
+      <!-- 5. RECOMMENDATIONS -->
+      <div class="lib-panel">
+        <div class="lib-panel-head">
+          <h4><i class="fas fa-lightbulb" style="color:#f5b342;"></i> Recommended for You</h4>
+          <span class="muted">Based on your reading history</span>
+        </div>
+        <div class="recommendations-grid" id="recommendationsGrid">
+          <p style="color:#6f6252; grid-column:1/-1; text-align:center; padding:20px;">Read more books to get personalized recommendations!</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== SIGN-IN GATE ===== -->
+    <div class="lib-gate" id="libGate" hidden>
+      <div class="gate-icon"><i class="fas fa-user-lock"></i></div>
+      <h2>Your Library, Anywhere</h2>
+      <p>Sign in to see all the books you've purchased and read — even offline.<br/>Your saved library is stored on this device for offline reading.</p>
+      <button class="gate-btn" onclick="openAuthLogin()"><i class="fas fa-sign-in-alt"></i> Sign In</button>
+      <a class="gate-alt" href="index.html">Browse the store instead →</a>
+      <p class="gate-note">You'll be signed in with your Volant Reads account. After signing in once, your library stays available on this device even without internet.</p>
+    </div>
+
+    <footer class="lib-footer">
+      <a href="index.html">Volant Reads</a> · <a href="details.html">Store</a> · <a href="faq.html">Help</a> · <a href="dashboard.html">Dashboard</a>
+      <div style="margin-top:6px;">&copy; Volant Reads &middot; Powered by Volant Poetry</div>
+    </footer>
+  </div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- ===== SHARE BOOK MODAL ===== -->
+<div class="share-modal" id="shareModal">
+    <div class="share-modal-content">
+      <span class="share-modal-close" id="shareModalClose">&times;</span>
+      <h3><i class="fas fa-share-alt" style="color:#6a34ff;margin-right:8px;"></i>Share This Book</h3>
+      <div class="share-book-preview">
+        <div class="share-cover" id="shareCover"><i class="fas fa-book-open"></i></div>
+        <div class="share-meta">
+          <div class="share-title" id="shareTitle">Book Title</div>
+          <div class="share-author" id="shareAuthor"></div>
+        </div>
+      </div>
+      <div class="share-link-box">
+        <input type="text" id="shareLinkInput" readonly />
+        <button class="btn-copy-link" id="shareCopyBtn"><i class="fas fa-copy"></i> Copy</button>
+      </div>
+      <div class="share-options">
+        <a href="#" class="share-option whatsapp" id="shareWhatsApp" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i><span>WhatsApp</span></a>
+        <a href="#" class="share-option telegram" id="shareTelegram" target="_blank" rel="noopener"><i class="fab fa-telegram-plane"></i><span>Telegram</span></a>
+        <a href="#" class="share-option facebook" id="shareFacebook" target="_blank" rel="noopener"><i class="fab fa-facebook-f"></i><span>Facebook</span></a>
+        <a href="#" class="share-option twitter" id="shareTwitter" target="_blank" rel="noopener"><i class="fab fa-x-twitter"></i><span>X</span></a>
+        <a href="#" class="share-option email" id="shareEmail"><i class="fas fa-envelope"></i><span>Email</span></a>
+      </div>
+    </div>
+  </div>
+
+<script type="importmap">
+  {
+    "imports": {
+      "firebase/app": "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js",
+      "firebase/firestore": "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js",
+      "firebase/auth": "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"
+    }
+  }
+</script>
+<script type="module">
+  import { initializeApp } from "firebase/app";
+  import { 
+    initializeFirestore,
+    getFirestore,
+    persistentLocalCache,
+    persistentMultipleTabManager,
+    collection, 
+    query, 
+    where, 
+    getDocs, 
+    getDoc, 
+    doc
+  } from "firebase/firestore";
+  import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyC4DHI8aBVY4JjTvJ-r-TGIDPsewtEWxzU",
+    authDomain: "silent-depth.firebaseapp.com",
+    projectId: "silent-depth",
+    storageBucket: "silent-depth.appspot.com",
+    messagingSenderId: "78008755450",
+    appId: "1:78008755450:web:3fd0f0f298a08820935543"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  let db;
+  try {
+    // Firestore persistent cache: keeps your library usable offline on this device.
+    db = initializeFirestore(app, {
+      localCache: persistentLocalCache({
+        tabManager: persistentMultipleTabManager()
+      })
+    });
+  } catch (e) {
+    db = getFirestore(app);
+  }
+  const auth = getAuth(app);
+
+  let currentUser = null;
+  let purchasedBooks = [];
+
+  // ===== TOAST =====
+  function showToast(message, type = 'info') {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.className = `toast ${type}`;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 4000);
+  }
+
+  // ===== HEADER / USER UI =====
+  function updateUserUI(user) {
+    const userBox = document.getElementById('libUserBox');
+    const signOutBtn = document.getElementById('libSignOutBtn');
+    if (!user) {
+      userBox.style.display = 'none';
+      signOutBtn.style.display = 'none';
+      return;
+    }
+    userBox.style.display = 'flex';
+    signOutBtn.style.display = 'inline-flex';
+    const name = user.displayName || user.email || 'Reader';
+    document.getElementById('libUserName').textContent = name;
+    const avatar = document.getElementById('libAvatar');
+    avatar.style.background = colorFromName(name);
+    avatar.textContent = getInitials(name);
+  }
+
+  function getInitials(name) {
+    if (!name || name === 'Anonymous' || name === 'Reader') return 'R';
+    const parts = name.trim().split(' ');
+    if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+
+  function colorFromName(name) {
+    if (!name) return 'hsl(0, 60%, 45%)';
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+      hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const hue = Math.abs(hash) % 360;
+    return `hsl(${hue}, 65%, 50%)`;
+  }
+
+  // ===== LIBRARY CACHE (localStorage so it survives across sessions) =====
+  function getLibraryCacheKey() {
+    return 'volant_reads_library_' + (currentUser ? currentUser.uid : 'anon');
+  }
+
+  function saveLibraryCache() {
+    if (!currentUser || !purchasedBooks) return;
+    try {
+      localStorage.setItem(getLibraryCacheKey(), JSON.stringify({
+        savedAt: new Date().toISOString(),
+        books: purchasedBooks.slice(0, 200).map(b => ({
+          id: b.id,
+          title: b.title,
+          subtitle: b.subtitle,
+          authorName: b.authorName,
+          imageUrl: b.imageUrl,
+          pdfUrl: b.pdfUrl,
+          status: b.status,
+          percentage: b.percentage,
+          page: b.page,
+          addedAt: b.addedAt instanceof Date ? b.addedAt.toISOString() : (b.addedAt ? String(b.addedAt) : null),
+          lastReadAt: b.lastReadAt instanceof Date ? b.lastReadAt.toISOString() : (b.lastReadAt ? String(b.lastReadAt) : null),
+          preorder: b.preorder,
+          preorderReleaseDate: b.preorderReleaseDate,
+          released: b.released,
+          downloadLimit: b.downloadLimit,
+          downloadCount: b.downloadCount
+        }))
+      }));
+    } catch (e) { /* storage full or unavailable */ }
+  }
+
+  function restoreLibraryCache() {
+    try {
+      const raw = localStorage.getItem(getLibraryCacheKey());
+      if (!raw) return;
+      const data = JSON.parse(raw);
+      if (!data || !Array.isArray(data.books)) return;
+      purchasedBooks = data.books.map(b => ({
+        ...b,
+        addedAt: b.addedAt ? new Date(b.addedAt) : new Date(),
+        lastReadAt: b.lastReadAt ? new Date(b.lastReadAt) : null
+      }));
+      renderLibrary();
+      renderStats();
+    } catch (e) { /* corrupted cache */ }
+  }
+
+  // ===== LOAD LIBRARY =====
+  async function loadLibrary() {
+    if (!currentUser) return;
+    restoreLibraryCache();
+
+    try {
+      const purchasesRef = collection(db, "purchases");
+      const purchasesQuery = query(purchasesRef, where("userId", "==", currentUser.uid));
+      const purchasesSnapshot = await getDocs(purchasesQuery);
+
+      const readsRef = collection(db, "readingProgress");
+      const readsQuery = query(readsRef, where("userId", "==", currentUser.uid));
+      const readsSnapshot = await getDocs(readsQuery);
+
+      const bookMap = new Map();
+
+      purchasesSnapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        if (data.itemType === 'lyric' || data.platform === 'lyrics' || data.lyricTitle) return;
+        if (data.status === 'completed' && data.verified === true) {
+          bookMap.set(data.bookId, { bookId: data.bookId, source: 'purchase', purchaseData: data });
+        }
+      });
+
+      readsSnapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        if (!bookMap.has(data.bookId)) {
+          bookMap.set(data.bookId, { bookId: data.bookId, source: 'read', readData: data });
+        }
+      });
+
+      const bookPromises = Array.from(bookMap.entries()).map(async ([bookId, entry]) => {
+        try {
+          const bookSnap = await getDoc(doc(db, "books", bookId));
+          if (bookSnap.exists()) {
+            const bookData = bookSnap.data();
+            const isPurchased = entry.source === 'purchase';
+            const purchaseData = entry.purchaseData || {};
+            const readData = entry.readData || {};
+            return {
+              id: bookId,
+              title: bookData.title || 'Untitled',
+              subtitle: bookData.subtitle || '',
+              authorName: bookData.authorName || 'Anonymous',
+              imageUrl: bookData.imageUrl || '',
+              price: bookData.pricing?.amount || 0,
+              currency: bookData.pricing?.currency || 'GHS',
+              downloadLimit: bookData.downloadLimit || bookData.downloads || 5,
+              addedAt: isPurchased 
+                ? (purchaseData.purchasedAt?.toDate?.() || new Date(purchaseData.purchasedAt) || new Date())
+                : (readData.lastReadAt?.toDate?.() || new Date(readData.lastReadAt) || new Date()),
+              downloadCount: purchaseData.downloadCount || 0,
+              pdfUrl: bookData.pdfUrl || '',
+              status: isPurchased ? 'owned' : 'read',
+              readCount: readData.readCount || 0,
+              lastReadAt: readData.lastReadAt?.toDate?.() || null,
+              percentage: readData.percentage || 0,
+              page: readData.page || 0,
+              preorder: bookData.preorder === true || bookData.preorder === 'true',
+              preorderReleaseDate: bookData.preorderReleaseDate || null,
+              released: bookData.released === true || bookData.released === 'true',
+              purchasedAt: purchaseData.purchasedAt || null,
+              transactionRef: purchaseData.transactionRef || '',
+              chargedTotalGHS: purchaseData.chargedTotalGHS || 0,
+              amount: purchaseData.amount || 0,
+              customerEmail: purchaseData.customerEmail || ''
+            };
+          }
+          return null;
+        } catch (err) {
+          return null;
+        }
+      });
+
+      const results = await Promise.all(bookPromises);
+      purchasedBooks = results.filter(book => book !== null);
+
+      purchasedBooks.sort((a, b) => {
+        if (a.status === 'owned' && b.status !== 'owned') return -1;
+        if (a.status !== 'owned' && b.status === 'owned') return 1;
+        return b.addedAt - a.addedAt;
+      });
+
+      renderLibrary();
+      renderStats();
+      saveLibraryCache();
+
+    } catch (err) {
+      showToast('You are offline — showing saved library.', 'info');
+    }
+  }
+
+  // ===== RENDER LIBRARY =====
+  function renderLibrary() {
+    const grid = document.getElementById('libraryGrid');
+    const countBadge = document.getElementById('libraryCountBadge');
+
+    countBadge.textContent = `${purchasedBooks.length} book${purchasedBooks.length !== 1 ? 's' : ''}`;
+
+    if (purchasedBooks.length === 0) {
+      grid.innerHTML = `
+        <div class="library-empty-state">
+          <i class="fas fa-book-open"></i>
+          <h3>Your library is empty</h3>
+          <p>Start building your collection by purchasing books from the store.</p>
+          <a href="index.html" class="btn-browse"><i class="fas fa-store"></i> Browse Store</a>
+        </div>
+      `;
+      return;
+    }
+
+    grid.innerHTML = '';
+    purchasedBooks.forEach(book => {
+      const card = createLibraryBookCard(book);
+      grid.appendChild(card);
+    });
+  }
+
+  function createLibraryBookCard(book) {
+    const card = document.createElement('div');
+    card.className = 'page-card';
+
+    const coverWrapper = document.createElement('div');
+    coverWrapper.className = 'cover-wrapper';
+    coverWrapper.onclick = () => {
+      window.location.href = `details.html?id=${book.id}`;
+    };
+
+    if (book.imageUrl) {
+      const img = document.createElement('img');
+      img.src = book.imageUrl;
+      img.alt = book.title || 'Book cover';
+      img.loading = 'lazy';
+      img.onerror = function() {
+        this.style.display = 'none';
+        this.parentElement.innerHTML = `<div class="no-image"><i class="fas fa-book-open"></i></div>`;
+      };
+      coverWrapper.appendChild(img);
+    } else {
+      coverWrapper.innerHTML = `<div class="no-image"><i class="fas fa-book-open"></i></div>`;
+    }
+    card.appendChild(coverWrapper);
+
+    const body = document.createElement('div');
+    body.className = 'book-body';
+
+    const title = document.createElement('div');
+    title.className = 'book-title';
+    title.textContent = book.title || 'Untitled';
+    body.appendChild(title);
+
+    if (book.subtitle && book.subtitle.trim() !== '') {
+      const subtitle = document.createElement('div');
+      subtitle.className = 'book-subtitle';
+      subtitle.textContent = book.subtitle;
+      body.appendChild(subtitle);
+    }
+
+    const author = document.createElement('div');
+    author.className = 'book-author';
+    author.textContent = book.authorName || 'Anonymous';
+    body.appendChild(author);
+
+    const statusBadge = document.createElement('span');
+    const preorderLocked = book.preorder && book.released !== true;
+    if (book.status === 'owned' && preorderLocked) {
+      statusBadge.className = 'badge-status pending';
+      statusBadge.innerHTML = `<i class="fas fa-hourglass-half"></i> Pre-order · unlocks ${book.preorderReleaseDate || 'on release date'}`;
+    } else if (book.status === 'owned') {
+      statusBadge.className = 'badge-status approved';
+      statusBadge.innerHTML = '<i class="fas fa-check-circle"></i> Owned';
+    } else if (book.status === 'read') {
+      statusBadge.className = 'badge-status pending';
+      statusBadge.innerHTML = `<i class="fas fa-book-open"></i> Reading ${book.percentage || 0}%`;
+    }
+    body.appendChild(statusBadge);
+
+    if (book.status === 'owned' && !preorderLocked) {
+      const limitDisplay = book.downloadLimit === 'unlimited' ? '♾️ Unlimited' : `${book.downloadLimit}`;
+      const used = book.downloadCount || 0;
+      const remaining = book.downloadLimit === 'unlimited' ? '♾️' : Math.max(0, book.downloadLimit - used);
+
+      const infoBadge = document.createElement('span');
+      infoBadge.className = 'sales-badge';
+      infoBadge.innerHTML = `
+        <i class="fas fa-download"></i> ${used}/${limitDisplay} · 
+        <i class="fas fa-clock"></i> ${remaining} remaining
+      `;
+      body.appendChild(infoBadge);
+    }
+
+    if (book.percentage > 0) {
+      const progressWrapper = document.createElement('div');
+      progressWrapper.style.cssText = 'margin-top:6px; width:100%;';
+      progressWrapper.innerHTML = `
+        <div style="display:flex; justify-content:space-between; font-size:0.65rem; color:#888;">
+          <span>Progress</span>
+          <span>${Math.round(book.percentage || 0)}%</span>
+        </div>
+        <div style="background:#eee; border-radius:4px; height:3px; overflow:hidden; margin-top:2px;">
+          <div style="background:#6a34ff; height:100%; width:${Math.round(book.percentage || 0)}%; border-radius:4px;"></div>
+        </div>
+      `;
+      body.appendChild(progressWrapper);
+    }
+
+    const btnGroup = document.createElement('div');
+    btnGroup.className = 'btn-group';
+
+    if (book.pdfUrl && !preorderLocked) {
+      const readBtn = document.createElement('button');
+      readBtn.className = 'update-book-btn';
+      readBtn.innerHTML = `<i class="fas fa-book-open"></i> ${book.status === 'read' ? 'Continue Reading' : 'Read Online'}`;
+      readBtn.style.background = '#4b2aad';
+      readBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        window.location.href = `reader.html?id=${book.id}`;
+      });
+      btnGroup.appendChild(readBtn);
+    } else if (book.pdfUrl && preorderLocked) {
+      const lockedBtn = document.createElement('button');
+      lockedBtn.className = 'share-book-btn';
+      lockedBtn.innerHTML = `<i class="fas fa-lock"></i> Unlocks ${book.preorderReleaseDate || 'on release'}`;
+      lockedBtn.disabled = true;
+      lockedBtn.style.opacity = '0.7';
+      lockedBtn.style.cursor = 'default';
+      btnGroup.appendChild(lockedBtn);
+    }
+
+    const shareBtn = document.createElement('button');
+    shareBtn.className = 'share-book-btn';
+    shareBtn.innerHTML = '<i class="fas fa-link"></i> Share';
+    shareBtn.title = 'Share this book';
+    shareBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      openBookShareModal(book);
+    });
+    btnGroup.appendChild(shareBtn);
+
+    if (book.status === 'owned') {
+      const receiptBtn = document.createElement('button');
+      receiptBtn.className = 'share-book-btn';
+      receiptBtn.innerHTML = '<i class="fas fa-receipt"></i> Receipt PDF';
+      receiptBtn.title = 'Download payment receipt as PDF';
+      receiptBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        printReceipt(book);
+      });
+      btnGroup.appendChild(receiptBtn);
+    }
+
+    body.appendChild(btnGroup);
+    card.appendChild(body);
+    return card;
+  }
+
+  // ===== READING STATS =====
+  function renderStats() {
+    const streak = parseInt(localStorage.getItem('volant_streak') || '0');
+    const longest = parseInt(localStorage.getItem('volant_longest_streak') || '0');
+
+    document.getElementById('libraryStreak').textContent = streak;
+    document.getElementById('libraryLongestStreak').textContent = `Longest: ${longest}`;
+
+    const totalBooks = purchasedBooks.length;
+    const ownedBooks = purchasedBooks.filter(b => b.status === 'owned').length;
+    const readBooks = purchasedBooks.filter(b => b.status === 'read' && b.percentage >= 100).length;
+    const totalRead = ownedBooks + readBooks;
+
+    document.getElementById('libraryBooksRead').textContent = totalRead;
+
+    let totalMinutes = 0;
+    purchasedBooks.forEach(book => {
+      if (book.page && book.page > 0) {
+        totalMinutes += book.page * 2;
+      }
+    });
+    const displayTime = totalMinutes > 60 ? 
+      `${Math.round(totalMinutes/60)}h ${totalMinutes%60}m` : 
+      `${totalMinutes}m`;
+    document.getElementById('libraryReadingTime').textContent = displayTime;
+
+    document.getElementById('libraryTotalBooks').textContent = totalBooks;
+    document.getElementById('libraryOwnedBooks').textContent = ownedBooks + ' owned';
+
+    loadBadges();
+  }
+
+  // ===== BADGES =====
+  function loadBadges() {
+    const badges = JSON.parse(localStorage.getItem('volant_badges') || '[]');
+
+    const badgeDefinitions = [
+      { id: 7, name: 'Week Warrior', icon: '🔥', description: 'Read for 7 days in a row', color: '#ff6b35' },
+      { id: 14, name: 'Fortnight Reader', icon: '📚', description: 'Read for 14 days in a row', color: '#4b2aad' },
+      { id: 30, name: 'Monthly Master', icon: '🏆', description: 'Read for 30 days in a row', color: '#f5b342' },
+      { id: 100, name: 'Century Club', icon: '👑', description: 'Read for 100 days in a row', color: '#9b59b6' }
+    ];
+
+    const container = document.getElementById('badgesContainer');
+    const progressText = document.getElementById('badgeProgressText');
+
+    const earnedCount = badgeDefinitions.filter(b => badges.includes(b.id)).length;
+    const totalBadges = badgeDefinitions.length;
+
+    const streak = parseInt(localStorage.getItem('volant_streak') || '0');
+    let nextBadge = null;
+    for (const badge of badgeDefinitions) {
+      if (streak < badge.id) {
+        nextBadge = badge.id - streak;
+        break;
+      }
+    }
+
+    if (progressText) {
+      const nextText = nextBadge !== null ? `Next: ${nextBadge} days` : 'All badges earned! 🎉';
+      progressText.textContent = `${earnedCount}/${totalBadges} badges earned — ${nextText}`;
+    }
+    document.getElementById('libraryBadges').textContent = earnedCount;
+    document.getElementById('libraryNextBadge').textContent = nextBadge !== null ? `Next: ${nextBadge} days` : 'All badges earned! 🎉';
+
+    let html = '';
+    badgeDefinitions.forEach(badge => {
+      const isEarned = badges.includes(badge.id);
+      html += `
+        <div class="badge-item ${isEarned ? 'badge-earned' : 'badge-locked'}">
+          <span class="badge-icon" style="${isEarned ? '' : 'filter: grayscale(1); opacity: 0.4;'}">${badge.icon}</span>
+          <div class="badge-info">
+            <div class="badge-name" style="${isEarned ? 'color: ' + badge.color + ';' : 'color: #999;'}">
+              ${badge.name}${isEarned ? '' : ' 🔒'}
+            </div>
+            <div class="badge-desc">${badge.description}</div>
+            ${isEarned ? '<div class="badge-earned-date">🏅 Earned!</div>' : `<div class="badge-requirement">Required: ${badge.id} day streak</div>`}
+          </div>
+          <span class="badge-check">
+            <i class="fas ${isEarned ? 'fa-check-circle' : 'fa-clock'}" style="${isEarned ? 'color: #2d7d46;' : 'color: #ccc;'}"></i>
+          </span>
+        </div>
+      `;
+    });
+
+    container.innerHTML = html;
+  }
+
+  // ===== CONTINUE READING =====
+  async function loadContinueReading() {
+    if (!currentUser) return;
+    try {
+      const progressRef = collection(db, "readingProgress");
+      const q = query(
+        progressRef,
+        where("userId", "==", currentUser.uid),
+        where("percentage", ">", 0),
+        where("percentage", "<", 100)
+      );
+      const snapshot = await getDocs(q);
+
+      const grid = document.getElementById('continueReadingGrid');
+
+      if (snapshot.empty) {
+        grid.innerHTML = `<p style="color:#6f6252; grid-column:1/-1; text-align:center; padding:20px;">No books in progress. Start reading today!</p>`;
+        return;
+      }
+
+      const progressItems = [];
+      for (const progressDoc of snapshot.docs) {
+        const data = progressDoc.data();
+        const bookSnap = await getDoc(doc(db, "books", data.bookId));
+        if (bookSnap.exists()) {
+          const book = { id: bookSnap.id, ...bookSnap.data() };
+          progressItems.push({
+            book: book,
+            percentage: data.percentage || 0,
+            page: data.page || 1,
+            lastReadAt: data.lastReadAt?.toDate?.() || new Date(data.lastReadAt) || new Date()
+          });
+        }
+      }
+
+      progressItems.sort((a, b) => b.lastReadAt - a.lastReadAt);
+
+      grid.innerHTML = '';
+      progressItems.slice(0, 4).forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'continue-book-card';
+        card.onclick = () => window.location.href = `reader.html?id=${item.book.id}`;
+
+        const coverHtml = item.book.imageUrl 
+          ? `<img src="${item.book.imageUrl}" alt="${item.book.title || 'Book cover'}" loading="lazy" onerror="this.style.display='none'">`
+          : `<div class="no-image"><i class="fas fa-book-open"></i></div>`;
+
+        card.innerHTML = `
+          <div class="continue-cover">${coverHtml}</div>
+          <div class="continue-body">
+            <div class="book-title" title="${item.book.title || 'Untitled'}">${item.book.title || 'Untitled'}</div>
+            <div class="book-author">${item.book.authorName || 'Anonymous'}</div>
+            <div class="progress-wrapper">
+              <div class="progress-bar">
+                <div class="progress-fill" style="width:${Math.round(item.percentage)}%;"></div>
+              </div>
+              <div class="progress-text">
+                <span>${Math.round(item.percentage)}% complete</span>
+                <span>Page ${item.page}</span>
+              </div>
+            </div>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+
+    } catch (err) {
+      grid.innerHTML = `<p style="color:#6f6252; grid-column:1/-1; text-align:center; padding:20px;">Continue reading is available when you're online.</p>`;
+    }
+  }
+
+  window.reloadContinueReading = function () { loadContinueReading(); };
+
+  // ===== RECOMMENDATIONS =====
+  async function loadRecommendations() {
+    if (!currentUser) return;
+    try {
+      const [purchasesSnap, progressSnap] = await Promise.all([
+        getDocs(query(collection(db, "purchases"), where("userId", "==", currentUser.uid), where("status", "==", "completed"))),
+        getDocs(query(collection(db, "readingProgress"), where("userId", "==", currentUser.uid)))
+      ]);
+
+      const userBookIds = new Set();
+      purchasesSnap.forEach(docSnap => {
+        const pd = docSnap.data();
+        if (pd.itemType === 'lyric' || pd.platform === 'lyrics' || pd.lyricTitle) return;
+        userBookIds.add(pd.bookId);
+      });
+      progressSnap.forEach(docSnap => userBookIds.add(docSnap.data().bookId));
+
+      if (userBookIds.size === 0) {
+        document.getElementById('recommendationsGrid').innerHTML = `
+          <p style="color:#6f6252; grid-column:1/-1; text-align:center; padding:20px;">
+            <i class="fas fa-lightbulb" style="font-size:1.5rem; display:block; margin-bottom:8px;"></i>
+            Read more books to get personalized recommendations!
+          </p>
+        `;
+        return;
+      }
+
+      const genres = [];
+      for (const bookId of userBookIds) {
+        try {
+          const bookSnap = await getDoc(doc(db, "books", bookId));
+          if (bookSnap.exists()) {
+            const data = bookSnap.data();
+            if (data.genre && !genres.includes(data.genre)) {
+              genres.push(data.genre);
+            }
+          }
+        } catch (err) { /* skip */ }
+      }
+
+      if (genres.length === 0) {
+        document.getElementById('recommendationsGrid').innerHTML = `
+          <p style="color:#6f6252; grid-column:1/-1; text-align:center; padding:20px;">
+            <i class="fas fa-search" style="font-size:1.5rem; display:block; margin-bottom:8px;"></i>
+            No recommendations yet. Keep exploring books!
+          </p>
+        `;
+        return;
+      }
+
+      const booksRef = collection(db, "books");
+      const bookQuery = query(booksRef, where("genre", "in", genres.slice(0, 5)), where("status", "==", "approved"));
+      const bookSnapshot = await getDocs(bookQuery);
+
+      const recommendations = [];
+      for (const docSnap of bookSnapshot.docs) {
+        const book = { id: docSnap.id, ...docSnap.data() };
+        if (!userBookIds.has(book.id)) {
+          recommendations.push(book);
+        }
+        if (recommendations.length >= 6) break;
+      }
+
+      const grid = document.getElementById('recommendationsGrid');
+
+      if (recommendations.length === 0) {
+        grid.innerHTML = `
+          <p style="color:#6f6252; grid-column:1/-1; text-align:center; padding:20px;">
+            <i class="fas fa-search" style="font-size:1.5rem; display:block; margin-bottom:8px;"></i>
+            No new recommendations yet. Check back soon!
+          </p>
+        `;
+        return;
+      }
+
+      grid.innerHTML = '';
+      recommendations.forEach(book => {
+        const card = document.createElement('div');
+        card.className = 'recommend-book-card';
+        card.onclick = () => window.location.href = `details.html?id=${book.id}`;
+
+        const coverHtml = book.imageUrl 
+          ? `<img src="${book.imageUrl}" alt="${book.title || 'Book cover'}" loading="lazy" onerror="this.style.display='none'">`
+          : `<div class="no-image"><i class="fas fa-book-open"></i></div>`;
+
+        const price = book.pricing?.amount || book.price || 0;
+        const currency = book.pricing?.currency || book.currency || 'GHS';
+
+        card.innerHTML = `
+          <div class="recommend-cover">${coverHtml}</div>
+          <div class="recommend-body">
+            <div class="book-title" title="${book.title || 'Untitled'}">${book.title || 'Untitled'}</div>
+            <div class="book-author">${book.authorName || 'Anonymous'}</div>
+            <div class="book-price">${currency} ${Number(price).toFixed(2)}</div>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+
+    } catch (err) {
+      document.getElementById('recommendationsGrid').innerHTML = `
+        <p style="color:#6f6252; grid-column:1/-1; text-align:center; padding:20px;">
+          Recommendations are available when you're online.
+        </p>
+      `;
+    }
+  }
+
+  // ===== SHARE MODAL =====
+  function setShareHref(id, url) {
+    const el = document.getElementById(id);
+    if (el && url) el.href = url;
+  }
+
+  function openBookShareModal(book) {
+    const modal = document.getElementById('shareModal');
+    if (!modal || !book) return;
+    const link = `${window.location.origin}${window.location.pathname.replace('library.html', 'details.html')}?id=${book.id}`;
+    const title = book.title || 'Untitled';
+    const author = book.authorName || book.author || (currentUser && currentUser.displayName) || '';
+    const cover = book.imageUrl || '';
+    const text = `${title}${author ? ' by ' + author : ''} — available on Volant Reads`;
+
+    const t = document.getElementById('shareTitle');
+    const a = document.getElementById('shareAuthor');
+    const c = document.getElementById('shareCover');
+    const l = document.getElementById('shareLinkInput');
+    if (t) t.textContent = title;
+    if (a) a.textContent = author;
+    if (l) l.value = link;
+    if (c) c.innerHTML = cover ? `<img src="${cover}" alt="${title}" />` : '<i class="fas fa-book-open"></i>';
+
+    setShareHref('shareWhatsApp', 'https://wa.me/?text=' + encodeURIComponent(text + ' ' + link));
+    setShareHref('shareTelegram', 'https://t.me/share/url?url=' + encodeURIComponent(link) + '&text=' + encodeURIComponent(text));
+    setShareHref('shareFacebook', 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(link));
+    setShareHref('shareTwitter', 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(text) + '&url=' + encodeURIComponent(link));
+    setShareHref('shareEmail', 'mailto:?subject=' + encodeURIComponent(title + (author ? ' by ' + author : '') + ' on Volant Reads') + '&body=' + encodeURIComponent(text + '\n\n' + link));
+
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeBookShareModal() {
+    const modal = document.getElementById('shareModal');
+    if (modal) modal.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+
+  (function initShareModal() {
+    const modal = document.getElementById('shareModal');
+    if (!modal) return;
+    const closeBtn = document.getElementById('shareModalClose');
+    if (closeBtn) closeBtn.addEventListener('click', closeBookShareModal);
+    modal.addEventListener('click', function(e) {
+      if (e.target === modal) closeBookShareModal();
+    });
+    const copyBtn = document.getElementById('shareCopyBtn');
+    if (copyBtn) {
+      copyBtn.addEventListener('click', async function() {
+        const input = document.getElementById('shareLinkInput');
+        try {
+          await navigator.clipboard.writeText(input.value);
+          copyBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+          showToast('✅ Book link copied to clipboard!', 'success');
+          setTimeout(() => { copyBtn.innerHTML = '<i class="fas fa-copy"></i> Copy'; }, 2000);
+        } catch (err) {
+          input.select();
+          document.execCommand('copy');
+          showToast('✅ Book link copied to clipboard!', 'success');
+        }
+      });
+    }
+  })();
+
+  // ===== RECEIPT PDF =====
+  function sanitizeReceiptText(s) {
+    return String(s == null ? '' : s)
+      .replace(/\u2013|\u2014/g, '-')
+      .replace(/[\u2018\u2019]/g, "'")
+      .replace(/[\u201C\u201D]/g, '"')
+      .replace(/[^\x20-\x7E]/g, '');
+  }
+
+  function printReceipt(book) {
+    try {
+      if (!window.jspdf) {
+        showToast('⬇️ Preparing receipt generator...', 'info');
+        const scriptTag = document.createElement('script');
+        scriptTag.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+        scriptTag.onload = function() { generateReceiptPdf(book); };
+        scriptTag.onerror = function() { showToast('⚠️ Receipt generator unavailable offline. Check your connection and try again.', 'error'); };
+        document.head.appendChild(scriptTag);
+        return;
+      }
+      generateReceiptPdf(book);
+    } catch (err) {
+      showToast('Could not generate receipt.', 'error');
+    }
+  }
+
+  function generateReceiptPdf(book) {
+    showToast('⬇️ Generating receipt... this will continue in the background.', 'info');
+    setTimeout(function() {
+      try {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+        const pageWidth = 210;
+        const margin = 14;
+        const right = pageWidth - margin;
+
+        doc.setFillColor(75, 42, 173);
+        doc.rect(0, 0, pageWidth, 24, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(18);
+        doc.text('Volant Reads', margin, 11);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(10);
+        doc.text('Official Payment Receipt', right, 9, { align: 'right' });
+        doc.setFontSize(8.5);
+        doc.setTextColor(206, 196, 255);
+        doc.text('Receipt of payment', right, 15, { align: 'right' });
+
+        let y = 36;
+        doc.setTextColor(90, 90, 90);
+        doc.setFont('helvetica', 'italic');
+        doc.setFontSize(11);
+        doc.text('Thank you for your purchase. Keep this receipt for your records.', margin, y);
+        y += 20;
+
+        const currency = book.currency || 'GHS';
+        const amount = (Number(book.chargedTotalGHS) || Number(book.amount) || 0).toFixed(2);
+        const paid = (Number(book.chargedTotalGHS) || 0) === 0 ? 'Free' : 'Paystack';
+        const date = book.purchasedAt?.toDate?.() ? book.purchasedAt.toDate().toLocaleString() : (book.purchasedAt ? new Date(book.purchasedAt).toLocaleString() : 'N/A');
+        const userEmail = (currentUser && currentUser.email) || book.customerEmail || '';
+
+        const rows = [
+          ['Book', sanitizeReceiptText(book.title || 'Untitled')],
+          ['Author', sanitizeReceiptText(book.authorName || '')],
+          ['Date', date],
+          ['Amount', currency + ' ' + amount],
+          ['Paid via', paid],
+          ['Transaction Ref', sanitizeReceiptText(book.transactionRef || 'paystack')],
+          ['Email', sanitizeReceiptText(userEmail)]
+        ];
+
+        rows.forEach(function(r) {
+          const lines = doc.splitTextToSize(r[1], right - margin - 52);
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(10.5);
+          doc.setTextColor(130, 130, 130);
+          doc.text(r[0], margin, y);
+          doc.setFont('helvetica', 'normal');
+          doc.setTextColor(25, 25, 25);
+          doc.text(lines, margin + 46, y);
+          y += 6 * lines.length + 3.5;
+        });
+
+        y += 5;
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9);
+        doc.setTextColor(150, 150, 150);
+        doc.text('Volant Reads - volantpoetry.vercel.app', pageWidth / 2, y + 7, { align: 'center' });
+
+        const titlePart = sanitizeReceiptText(book.title || 'Untitled').replace(/\s+/g, ' ').trim();
+        const fileName = 'volant_reads_receipt_' + (titlePart ? titlePart.replace(/[^a-z0-9 _\-,\.]/gi, '_') : 'book').split(' ').join('-').toLowerCase() + '.pdf';
+        doc.save(fileName);
+        showToast('✅ Receipt downloaded!', 'success');
+      } catch (err) {
+        showToast('⚠️ Could not generate receipt.', 'error');
+      }
+    }, 60);
+  }
+
+  // ===== FILTER & SEARCH =====
+  function filterLibrary(searchTerm) {
+    const cards = document.querySelectorAll('#libraryGrid .page-card');
+    cards.forEach(card => {
+      const title = card.querySelector('.book-title')?.textContent?.toLowerCase() || '';
+      const author = card.querySelector('.book-author')?.textContent?.toLowerCase() || '';
+      const match = title.includes(searchTerm) || author.includes(searchTerm);
+      card.style.display = match ? '' : 'none';
+    });
+  }
+
+  function sortLibrary(sortBy) {
+    const grid = document.getElementById('libraryGrid');
+    const cards = Array.from(grid.querySelectorAll('.page-card'));
+
+    cards.sort((a, b) => {
+      const titleA = a.querySelector('.book-title')?.textContent || '';
+      const titleB = b.querySelector('.book-title')?.textContent || '';
+      const authorA = a.querySelector('.book-author')?.textContent || '';
+      const authorB = b.querySelector('.book-author')?.textContent || '';
+
+      switch(sortBy) {
+        case 'title':
+          return titleA.localeCompare(titleB);
+        case 'title-desc':
+          return titleB.localeCompare(titleA);
+        case 'author':
+          return authorA.localeCompare(authorB);
+        default: // 'recent'
+          return 0;
+      }
+    });
+
+    cards.forEach(card => grid.appendChild(card));
+  }
+
+  document.getElementById('librarySearchInput')?.addEventListener('input', function() {
+    const searchTerm = this.value.toLowerCase().trim();
+    filterLibrary(searchTerm);
+  });
+
+  document.getElementById('librarySortSelect')?.addEventListener('change', function() {
+    sortLibrary(this.value);
+  });
+
+  // ===== SIGN OUT =====
+  document.getElementById('libSignOutBtn')?.addEventListener('click', function() {
+    if (!auth) return;
+    signOut(auth).then(function() {
+      try { localStorage.removeItem(getLibraryCacheKey()); } catch (e) {}
+      window.location.reload();
+    }).catch(function() {
+      showToast('Could not sign out. Try again.', 'error');
+    });
+  });
+
+  // ===== GATE / CONTENT SWITCH =====
+  function setAccess(authed) {
+    document.getElementById('libContent').style.display = authed ? '' : 'none';
+    document.getElementById('libGate').hidden = authed;
+  }
+
+  // ===== AUTH =====
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      currentUser = user;
+      updateUserUI(user);
+      setAccess(true);
+      await loadLibrary();
+      loadContinueReading();
+      loadRecommendations();
+    } else {
+      currentUser = null;
+      purchasedBooks = [];
+      updateUserUI(null);
+      setAccess(false);
+    }
+  });
+
+  // ===== CROSS-TAB SYNC =====
+  window.addEventListener('storage', function(e) {
+    if (!e.key) return;
+    if (e.key === 'volant_purchase_completed' || e.key.indexOf('volant_reads_library_') === 0 || e.key.indexOf('firebase:authUser') === 0 || e.key.indexOf('volant_streak') === 0 || e.key === 'volant_badges') {
+      if (currentUser) {
+        loadLibrary();
+        loadContinueReading();
+      } else {
+        window.location.reload();
+      }
+    }
+  });
+</script>
+<script src="shared/return-url-handler.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script src="shared/auth-overlay.js?v=5"></script>
+<script>
+// Robust sign-in helper: use the Volant Auth overlay when available,
+// otherwise fall back to the standalone universal-login page.
+function openAuthLogin() {
+    var target = encodeURIComponent(window.location.pathname + window.location.search);
+    if (window.VolantAuth && typeof window.VolantAuth.open === 'function') {
+        try { window.VolantAuth.open('login', { platform: 'reads', redirect: target }); return; } catch (e) { }
+    }
+    window.location.href = 'universal-login.html?platform=reads&redirect=' + target;
+}
+window.goToLogin = openAuthLogin;
+
+// If the auth overlay fires an auth-changed event, refresh library state.
+document.addEventListener('volant_auth_event', function () {
+    window.location.reload();
+});
+</script>
+</body>
+</html>

@@ -42,7 +42,7 @@
 
     <script>
         if ('serviceWorker' in navigator && location.protocol === 'https:') {
-            navigator.serviceWorker.register('/sw.js?v=5', { scope: '/' }).catch(function() {});
+            navigator.serviceWorker.register('/sw.js?v=8', { scope: '/' }).catch(function() {});
         }
     </script>
 
@@ -4492,7 +4492,7 @@ header .logo-header {
         <div class="volant-footer-col">
             <h4 class="volant-footer-heading">Volant Reads</h4>
             <ul class="volant-footer-links">
-               <li> <a href="dashboard.html#library">
+               <li> <a href="library.html">
     <i class="fas fa-book-open"></i> My Library
 </a></li>
       <li><a href="javascript:void(0)" onclick="sessionStorage.setItem('volant_reads_current_page','dashboard'); location.href='dashboard.html';">
@@ -4567,7 +4567,10 @@ import { initializeApp } from "firebase/app";
 import { 
     getFirestore, collection, query, where, getDocs, 
     doc, getDoc, updateDoc, writeBatch, setDoc, serverTimestamp, increment,
-    orderBy, limit, onSnapshot
+    orderBy, limit, onSnapshot,
+    initializeFirestore,
+    persistentLocalCache,
+    persistentMultipleTabManager
 } from "firebase/firestore";
 import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 import { logEvent, logPageView, clearAbandonedCart, captureAbandonedCart } from "./store-ops.js";
@@ -4583,7 +4586,16 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+let db;
+try {
+  db = initializeFirestore(app, {
+    localCache: persistentLocalCache({
+      tabManager: persistentMultipleTabManager()
+    })
+  });
+} catch (e) {
+  db = getFirestore(app);
+}
 const auth = getAuth(app);
 logPageView('index');
 
@@ -5695,7 +5707,7 @@ if (couponRemoveBtn) {
 checkoutBtn.addEventListener('click', async function() {
     if (!currentUser) {
         showToast('🔐 Please sign in to checkout.', 'error');
-        window.window.VolantAuth && window.VolantAuth.open('login', { platform: 'reads' });
+        goToLogin()
         return;
     }
 
@@ -6133,7 +6145,7 @@ async function renderHeader(user) {
                         </div>
                     </div>
                     <hr>
-                    <a class="acct-item" href="dashboard.html#library" style="text-decoration:none;"><i class="fas fa-book-open"></i> My Library</a>
+                    <a class="acct-item" href="library.html" style="text-decoration:none;"><i class="fas fa-book-open"></i> My Library</a>
                     <a class="acct-item" href="dashboard.html" id="navAcctDashboard" style="display:none;text-decoration:none;" onclick="sessionStorage.setItem('volant_reads_current_page','dashboard');"><i class="fas fa-gauge-high"></i> My Dashboard</a>
                     <button class="acct-item" id="navAcctSignOut" type="button"><i class="fas fa-sign-out-alt"></i> Sign out</button>
                     <small class="acct-foot">Signed in on Volant Reads</small>
@@ -6187,7 +6199,7 @@ async function renderHeader(user) {
         `;
         document.getElementById('cartOpenBtn')?.addEventListener('click', openCart);
         document.getElementById('wishlistHeaderBtn')?.addEventListener('click', () => {
-            window.window.VolantAuth && window.VolantAuth.open('login', { platform: 'reads' });
+            goToLogin()
         });
     }
     updateCartBadge();
@@ -7117,7 +7129,7 @@ window.addEventListener('storage', (e) => {
     
 })();
 </script>
-<script src="https://volantpoetry.vercel.app/shared/return-url-handler.js"></script>
+<script src="shared/return-url-handler.js"></script>
 
 <!-- ===== PWA INSTALL PROMPT ===== -->
 <style>
@@ -7242,6 +7254,17 @@ window.addEventListener('storage', (e) => {
 document.getElementById('year').textContent = new Date().getFullYear();
 </script>
 
-<script src="../shared/auth-overlay.js?v=5"></script>
+<script src="shared/auth-overlay.js?v=5"></script>
+<script>
+// Robust sign-in helper: use the Volant Auth overlay when available,
+// otherwise fall back to the standalone universal-login page.
+window.goToLogin = function () {
+    var target = encodeURIComponent(window.location.pathname + window.location.search);
+    if (window.VolantAuth && typeof window.VolantAuth.open === 'function') {
+        try { window.VolantAuth.open('login', { platform: 'reads', redirect: target }); return; } catch (e) { }
+    }
+    window.location.href = 'universal-login.html?platform=reads&redirect=' + target;
+};
+</script>
 </body>
 </html>

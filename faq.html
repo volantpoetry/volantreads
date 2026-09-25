@@ -658,7 +658,7 @@
             <div class="faq-answer">
               <p>To submit your book, you will need:</p>
               <ul>
-                <li>Your manuscript in PDF format</li>
+                <li>Your manuscript in PDF or EPUB format</li>
                 <li>A cover image (JPG, PNG, or WEBP)</li>
                 <li>Book details: title, subtitle (optional), synopsis, author bio</li>
                 <li>Genre, language, and number of pages</li>
@@ -667,7 +667,7 @@
               </ul>
               <p style="margin-top:0.5rem;">
                 <span class="role-badge author" style="font-size:0.6rem;">Author Tip</span>
-                <span style="color:var(--text-muted); font-size:0.85rem;">Make sure your PDF is properly formatted and your cover image is high-quality before submitting.</span>
+                <span style="color:var(--text-muted); font-size:0.85rem;">Make sure your manuscript (PDF or EPUB) is properly formatted and your cover image is high-quality before submitting.</span>
               </p>
             </div>
           </div>
@@ -803,7 +803,7 @@
             </div>
             <div class="faq-answer">
               <p>
-                All books on Volant Reads are provided as <strong>PDF (Portable Document Format)</strong> files. This format works on all devices including computers, tablets, and smartphones. You will need a PDF reader app to view your purchased books.
+                Books on Volant Reads are available in <strong>PDF</strong> or <strong>EPUB</strong> format. Both work on all devices - computers, tablets, and smartphones. You can read them online in your browser, or download the file to read on your device.
               </p>
             </div>
           </div>
@@ -816,6 +816,17 @@
             <div class="faq-answer">
               <p>
                 <strong>No.</strong> Purchased ebooks are for <strong>personal use only</strong>. Sharing, distributing, or uploading purchased books to any platform is strictly prohibited. This helps protect authors' rights and supports their work.
+              </p>
+            </div>
+          </div>
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">
+              <span class="q"><i class="fas fa-question"></i> Can I read my books offline?</span>
+              <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+            </div>
+            <div class="faq-answer">
+              <p>
+                <strong>Yes.</strong> Open a book once while you're online and it will be saved automatically to your device. After that, you can read it anytime from <a href="library.html">My Library</a> - even without an internet connection. Offline copies are saved per device, so open a book once on each device where you want offline access. You'll also need to be signed in to view your library.
               </p>
             </div>
           </div>
@@ -1008,12 +1019,12 @@
     });
   </script>
 
-<script src="https://volantpoetry.vercel.app/shared/return-url-handler.js"></script>
+<script src="shared/return-url-handler.js"></script>
 
 <script>
 document.getElementById('year').textContent = new Date().getFullYear();
 </script>
 
-<script src="../shared/auth-overlay.js?v=5"></script>
+<script src="shared/auth-overlay.js?v=5"></script>
 </body>
 </html>

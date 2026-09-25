@@ -2833,7 +2833,7 @@ body.reader-epub .epub-controls.show {
 
 </button>
 
-<a href="dashboard.html#library">My Library
+<a href="library.html">My Library
 
 </a>
 
@@ -2851,7 +2851,7 @@ body.reader-epub .epub-controls.show {
 
 </span>
 
-<a href="dashboard.html#library">
+<a href="library.html">
 
 <i class="fas fa-book-open">
 
@@ -3231,7 +3231,7 @@ body.reader-epub .epub-controls.show {
 
 </button>
 
-<a href="dashboard.html#library" class="epub-ctrl-library" aria-label="My Library" title="My Library">
+<a href="library.html" class="epub-ctrl-library" aria-label="My Library" title="My Library">
 
 <i class="fas fa-book-open">
 
@@ -3269,7 +3269,10 @@ body.reader-epub .epub-controls.show {
             collection,
             query,
             where,
-            getDocs
+            getDocs,
+            initializeFirestore,
+            persistentLocalCache,
+            persistentMultipleTabManager
         } from "firebase/firestore";
         import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
         
@@ -3283,7 +3286,16 @@ body.reader-epub .epub-controls.show {
         };
         
         const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+        let db;
+        try {
+            db = initializeFirestore(app, {
+                localCache: persistentLocalCache({
+                    tabManager: persistentMultipleTabManager()
+                })
+            });
+        } catch (e) {
+            db = getFirestore(app);
+        }
         const auth = getAuth(app);
         
         let currentUser = null;
@@ -3986,9 +3998,35 @@ body.reader-epub .epub-controls.show {
             return false;
         }
         
+        async function ensureBookCached() {
+            if (!currentBook || !currentBook.pdfUrl) return;
+            try {
+                saveBookToLocalStorage({
+                    id: currentBook.id,
+                    title: currentBook.title || 'Untitled',
+                    authorName: currentBook.authorName || 'Anonymous',
+                    pdfUrl: currentBook.pdfUrl || '',
+                    bookFormat: currentBook.bookFormat || '',
+                    content: currentBook.content || '',
+                    downloadLimit: currentBook.downloadLimit || 5
+                });
+            } catch (e) { /* ignore */ }
+            if (navigator.onLine && 'caches' in window) {
+                try {
+                    const cache = await caches.open('volant-reads-pdfs');
+                    const existing = await cache.match(currentBook.pdfUrl);
+                    if (existing) return;
+                    const response = await fetch(currentBook.pdfUrl);
+                    if (response && response.ok) {
+                        await cache.put(currentBook.pdfUrl, response.clone());
+                    }
+                } catch (e) { /* silent - best effort auto save */ }
+            }
+        }
+
         function registerServiceWorker() {
             if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('/sw.js?v=5', { scope: '/' })
+                navigator.serviceWorker.register('/sw.js?v=8', { scope: '/' })
                     .then(registration => {
                         console.log('✅ Service Worker registered successfully');
                     })
@@ -4082,7 +4120,7 @@ function isDesktop() {            return window.matchMedia && window.matchMedia(
         function displayBook() {
             const content = document.getElementById('readerContent');
             const fmt = String(currentBook.bookFormat || '').toLowerCase();
-            const isEpub = fmt === 'epub' || /\.epub(\?|#|$)/i.test(currentBook.pdfUrl || '');            const epubControls = document.getElementById('epubControls');            if (epubControls) epubControls.classList.toggle('show', isEpub);            if (isEpub && currentBook.pdfUrl) {                document.body.classList.add('reader-epub');                const dt = isDesktop();                content.innerHTML = `                    <div class="epub-desktop-shell">                        <aside class="epub-desktop-toc collapsed" id="epubDesktopToc" aria-label="Contents">                            <div class="epub-toc-header">                                <span><i class="fas fa-list-ul"></i> Contents</span>                                <button type="button" class="epub-toc-close" onclick="toggleEpubToc()" aria-label="Hide contents"><i class="fas fa-times"></i></button>                            </div>                            <div class="epub-desktop-toc-book">                                <span class="epub-toc-book-title" id="epubDesktopTocTitle"></span>                                <span class="epub-toc-book-author" id="epubDesktopTocAuthor"></span>                            </div>                            <nav class="epub-toc-body" id="epubDesktopTocList" aria-label="Table of contents"><div class="epub-toc-empty"><div class="spinner"></div><p>Loading contents…</p></div></nav>                        </aside>                        <div class="pdf-viewer-wrapper epub-frame epub-desktop-stage" style="position:relative; background:#efe9dc;">                            <div id="epubViewer" style="width:100%; height:100%;"></div>                            <div class="epub-tap-left" onclick="epubFlip('prev')" title="Previous page" aria-hidden="true"></div>                            <div class="epub-tap-right" onclick="epubFlip('next')" title="Next page" aria-hidden="true"></div>                            <div class="epub-tap-top" onclick="toggleReaderHeader()" title="Menu" aria-hidden="true"></div>                            <div class="epub-nav-pill" id="epubNavPill">                                <button type="button" id="epubMenuBtn" onclick="epubToggleMobilePanel()" aria-label="Open reading menu"><i class="fas fa-chevron-right"></i></button>                                <span class="epub-nav-pill-sep"></span>                                <button type="button" onclick="epubFlip('prev')" aria-label="Previous page"><i class="fas fa-chevron-left"></i></button>                                <span class="epub-nav-pill-sep"></span>                                <button type="button" onclick="epubFlip('next')" aria-label="Next page"><i class="fas fa-chevron-right"></i></button>                            </div>                        </div>                        <div class="epub-desktop-rail" id="epubDesktopRail">                            <button type="button" onclick="toggleEpubToc()" title="Contents" aria-label="Contents"><i class="fas fa-list-ul"></i></button>                            <button type="button" id="epubRailThemeBtn" onclick="epubCycleTheme()" title="Theme" aria-label="Theme"><i class="fas fa-moon"></i></button>                            <button type="button" onclick="epubSetFont(-10)" title="Decrease font size" aria-label="Decrease font size">A−</button>                            <span class="epub-rail-font" id="epubRailFontLabel">120%</span>                            <button type="button" onclick="epubSetFont(10)" title="Increase font size" aria-label="Increase font size">A+</button>                            <div class="share-dropdown">                                <button type="button" onclick="toggleShareDropdown(this)" class="share-btn" title="Share this book" aria-label="Share"><i class="fas fa-share-alt"></i></button>                                <div class="share-dropdown-content">                                    <button class="share-item" onclick="shareBook('whatsapp')"><i class="fab fa-whatsapp"></i> WhatsApp</button>                                    <button class="share-item" onclick="shareBook('twitter')"><i class="fab fa-twitter"></i> Twitter</button>                                    <button class="share-item" onclick="shareBook('facebook')"><i class="fab fa-facebook"></i> Facebook</button>                                    <button class="share-item" onclick="shareBook('email')"><i class="fas fa-envelope"></i> Email</button>                                    <button class="share-item" onclick="shareBook('copy')"><i class="fas fa-copy"></i> Copy Link</button>                                    <button class="share-item" onclick="shareBook('native')"><i class="fas fa-share-alt"></i> Share via...</button>                                </div>                            </div>                            <button type="button" class="rail-close" onclick="closeReader()" title="Close reader" aria-label="Close"><i class="fas fa-times"></i></button>                            <a class="rail-library" href="dashboard.html#library" title="My Library" aria-label="My Library"><i class="fas fa-book-open"></i></a>                        </div>                    </div>                `;                renderEpub(currentBook.pdfUrl);                const tocTitle = document.getElementById('epubTocTitle');                if (tocTitle) tocTitle.textContent = currentBook.title || '';                const tocAuthor = document.getElementById('epubTocAuthor');                if (tocAuthor) tocAuthor.textContent = currentBook.authorName || '';                if (dt) {                    const tocTitle = document.getElementById('epubDesktopTocTitle');                    if (tocTitle) tocTitle.textContent = currentBook.title || '';                    const tocAuthor = document.getElementById('epubDesktopTocAuthor');                    if (tocAuthor) tocAuthor.textContent = currentBook.authorName || '';                    setReaderHeader(true, true);                    buildEpubToc('epubDesktopTocList');                } else {                    setReaderHeader(false);                }                return;            }            if (currentBook.pdfUrl) {                document.body.classList.remove('reader-epub');                setReaderHeader(true);                const isMobile = isPhoneDevice();
+            const isEpub = fmt === 'epub' || /\.epub(\?|#|$)/i.test(currentBook.pdfUrl || '');            const epubControls = document.getElementById('epubControls');            if (epubControls) epubControls.classList.toggle('show', isEpub);            if (isEpub && currentBook.pdfUrl) {                document.body.classList.add('reader-epub');                const dt = isDesktop();                content.innerHTML = `                    <div class="epub-desktop-shell">                        <aside class="epub-desktop-toc collapsed" id="epubDesktopToc" aria-label="Contents">                            <div class="epub-toc-header">                                <span><i class="fas fa-list-ul"></i> Contents</span>                                <button type="button" class="epub-toc-close" onclick="toggleEpubToc()" aria-label="Hide contents"><i class="fas fa-times"></i></button>                            </div>                            <div class="epub-desktop-toc-book">                                <span class="epub-toc-book-title" id="epubDesktopTocTitle"></span>                                <span class="epub-toc-book-author" id="epubDesktopTocAuthor"></span>                            </div>                            <nav class="epub-toc-body" id="epubDesktopTocList" aria-label="Table of contents"><div class="epub-toc-empty"><div class="spinner"></div><p>Loading contents…</p></div></nav>                        </aside>                        <div class="pdf-viewer-wrapper epub-frame epub-desktop-stage" style="position:relative; background:#efe9dc;">                            <div id="epubViewer" style="width:100%; height:100%;"></div>                            <div class="epub-tap-left" onclick="epubFlip('prev')" title="Previous page" aria-hidden="true"></div>                            <div class="epub-tap-right" onclick="epubFlip('next')" title="Next page" aria-hidden="true"></div>                            <div class="epub-tap-top" onclick="toggleReaderHeader()" title="Menu" aria-hidden="true"></div>                            <div class="epub-nav-pill" id="epubNavPill">                                <button type="button" id="epubMenuBtn" onclick="epubToggleMobilePanel()" aria-label="Open reading menu"><i class="fas fa-chevron-right"></i></button>                                <span class="epub-nav-pill-sep"></span>                                <button type="button" onclick="epubFlip('prev')" aria-label="Previous page"><i class="fas fa-chevron-left"></i></button>                                <span class="epub-nav-pill-sep"></span>                                <button type="button" onclick="epubFlip('next')" aria-label="Next page"><i class="fas fa-chevron-right"></i></button>                            </div>                        </div>                        <div class="epub-desktop-rail" id="epubDesktopRail">                            <button type="button" onclick="toggleEpubToc()" title="Contents" aria-label="Contents"><i class="fas fa-list-ul"></i></button>                            <button type="button" id="epubRailThemeBtn" onclick="epubCycleTheme()" title="Theme" aria-label="Theme"><i class="fas fa-moon"></i></button>                            <button type="button" onclick="epubSetFont(-10)" title="Decrease font size" aria-label="Decrease font size">A−</button>                            <span class="epub-rail-font" id="epubRailFontLabel">120%</span>                            <button type="button" onclick="epubSetFont(10)" title="Increase font size" aria-label="Increase font size">A+</button>                            <div class="share-dropdown">                                <button type="button" onclick="toggleShareDropdown(this)" class="share-btn" title="Share this book" aria-label="Share"><i class="fas fa-share-alt"></i></button>                                <div class="share-dropdown-content">                                    <button class="share-item" onclick="shareBook('whatsapp')"><i class="fab fa-whatsapp"></i> WhatsApp</button>                                    <button class="share-item" onclick="shareBook('twitter')"><i class="fab fa-twitter"></i> Twitter</button>                                    <button class="share-item" onclick="shareBook('facebook')"><i class="fab fa-facebook"></i> Facebook</button>                                    <button class="share-item" onclick="shareBook('email')"><i class="fas fa-envelope"></i> Email</button>                                    <button class="share-item" onclick="shareBook('copy')"><i class="fas fa-copy"></i> Copy Link</button>                                    <button class="share-item" onclick="shareBook('native')"><i class="fas fa-share-alt"></i> Share via...</button>                                </div>                            </div>                            <button type="button" class="rail-close" onclick="closeReader()" title="Close reader" aria-label="Close"><i class="fas fa-times"></i></button>                            <a class="rail-library" href="library.html" title="My Library" aria-label="My Library"><i class="fas fa-book-open"></i></a>                        </div>                    </div>                `;                renderEpub(currentBook.pdfUrl);                const tocTitle = document.getElementById('epubTocTitle');                if (tocTitle) tocTitle.textContent = currentBook.title || '';                const tocAuthor = document.getElementById('epubTocAuthor');                if (tocAuthor) tocAuthor.textContent = currentBook.authorName || '';                if (dt) {                    const tocTitle = document.getElementById('epubDesktopTocTitle');                    if (tocTitle) tocTitle.textContent = currentBook.title || '';                    const tocAuthor = document.getElementById('epubDesktopTocAuthor');                    if (tocAuthor) tocAuthor.textContent = currentBook.authorName || '';                    setReaderHeader(true, true);                    buildEpubToc('epubDesktopTocList');                } else {                    setReaderHeader(false);                }                return;            }            if (currentBook.pdfUrl) {                document.body.classList.remove('reader-epub');                setReaderHeader(true);                const isMobile = isPhoneDevice();
                 const embeddedUrl = getPdfJsViewerUrl(currentBook.pdfUrl, !isMobile, currentPage);
                 
                 content.innerHTML = `
@@ -4299,6 +4337,7 @@ function isDesktop() {            return window.matchMedia && window.matchMedia(
                         return;
                     }
                 }
+                ensureBookCached();
                 await checkOfflineAvailability(currentBook.pdfUrl);
                 await updateDownloadButton();
                 

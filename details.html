@@ -42,7 +42,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <script>
     if ('serviceWorker' in navigator && location.protocol === 'https:') {
-      navigator.serviceWorker.register('/sw.js?v=5', { scope: '/' }).catch(function() {});
+      navigator.serviceWorker.register('/sw.js?v=8', { scope: '/' }).catch(function() {});
     }
   </script>
 
@@ -4029,7 +4029,11 @@ header .logo-header {
 // Helper function for login redirect
 function goToLogin() {
     const currentUrl = window.location.pathname + window.location.search;
-    window.window.VolantAuth && window.VolantAuth.open('login', { platform: 'reads' }) + encodeURIComponent(currentUrl);
+    const target = encodeURIComponent(currentUrl);
+    if (window.VolantAuth && typeof window.VolantAuth.open === 'function') {
+        try { window.VolantAuth.open('login', { platform: 'reads', redirect: target }); return; } catch (err) { }
+    }
+    window.location.href = 'universal-login.html?platform=reads&redirect=' + target;
 }
 </script>
 
@@ -4456,7 +4460,10 @@ function goToLogin() {
       arrayRemove,
       serverTimestamp,
       orderBy,
-      limit
+      limit,
+      initializeFirestore,
+      persistentLocalCache,
+      persistentMultipleTabManager
     } from "firebase/firestore";
     import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
     import { logEvent, logPageView, captureCampaignEmail, clearAbandonedCart } from "./store-ops.js";
@@ -4471,7 +4478,16 @@ function goToLogin() {
     };
 
     const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+    let db;
+    try {
+      db = initializeFirestore(app, {
+        localCache: persistentLocalCache({
+          tabManager: persistentMultipleTabManager()
+        })
+      });
+    } catch (e) {
+      db = getFirestore(app);
+    }
     const auth = getAuth(app);
     logPageView('details');
 
@@ -4986,7 +5002,7 @@ function goToLogin() {
     function openContactModal(book) {
       if (!currentUser) {
         showToast('🔐 Please sign in to contact the author.', 'error');
-        window.window.VolantAuth && window.VolantAuth.open('login', { platform: 'reads' }) + encodeURIComponent(window.location.pathname + window.location.search);
+        goToLogin();
         return;
       }
       contactBookTitle.textContent = `About: ${book.title || 'Untitled'}`;
@@ -5335,7 +5351,7 @@ function goToLogin() {
                 </div>
               </div>
               <hr>
-              <a class="acct-item" href="dashboard.html#library" style="text-decoration:none;"><i class="fas fa-book-open"></i> My Library</a>
+              <a class="acct-item" href="library.html" style="text-decoration:none;"><i class="fas fa-book-open"></i> My Library</a>
               <a class="acct-item" href="dashboard.html" id="navAcctDashboard" style="display:none;text-decoration:none;" onclick="sessionStorage.setItem('volant_reads_current_page','dashboard');"><i class="fas fa-gauge-high"></i> My Dashboard</a>
               <button class="acct-item" id="navAcctSignOut" type="button"><i class="fas fa-sign-out-alt"></i> Sign out</button>
               <small class="acct-foot">Signed in on Volant Reads</small>
@@ -6897,7 +6913,7 @@ async function handleCartPaymentCallback(response, ctx) {
 
     // ===== PAY BUTTON =====
     payBtn.addEventListener('click', function() {
-      if (!currentUser) { showToast('🔐 Please sign in to purchase.', 'error'); window.window.VolantAuth && window.VolantAuth.open('login', { platform: 'reads' }) + encodeURIComponent(window.location.pathname + window.location.search); return; }
+      if (!currentUser) { showToast('🔐 Please sign in to purchase.', 'error'); goToLogin(); return; }
       if (!currentBook) { showToast('❌ Book not loaded.', 'error'); return; }
       if (hasPaidForBook) { showToast('✅ You already own this book!', 'success'); return; }
       const amount = effectiveBookPrice(currentBook);
@@ -6915,7 +6931,7 @@ async function handleCartPaymentCallback(response, ctx) {
 
     // ===== RE-PURCHASE BUTTON =====
     repurchaseBtn.addEventListener('click', function() {
-      if (!currentUser) { showToast('🔐 Please sign in to purchase.', 'error'); window.window.VolantAuth && window.VolantAuth.open('login', { platform: 'reads' }) + encodeURIComponent(window.location.pathname + window.location.search); return; }
+      if (!currentUser) { showToast('🔐 Please sign in to purchase.', 'error'); goToLogin(); return; }
       if (!currentBook) { showToast('❌ Book not loaded.', 'error'); return; }
       const amount = effectiveBookPrice(currentBook);
       if (amount <= 0) {
@@ -6932,7 +6948,7 @@ async function handleCartPaymentCallback(response, ctx) {
     checkoutBtn.addEventListener('click', async function() {
       if (!currentUser) {
         showToast('🔐 Please sign in to checkout.', 'error');
-        window.window.VolantAuth && window.VolantAuth.open('login', { platform: 'reads' }) + encodeURIComponent(window.location.pathname + window.location.search);
+        goToLogin();
         return;
       }
 
@@ -8095,7 +8111,7 @@ async function handleCartPaymentCallback(response, ctx) {
 
     // ===== WISHLIST BUTTON =====
     wishlistBtn.addEventListener('click', async function() {
-      if (!currentUser) { showToast('🔐 Please sign in to use wishlist.', 'error'); window.window.VolantAuth && window.VolantAuth.open('login', { platform: 'reads' }) + encodeURIComponent(window.location.pathname + window.location.search); return; }
+      if (!currentUser) { showToast('🔐 Please sign in to use wishlist.', 'error'); goToLogin(); return; }
       if (!currentBook) { showToast('❌ Book not loaded.', 'error'); return; }
       wishlistBtn.disabled = true;
       const inWishlist = await isBookInWishlist(currentUser.uid, currentBook.id);
@@ -8148,7 +8164,7 @@ async function handleCartPaymentCallback(response, ctx) {
       }
     })();
   </script>
-<script src="https://volantpoetry.vercel.app/shared/return-url-handler.js"></script>
+<script src="shared/return-url-handler.js"></script>
   <script type="module" src="./book-schema.js"></script>
 <style>
       .ratings-breakdown { margin: 0.9rem 0 0.2rem; padding-top: 0.8rem; border-top: 1px solid #ede7df; }
@@ -8160,6 +8176,6 @@ async function handleCartPaymentCallback(response, ctx) {
       .rating-count { font-size: 0.75rem; color: #8a7b6a; min-width: 18px; text-align: right; }
     </style>
 
-<script src="../shared/auth-overlay.js?v=5"></script>
+<script src="shared/auth-overlay.js?v=5"></script>
 </body>
 </html>
