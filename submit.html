@@ -2210,15 +2210,15 @@
                     <span class="hint">Add at least 3 and up to 5 keywords — separate multiple keywords with commas.</span>
                 </div>
 
-                <!-- BOOK FILE UPLOAD (PDF) -->
+                <!-- BOOK FILE UPLOAD (PDF or EPUB) -->
                 <div class="form-group">
-                    <label for="pdfUpload"><i class="fas fa-book-open"></i> Upload Manuscript (PDF) <span style="color:#b76e4b;">*</span></label>
+                    <label for="pdfUpload"><i class="fas fa-book-open"></i> Upload Manuscript (PDF or EPUB) <span style="color:#b76e4b;">*</span></label>
                     <div class="file-upload-wrapper">
-                        <input type="file" id="pdfUpload" accept=".pdf,application/pdf" required />
-                        <span class="file-hint"><i class="fas fa-info-circle"></i> PDF · max 15 MB</span>
+                        <input type="file" id="pdfUpload" accept=".pdf,application/pdf,.epub,application/epub+zip" required />
+                        <span class="file-hint"><i class="fas fa-info-circle"></i> PDF or EPUB · max 15 MB</span>
                     </div>
                     <div id="pdfFeedback" class="file-feedback"></div>
-                    <span class="hint">Upload the full book as a PDF file (max 15MB).</span>
+                    <span class="hint">Upload the full book as a PDF or EPUB file (max 15MB).</span>
                 </div>
 
                 <!-- COVER IMAGE -->
@@ -3064,7 +3064,24 @@ document.addEventListener('DOMContentLoaded', setupBackLink);
                 return true;
             }
         }
-        pdfInput.addEventListener('change', function() { validateFile(this, pdfFeedback, MAX_PDF_SIZE, 'Book file'); });
+        function detectBookFormat(file) {
+            const name = (file.name || '').toLowerCase();
+            const type = (file.type || '').toLowerCase();
+            return (name.endsWith('.epub') || type.includes('epub')) ? 'epub' : 'pdf';
+        }
+        function isSupportedBookFile(file) {
+            const name = (file.name || '').toLowerCase();
+            const type = (file.type || '').toLowerCase();
+            return name.endsWith('.pdf') || name.endsWith('.epub') || type.includes('pdf') || type.includes('epub');
+        }
+        pdfInput.addEventListener('change', function() {
+            validateFile(this, pdfFeedback, MAX_PDF_SIZE, 'Book file');
+            const f = this.files[0];
+            if (f && !isSupportedBookFile(f)) {
+                pdfFeedback.textContent = '❌ Please upload a PDF or EPUB file.';
+                pdfFeedback.className = 'file-feedback error';
+            }
+        });
         coverInput.addEventListener('change', function() { validateFile(this, imageFeedback, MAX_IMAGE_SIZE,
             'Cover image'); });
 
@@ -3842,7 +3859,9 @@ document.addEventListener('DOMContentLoaded', setupBackLink);
 
             const pdfFile = pdfInput.files[0];
             const coverFile = coverInput.files[0];
-            if (!pdfFile) { showFeedback('❌ Please upload a PDF file.', 'error');
+            if (!pdfFile) { showFeedback('❌ Please upload a PDF or EPUB file.', 'error');
+                pdfInput.focus(); return; }
+            if (!isSupportedBookFile(pdfFile)) { showFeedback('❌ Book file must be a PDF or EPUB.', 'error');
                 pdfInput.focus(); return; }
             if (!coverFile) { showFeedback('❌ Please upload a cover image.', 'error');
                 coverInput.focus(); return; }
@@ -3851,6 +3870,8 @@ document.addEventListener('DOMContentLoaded', setupBackLink);
                 showFeedback('❌ One or more files exceed the size limit.', 'error');
                 return;
             }
+
+            const bookFormat = detectBookFormat(pdfFile);
 
             // ⭐ SAVE PROFILE DATA TO FIRESTORE AND LOCALSTORAGE BEFORE SUBMITTING
             try {
@@ -3933,7 +3954,7 @@ document.addEventListener('DOMContentLoaded', setupBackLink);
                     otherDetails: otherDetails || null,
                     imageUrl,
                     pdfUrl,
-                    bookFormat: 'pdf',
+                    bookFormat,
                     pricing: { currency, amount: parseFloat(price) },
                     submittedBy: currentUser.uid,
                     submittedByUsername: currentUsername,
@@ -4057,5 +4078,7 @@ document.addEventListener('DOMContentLoaded', setupBackLink);
         console.log('📝 Volant Reads submission form ready with Author Name, Publisher Name, Country, Phone, Email, Pre-order, Rights Declaration, and Terms Agreement.');
     </script>
     <script src="https://volantpoetry.vercel.app/shared/return-url-handler.js"></script>
+
+<script src="../shared/auth-overlay.js?v=5"></script>
 </body>
 </html>

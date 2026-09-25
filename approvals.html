@@ -2258,6 +2258,13 @@ Volant Reads Team
     }
 
     // ========== RENDER BOOK CARD ==========
+    function waDigits(n) {
+        let d = String(n || '').replace(/[^0-9]/g, '');
+        if (!d) return '';
+        if (d.startsWith('00')) d = d.slice(2);
+        if (d.startsWith('0') && d.length === 10) d = '233' + d.slice(1);
+        return d;
+    }
     function renderBookCard(book) {
         const imageUrl = book.imageUrl || '';
         const pdfUrl = book.pdfUrl || '';
@@ -2287,7 +2294,7 @@ Volant Reads Team
             : 'Unknown date';
         
         const whatsappUrl = book.phoneNumber 
-            ? `https://wa.me/${book.phoneNumber.replace(/[^0-9+]/g, '')}`
+            ? `https://wa.me/${waDigits(book.phoneNumber)}`
             : '#';
         
         const keywordsDisplay = book.keywords && book.keywords.length > 0 
@@ -3176,7 +3183,7 @@ ${msg.message || msg.content || ''}
         }
     }
 
-    async function confirmSettlement(purchaseId) {
+    window.confirmSettlement = async function(purchaseId) {
         const row = document.querySelector(`[data-settle-id="${purchaseId}"]`);
         const statusEl = row ? row.querySelector('.settle-status') : null;
         if (row) {
@@ -3198,7 +3205,7 @@ ${msg.message || msg.content || ''}
         }
     }
 
-    async function rescanSettlement(purchaseId) {
+    window.rescanSettlement = async function(purchaseId) {
         const row = document.querySelector(`[data-settle-id="${purchaseId}"]`);
         const statusEl = row ? row.querySelector('.settle-status') : null;
         if (row) {
@@ -3326,7 +3333,7 @@ ${msg.message || msg.content || ''}
         }
     }
 
-    async function runFullSettlementCheck() {
+    window.runFullSettlementCheck = async function() {
         const container = document.getElementById('settlementsContainer');
         if (!container) return;
         container.innerHTML += '<div class="settle-status" style="display:block;text-align:center;padding:0.5rem;">Running Paystack settlement check…</div>';
@@ -3379,6 +3386,16 @@ ${msg.message || msg.content || ''}
                 return;
             }
 
+            const couponNames = {};
+            couponNames['admin'] = 'Admin';
+            await Promise.all([...new Set(coupons.filter(c => c.createdBy && c.createdBy !== 'admin').map(c => c.createdBy))].map(async (uid) => {
+                try {
+                    const uSnap = await getDoc(doc(db, "users", uid));
+                    const ud = uSnap.exists() ? uSnap.data() : null;
+                    couponNames[uid] = ud ? (ud.username || ud.authorName || ud.displayName || uid.slice(0, 8)) : uid.slice(0, 8);
+                } catch (e) { couponNames[uid] = uid.slice(0, 8); }
+            }));
+
             const scopeLabel = (c) => c.scope === 'book' ? `Book${(c.bookIds || []).length > 1 ? 's' : ''}` : c.scope === 'author' ? 'Author' : 'Storewide';
             const expiryLabel = (c) => {
                 if (!c.expiresAt) return '—';
@@ -3395,7 +3412,7 @@ ${msg.message || msg.content || ''}
                 const st = couponStatus(c);
                 const discountLabel = c.type === 'fixed' ? `GHS ${Number(c.value) || 0}` : `${Number(c.value) || 0}%`;
                 rows += `<tr>
-                    <td><strong>${c.code || '—'}</strong>${c.createdByName ? `<br><small style="color:#999;">by ${c.createdByName}</small>` : ''}</td>
+                    <td><strong>${c.code || '—'}</strong>${couponNames[c.createdBy] ? `<br><small style="color:#999;">by ${couponNames[c.createdBy]}</small>` : (c.createdByName ? `<br><small style="color:#999;">by ${c.createdByName}</small>` : '')}</td>
                     <td>${discountLabel}</td>
                     <td>${scopeLabel(c)}${c.bookIds && c.bookIds.length ? `<br><small style="color:#999;">${(c.bookTitles || []).join(', ') || c.bookIds.join(', ')}</small>` : ''}</td>
                     <td>${(c.uses || 0)} / ${c.maxUses > 0 ? c.maxUses : '∞'}</td>

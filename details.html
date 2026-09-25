@@ -42,7 +42,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <script>
     if ('serviceWorker' in navigator && location.protocol === 'https:') {
-      navigator.serviceWorker.register('./sw.js').catch(function() {});
+      navigator.serviceWorker.register('/sw.js?v=5', { scope: '/' }).catch(function() {});
     }
   </script>
 
@@ -2181,6 +2181,15 @@ header {
       background: var(--bg-cream);
       color: var(--primary);
     }
+    .review-item .review-helpful button.voted {
+      background: var(--bg-cream);
+      color: var(--primary);
+      font-weight: 600;
+    }
+    .review-item .review-helpful button:disabled {
+      opacity: 0.6;
+      cursor: wait;
+    }
     .review-item .review-helpful .helpful-count {
       color: var(--text-light);
       font-size: 0.75rem;
@@ -4020,7 +4029,7 @@ header .logo-header {
 // Helper function for login redirect
 function goToLogin() {
     const currentUrl = window.location.pathname + window.location.search;
-    window.location.href = 'universal-login.html?platform=reads&redirect=' + encodeURIComponent(currentUrl);
+    window.window.VolantAuth && window.VolantAuth.open('login', { platform: 'reads' }) + encodeURIComponent(currentUrl);
 }
 </script>
 
@@ -4443,6 +4452,8 @@ function goToLogin() {
       writeBatch,
       increment,
       addDoc,
+      arrayUnion,
+      arrayRemove,
       serverTimestamp,
       orderBy,
       limit
@@ -4975,7 +4986,7 @@ function goToLogin() {
     function openContactModal(book) {
       if (!currentUser) {
         showToast('🔐 Please sign in to contact the author.', 'error');
-        window.location.href = "universal-login.html?platform=reads&redirect=" + encodeURIComponent(window.location.pathname + window.location.search);
+        window.window.VolantAuth && window.VolantAuth.open('login', { platform: 'reads' }) + encodeURIComponent(window.location.pathname + window.location.search);
         return;
       }
       contactBookTitle.textContent = `About: ${book.title || 'Untitled'}`;
@@ -6886,7 +6897,7 @@ async function handleCartPaymentCallback(response, ctx) {
 
     // ===== PAY BUTTON =====
     payBtn.addEventListener('click', function() {
-      if (!currentUser) { showToast('🔐 Please sign in to purchase.', 'error'); window.location.href = "universal-login.html?platform=reads&redirect=" + encodeURIComponent(window.location.pathname + window.location.search); return; }
+      if (!currentUser) { showToast('🔐 Please sign in to purchase.', 'error'); window.window.VolantAuth && window.VolantAuth.open('login', { platform: 'reads' }) + encodeURIComponent(window.location.pathname + window.location.search); return; }
       if (!currentBook) { showToast('❌ Book not loaded.', 'error'); return; }
       if (hasPaidForBook) { showToast('✅ You already own this book!', 'success'); return; }
       const amount = effectiveBookPrice(currentBook);
@@ -6904,7 +6915,7 @@ async function handleCartPaymentCallback(response, ctx) {
 
     // ===== RE-PURCHASE BUTTON =====
     repurchaseBtn.addEventListener('click', function() {
-      if (!currentUser) { showToast('🔐 Please sign in to purchase.', 'error'); window.location.href = "universal-login.html?platform=reads&redirect=" + encodeURIComponent(window.location.pathname + window.location.search); return; }
+      if (!currentUser) { showToast('🔐 Please sign in to purchase.', 'error'); window.window.VolantAuth && window.VolantAuth.open('login', { platform: 'reads' }) + encodeURIComponent(window.location.pathname + window.location.search); return; }
       if (!currentBook) { showToast('❌ Book not loaded.', 'error'); return; }
       const amount = effectiveBookPrice(currentBook);
       if (amount <= 0) {
@@ -6921,7 +6932,7 @@ async function handleCartPaymentCallback(response, ctx) {
     checkoutBtn.addEventListener('click', async function() {
       if (!currentUser) {
         showToast('🔐 Please sign in to checkout.', 'error');
-        window.location.href = "universal-login.html?platform=reads&redirect=" + encodeURIComponent(window.location.pathname + window.location.search);
+        window.window.VolantAuth && window.VolantAuth.open('login', { platform: 'reads' }) + encodeURIComponent(window.location.pathname + window.location.search);
         return;
       }
 
@@ -7772,6 +7783,10 @@ async function handleCartPaymentCallback(response, ctx) {
             `<img src="${photoURL}" style="width:24px;height:24px;border-radius:50%;object-fit:cover;margin-right:6px;" />` : 
             '';
           
+          const helpfulBy = Array.isArray(review.helpfulBy) ? review.helpfulBy : [];
+          const voted = currentUser ? helpfulBy.includes(currentUser.uid) : false;
+          const helpfulCount = Array.isArray(review.helpfulBy) ? helpfulBy.length : (review.helpfulCount || 0);
+          
           reviewHTML += `
             <div class="review-item">
               <div class="review-header">
@@ -7784,8 +7799,8 @@ async function handleCartPaymentCallback(response, ctx) {
               </div>
               <div class="review-text">${review.review}</div>
               <div class="review-helpful">
-                <button class="helpful-btn" data-review-id="${review.id}" data-helpful="${review.helpfulCount || 0}">
-                  <i class="fas fa-thumbs-up"></i> Helpful (<span class="helpful-count">${review.helpfulCount || 0}</span>)
+                <button class="helpful-btn${voted ? ' voted' : ''}" data-review-id="${review.id}" data-helpful-by="${helpfulBy.join(',')}">
+                  <i class="fas fa-thumbs-up"></i> Helpful (<span class="helpful-count">${helpfulCount}</span>)
                 </button>
               </div>
             </div>
@@ -7843,18 +7858,30 @@ async function handleCartPaymentCallback(response, ctx) {
               return;
             }
             const reviewId = this.dataset.reviewId;
-            const helpfulCount = parseInt(this.dataset.helpful) || 0;
+            const helpfulBy = (this.dataset.helpfulBy || '').split(',').filter(Boolean);
+            const voted = helpfulBy.includes(currentUser.uid);
+            const btn = this;
+            btn.disabled = true;
             try {
               const reviewRef = doc(db, "reviews", reviewId);
-              await updateDoc(reviewRef, {
-                helpfulCount: increment(1)
-              });
-              this.dataset.helpful = helpfulCount + 1;
-              this.querySelector('.helpful-count').textContent = helpfulCount + 1;
-              showToast('✅ Thanks for your feedback!', 'success');
+              if (voted) {
+                await updateDoc(reviewRef, {
+                  helpfulBy: arrayRemove(currentUser.uid),
+                  helpfulCount: increment(-1)
+                });
+                showToast('ℹ️ Removed your helpful vote.', 'info');
+              } else {
+                await updateDoc(reviewRef, {
+                  helpfulBy: arrayUnion(currentUser.uid),
+                  helpfulCount: increment(1)
+                });
+                showToast('✅ Thanks for your feedback!', 'success');
+              }
+              await loadReviews(currentBook.id);
             } catch (err) {
               console.error('Error marking helpful:', err);
               showToast('❌ Error. Please try again.', 'error');
+              btn.disabled = false;
             }
           });
         });
@@ -8068,7 +8095,7 @@ async function handleCartPaymentCallback(response, ctx) {
 
     // ===== WISHLIST BUTTON =====
     wishlistBtn.addEventListener('click', async function() {
-      if (!currentUser) { showToast('🔐 Please sign in to use wishlist.', 'error'); window.location.href = "universal-login.html?platform=reads&redirect=" + encodeURIComponent(window.location.pathname + window.location.search); return; }
+      if (!currentUser) { showToast('🔐 Please sign in to use wishlist.', 'error'); window.window.VolantAuth && window.VolantAuth.open('login', { platform: 'reads' }) + encodeURIComponent(window.location.pathname + window.location.search); return; }
       if (!currentBook) { showToast('❌ Book not loaded.', 'error'); return; }
       wishlistBtn.disabled = true;
       const inWishlist = await isBookInWishlist(currentUser.uid, currentBook.id);
@@ -8132,5 +8159,7 @@ async function handleCartPaymentCallback(response, ctx) {
       .rating-fill { height: 100%; background: linear-gradient(90deg, #4b2aad, #b76e4b); border-radius: 20px; transition: width 0.4s ease; }
       .rating-count { font-size: 0.75rem; color: #8a7b6a; min-width: 18px; text-align: right; }
     </style>
+
+<script src="../shared/auth-overlay.js?v=5"></script>
 </body>
 </html>

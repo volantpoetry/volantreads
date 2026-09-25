@@ -51,6 +51,10 @@
       --radius-lg: 24px;
       --radius-md: 16px;
       --radius-sm: 10px;
+      --store-grad-start: #2c1674;
+      --store-grad-end: #4b2aad;
+      --store-accent: #f59e0b;
+      --store-gold: #ffd479;
     }
     body { font-family: 'Inter', sans-serif; background: var(--bg-cream); color: var(--text-dark); line-height: 1.6; min-height: 100vh; }
     a { color: inherit; text-decoration: none; }
@@ -192,14 +196,17 @@
     .acct-foot { font-size: 0.72rem; color: var(--text-light, #8a7b6a); text-align: center; padding: 0.4rem 0 0.1rem; }
 
     @media (max-width: 768px) {
+      header { height: 60px; }
       nav { padding: 0 1.2rem; }
-      .logo-text { font-size: 1.15rem; }
+      .nav-logo-img { width: 28px; height: 28px; }
+      .logo-text { font-size: 1.4rem; }
       .nav-right { padding-right: 0; }
     }
     @media (max-width: 480px) {
+      header { height: 50px; }
       nav { padding: 0 0.8rem; gap: 0.6rem; }
-      .nav-logo-img { width: 30px; height: 30px; }
-      .logo-text { font-size: 1rem; }
+      .nav-logo-img { width: 20px; height: 20px; }
+      .logo-text { font-size: 1.1rem; }
       .nav-right { gap: 0.4rem; }
       .btn-signin { font-size: 0.72rem; padding: 0.3rem 0.7rem; }
       .profile-avatar { width: 28px; height: 28px; font-size: 0.9rem; }
@@ -212,30 +219,36 @@
 
     /* ===== HERO / PROFILE CARD ===== */
     .author-hero {
-      background: var(--bg-white);
+      position: relative;
+      background: linear-gradient(120deg, var(--store-grad-start), var(--store-grad-end));
+      color: #fff;
       border-radius: var(--radius-lg);
       box-shadow: var(--shadow-md);
       overflow: hidden;
       margin-bottom: 32px;
     }
-    .author-hero-accent {
-      height: 100px;
-      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 50%, var(--secondary) 100%);
+    .author-hero::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(600px 260px at 85% 100%, rgba(245,158,11,0.25), transparent 70%);
+      pointer-events: none;
     }
     .author-hero-body {
+      position: relative;
+      z-index: 1;
       display: flex;
       gap: 28px;
-      align-items: flex-start;
-      padding: 0 36px 32px;
-      margin-top: -48px;
+      align-items: center;
+      padding: 30px 36px 34px;
       flex-wrap: wrap;
     }
     .author-avatar {
       width: 120px; height: 120px;
       border-radius: 50%;
-      background: linear-gradient(135deg, var(--primary), var(--secondary));
-      border: 5px solid var(--bg-white);
-      box-shadow: var(--shadow-md);
+      background: var(--store-accent);
+      border: 3px solid rgba(255,255,255,0.4);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.28);
       display: flex; align-items: center; justify-content: center;
       overflow: hidden; flex-shrink: 0;
     }
@@ -245,32 +258,32 @@
       font-family: 'Playfair Display', serif;
       font-size: 2.6rem; font-weight: 700;
     }
-    .author-info { flex: 1; min-width: 220px; padding-top: 52px; }
+    .author-info { flex: 1; min-width: 220px; }
     .author-name {
       font-family: 'Playfair Display', serif;
-      font-size: 1.8rem; font-weight: 700; color: var(--text-dark);
+      font-size: 1.8rem; font-weight: 700; color: #fff;
       line-height: 1.2;
     }
     .author-handle {
       display: inline-flex; align-items: center; gap: 5px;
-      color: var(--text-muted); font-size: 0.88rem; margin-top: 4px;
+      color: #dcd2ff; font-size: 0.88rem; margin-top: 4px;
     }
     .author-meta-row {
       display: flex; align-items: center; gap: 12px; margin-top: 10px; flex-wrap: wrap;
     }
     .author-badge {
       display: inline-flex; align-items: center; gap: 4px;
-      background: var(--bg-cream); color: var(--text-light); font-size: 0.78rem;
+      background: rgba(255,255,255,0.14); color: #f3eaff; font-size: 0.78rem;
       padding: 4px 10px; border-radius: 20px; font-weight: 500;
     }
-    .author-badge i { font-size: 0.7rem; }
+    .author-badge i { font-size: 0.7rem; color: var(--store-accent); }
     .share-btn {
       display: inline-flex; align-items: center; gap: 5px;
-      background: var(--bg-cream); border: 1px solid var(--border); color: var(--text-muted);
+      background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.4); color: #fff;
       padding: 6px 14px; border-radius: 20px; font-size: 0.82rem;
       font-weight: 600; cursor: pointer; transition: 0.2s;
     }
-    .share-btn:hover { border-color: var(--primary); color: var(--primary); }
+    .share-btn:hover { background: #fff; border-color: #fff; color: var(--store-grad-end); }
     .author-stats {
       display: flex; gap: 20px; margin-top: 18px; flex-wrap: wrap;
     }
@@ -278,10 +291,10 @@
       display: flex; flex-direction: column; min-width: 70px;
     }
     .author-stats .stat .num {
-      font-size: 1.3rem; font-weight: 800; color: var(--primary); line-height: 1.2;
+      font-size: 1.3rem; font-weight: 800; color: var(--store-gold); line-height: 1.2;
     }
     .author-stats .stat .label {
-      font-size: 0.72rem; color: var(--text-light);
+      font-size: 0.72rem; color: rgba(255,255,255,0.72);
       text-transform: uppercase; letter-spacing: 0.06em; font-weight: 500;
     }
 
@@ -434,33 +447,33 @@
     .social-link {
       display: inline-flex; align-items: center; justify-content: center;
       width: 38px; height: 38px; border-radius: 50%;
-      background: var(--bg-cream); border: 1px solid var(--border);
-      color: var(--text-muted); font-size: 0.95rem;
+      border: 1px solid transparent;
+      color: #fff; font-size: 0.95rem;
       transition: all 0.2s; cursor: pointer;
     }
-    .social-link.instagram { color: #e1306c; border-color: #e1306c; background: rgba(225, 48, 108, 0.09); }
-    .social-link.tiktok { color: #010101; border-color: #010101; background: rgba(0, 0, 0, 0.06); }
-    .social-link.twitter { color: #000; border-color: #000; background: rgba(0, 0, 0, 0.06); }
-    .social-link.facebook { color: #1877f2; border-color: #1877f2; background: rgba(24, 119, 242, 0.09); }
-    .social-link.whatsapp { color: #25d366; border-color: #25d366; background: rgba(37, 211, 102, 0.10); }
-    .social-link.website { color: var(--primary); border-color: var(--primary); background: rgba(183, 110, 75, 0.10); }
-    .social-link:hover { transform: translateY(-2px); box-shadow: var(--shadow-sm); }
-    .social-link.instagram:hover { background: #e1306c; border-color: #e1306c; color: #fff; }
-    .social-link.tiktok:hover { background: #010101; border-color: #010101; color: #fff; }
-    .social-link.twitter:hover { background: #000; border-color: #000; color: #fff; }
-    .social-link.facebook:hover { background: #1877f2; border-color: #1877f2; color: #fff; }
-    .social-link.whatsapp:hover { background: #25d366; border-color: #25d366; color: #fff; }
-    .social-link.website:hover { background: var(--primary); border-color: var(--primary); color: #fff; }
+    .social-link.instagram { background: #e1306c; border-color: #e1306c; }
+    .social-link.tiktok { background: #111; border-color: #111; }
+    .social-link.twitter { background: #000; border-color: #000; }
+    .social-link.facebook { background: #1877f2; border-color: #1877f2; }
+    .social-link.whatsapp { background: #25d366; border-color: #25d366; }
+    .social-link.website { background: var(--store-accent); border-color: var(--store-accent); }
+    .social-link:hover { transform: translateY(-2px) scale(1.05); box-shadow: var(--shadow-md); }
+    .social-link.instagram:hover { background: rgba(225, 48, 108, 0.28); }
+    .social-link.tiktok:hover { background: rgba(0, 0, 0, 0.40); }
+    .social-link.twitter:hover { background: rgba(0, 0, 0, 0.40); }
+    .social-link.facebook:hover { background: rgba(24, 119, 242, 0.30); }
+    .social-link.whatsapp:hover { background: rgba(37, 211, 102, 0.30); }
+    .social-link.website:hover { background: rgba(245, 158, 11, 0.30); }
 
     @media (max-width: 900px) {
       .books-grid { grid-template-columns: repeat(3, 1fr); }
     }
     @media (max-width: 640px) {
       .page-wrap { padding: 20px 14px 50px; }
-      .author-hero-body { padding: 0 20px 24px; }
+      .author-hero-body { padding: 24px 20px 28px; }
       .author-avatar { width: 96px; height: 96px; }
       .author-avatar .initials { font-size: 2rem; }
-      .author-info { padding-top: 44px; min-width: 180px; }
+      .author-info { min-width: 180px; }
       .author-name { font-size: 1.45rem; }
       .author-stats { gap: 14px; }
       .author-stats .stat .num { font-size: 1.1rem; }
@@ -471,7 +484,6 @@
       .book-price { font-size: 0.85rem; }
     }
     @media (max-width: 380px) {
-      .author-hero-accent { height: 70px; }
       .author-hero-body { gap: 18px; }
     }
 
@@ -508,7 +520,12 @@
     </div>
   </div>
 
-  <footer class="site-footer">&copy; <span id="year"></span> Volant Reads</footer>
+  <footer class="site-footer">
+    <div style="margin-bottom:6px;">
+      <span style="background:rgba(183,110,75,0.12); padding:3px 16px; border-radius:20px; font-size:0.7rem; color:#b76e4b; font-weight:500; display:inline-block;">Part of the Volant Foundry Platform</span>
+    </div>
+    <div style="font-size:0.75rem; color:var(--text-light);">&copy; <span id="year"></span> <strong style="color:var(--text-dark);">Volant Reads</strong>. All Rights Reserved</div>
+  </footer>
   <div id="toast"></div>
 
   <script type="importmap">
@@ -551,7 +568,7 @@
 
     function goToLogin() {
       const redir = window.location.pathname + window.location.search;
-      window.location.href = 'universal-login.html?platform=reads&redirect=' + encodeURIComponent(redir);
+      window.window.VolantAuth && window.VolantAuth.open('login', { platform: 'reads' }) + encodeURIComponent(redir);
     }
 
     /* ===== HEADER ===== */
@@ -635,6 +652,13 @@ function renderHeader(user) {
     function initials(name) { const p = (name || 'A').trim().split(/\s+/); return p.slice(0,2).map(x=>x[0]?.toUpperCase()||'').join('') || 'A'; }
 function formatNum(n) { return Number(n || 0).toLocaleString(); }
     function stripAt(s) { return String(s || '').trim().replace(/^@/, ''); }
+    function waDigits(n) {
+      let d = String(n || '').replace(/[^0-9]/g, '');
+      if (!d) return '';
+      if (d.startsWith('00')) d = d.slice(2);
+      if (d.startsWith('0') && d.length === 10) d = '233' + d.slice(1);
+      return d;
+    }
     function toURL(val, kind) {
       let v = String(val || '').trim();
       if (!v) return '';
@@ -643,7 +667,7 @@ function formatNum(n) { return Number(n || 0).toLocaleString(); }
       if (kind === 'tiktok') return 'https://tiktok.com/@' + encodeURIComponent(stripAt(v));
       if (kind === 'twitter') return 'https://x.com/' + encodeURIComponent(stripAt(v));
       if (kind === 'facebook') return /^https?:\/\//i.test(v) ? v : 'https://facebook.com/' + encodeURIComponent(v);
-      if (kind === 'whatsapp') return 'https://wa.me/' + v.replace(/[^0-9]/g, '');
+      if (kind === 'whatsapp') return 'https://wa.me/' + waDigits(v);
       if (kind === 'website') return 'https://' + v;
       return v;
     }
@@ -782,7 +806,6 @@ function formatNum(n) { return Number(n || 0).toLocaleString(); }
 
       profileWrap.innerHTML = `
         <div class="author-hero">
-          <div class="author-hero-accent"></div>
           <div class="author-hero-body">
             <div class="author-avatar">
               ${avatar
@@ -836,5 +859,7 @@ ${followerCount > 0 ? `<div class="stat stat-followers"><span class="num">${form
 
     loadAuthor();
   </script>
+
+<script src="../shared/auth-overlay.js?v=5"></script>
 </body>
 </html>

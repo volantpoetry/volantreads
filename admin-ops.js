@@ -1,5 +1,5 @@
 // store/admin-ops.js — admin Email Campaigns + real-time Analytics (loaded by approvals.html).
-import { initializeApp } from "firebase/app";
+import { initializeApp, getApps, getApp } from "firebase/app";
 import {
     getFirestore, collection, query, where, orderBy, limit,
     getDocs, getDoc, doc, addDoc, writeBatch, serverTimestamp, onSnapshot
@@ -15,7 +15,7 @@ const firebaseConfig = {
     appId: "1:78008755450:web:3fd0f0f298a08820935543"
 };
 
-const app = initializeApp(firebaseConfig);
+const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
@@ -38,6 +38,7 @@ const GHS = (n) => 'GHS ' + Number(n).toLocaleString(undefined, { minimumFractio
 
 let isAdmin = false;
 let initialized = {};
+let pendingTabs = [];
 
 function status(msg, el) {
     if (!el) return;
@@ -54,26 +55,43 @@ onAuthStateChanged(auth, async (user) => {
             document.querySelectorAll('#tab-emails, #tab-analytics').forEach(el => {
                 el.innerHTML = '<div style="padding:2rem;color:#8a7b6a;text-align:center;"><i class="fas fa-shield-alt"></i> You are not an admin.</div>';
             });
+        } else if (pendingTabs.length) {
+            pendingTabs.slice().forEach(t => ensureInit(t));
         }
     } catch (e) {
         isAdmin = false;
     }
 });
 
-document.querySelectorAll('.tab-btn[data-tab="emails"], .tab-btn[data-tab="analytics"]').forEach(btn => {
+document.querySelectorAll('.tab-btn[data-tab="emails"], .tab-btn[data-tab="analytics"], .vr-tab-btn[data-tab="emails"], .vr-tab-btn[data-tab="analytics"]').forEach(btn => {
     btn.addEventListener('click', () => {
         ensureInit(btn.dataset.tab);
     });
 });
-if (document.querySelector('.tab-btn.active[data-tab="emails"]')) ensureInit('emails');
-if (document.querySelector('.tab-btn.active[data-tab="analytics"]')) ensureInit('analytics');
+if (document.querySelector('.tab-btn.active[data-tab="emails"]') || document.querySelector('.vr-tab-btn.active[data-tab="emails"]')) ensureInit('emails');
+if (document.querySelector('.tab-btn.active[data-tab="analytics"]') || document.querySelector('.vr-tab-btn.active[data-tab="analytics"]')) ensureInit('analytics');
 
-function ensureInit(tab) {
-    if (!isAdmin || initialized[tab]) return;
+async function ensureInit(tab) {
+    if (initialized[tab]) return;
+    if (!isAdmin) {
+        if (auth.currentUser) {
+            try {
+                const adm = await getDoc(doc(db, "admins", auth.currentUser.uid));
+                isAdmin = adm.exists();
+            } catch (e) {}
+        }
+    }
+    if (!isAdmin) {
+        if (pendingTabs.indexOf(tab) === -1) pendingTabs.push(tab);
+        return;
+    }
+    pendingTabs = pendingTabs.filter(t => t !== tab);
     initialized[tab] = true;
     if (tab === 'emails') initEmails();
     else initAnalytics();
 }
+
+window.adminOpsEnsureInit = ensureInit;
 
 // ================= EMAIL CAMPAIGNS =================
 

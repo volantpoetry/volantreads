@@ -573,7 +573,7 @@
       
       <!-- Copyright -->
       <div style="font-size:0.75rem; color:#6a5f55; margin-top:6px;">
-        &copy; 2026 <strong style="color:#c4b8aa;">Volant Reads</strong>. All Rights Reserved.
+        &copy; <span id="year"></span> <strong style="color:#c4b8aa;">Volant Reads</strong>. All Rights Reserved.
       </div>
     </div>
   </footer>
@@ -609,5 +609,9 @@
   </style>
 
 <script src="https://volantpoetry.vercel.app/shared/return-url-handler.js"></script>
+
+<script>
+document.getElementById('year').textContent = new Date().getFullYear();
+</script>
 </body>
 </html>

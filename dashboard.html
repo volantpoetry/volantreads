@@ -17,7 +17,7 @@
         if (!sessionStorage.getItem('auth_redirect_attempted')) {
             sessionStorage.setItem('auth_redirect_attempted', 'true');
             const currentPage = window.location.pathname + window.location.search;
-            window.location.href = 'universal-login.html?platform=reads&redirect=' + 
+            window.window.VolantAuth && window.VolantAuth.open('login', { platform: 'reads' }) + 
                                   encodeURIComponent(currentPage);
         }
     } else {
@@ -64,7 +64,7 @@
 
   <script>
         if ('serviceWorker' in navigator && location.protocol === 'https:') {
-            navigator.serviceWorker.register('./sw.js').catch(function() {});
+            navigator.serviceWorker.register('/sw.js?v=5', { scope: '/' }).catch(function() {});
         }
     </script>
 
@@ -4297,12 +4297,12 @@ body:has(#page-mylibrary.active) #setupAlertBanner {
       </div>
 
       <div class="form-group">
-        <label>PDF File</label>
+        <label id="updatePdfLabel">Book File</label>
         <div class="file-input-wrapper">
-          <input type="file" id="updatePdfFile" accept=".pdf,application/pdf" />
-          <span class="current-file" id="updatePdfCurrent">Current PDF saved</span>
+          <input type="file" id="updatePdfFile" accept=".pdf,application/pdf,.epub,application/epub+zip" />
+          <span class="current-file" id="updatePdfCurrent">Current file saved</span>
         </div>
-        <div class="file-hint">Upload a new PDF to replace the current one. Max 15MB.</div>
+        <div class="file-hint">Upload a new PDF or EPUB to replace the current one. Max 15MB.</div>
       </div>
 
       <div class="form-actions">
@@ -5017,7 +5017,7 @@ body:has(#page-mylibrary.active) #setupAlertBanner {
     if (!file) return null;
     const url = await uploadToCloudinary(file, resourceType, (pct) => {
       if (pct % 20 === 0 || pct === 100) {
-        showToast(`Uploading ${resourceType === 'raw' ? 'PDF' : 'cover'}... ${pct}%`, 'info');
+        showToast(`Uploading ${resourceType === 'raw' ? 'book file' : 'cover'}... ${pct}%`, 'info');
       }
     });
     return url;
@@ -5801,6 +5801,17 @@ body:has(#page-mylibrary.active) #setupAlertBanner {
 
         const bookSnap = await getDoc(doc(db, "books", bookId));
         const bookTitle = bookSnap.exists() ? (bookSnap.data().title || 'Untitled') : '';
+        let creatorName = currentUser.displayName || currentUser.email || 'Author';
+        try {
+          const cuSnap = await getDoc(doc(db, "users", currentUser.uid));
+          if (cuSnap.exists()) {
+            const cd = cuSnap.data();
+            if (cd.username) creatorName = cd.username;
+            else if (cd.authorName) creatorName = cd.authorName;
+            else if (cd.displayName) creatorName = cd.displayName;
+          }
+        } catch (e) {}
+
 
         this.disabled = true;
         try {
@@ -5813,7 +5824,7 @@ body:has(#page-mylibrary.active) #setupAlertBanner {
             bookTitles: [bookTitle],
             authorId: currentUser.uid,
             createdBy: currentUser.uid,
-            createdByName: currentUser.displayName || currentUser.email || 'Author',
+            createdByName: creatorName,
             maxUses: maxUses,
             uses: 0,
             active: true,
@@ -6193,7 +6204,9 @@ body:has(#page-mylibrary.active) #setupAlertBanner {
       
       updateCoverCurrent.textContent = data.imageUrl ? '✅ Current cover uploaded' : 'No cover';
       updateCoverCurrent.className = data.imageUrl ? 'current-file' : 'current-file no-file';
-      updatePdfCurrent.textContent = data.pdfUrl ? '✅ Current PDF uploaded' : 'No PDF';
+      const updateIsEpub = (data.bookFormat === 'epub') || /\.epub(\?|#|$)/i.test(data.pdfUrl || '');
+      updatePdfLabel.textContent = data.pdfUrl ? (updateIsEpub ? 'Book File — EPUB' : 'Book File — PDF') : 'Book File';
+      updatePdfCurrent.textContent = data.pdfUrl ? (updateIsEpub ? '✅ Current EPUB uploaded' : '✅ Current PDF uploaded') : 'No file';
       updatePdfCurrent.className = data.pdfUrl ? 'current-file' : 'current-file no-file';
       
       updateCoverImage.value = '';
@@ -6281,6 +6294,7 @@ async function updateBook() {
   try {
     let imageUrl = null;
     let pdfUrl = null;
+    let newBookFormat = null;
 
     if (updateCoverImage.files.length > 0) {
       const file = updateCoverImage.files[0];
@@ -6301,7 +6315,16 @@ async function updateBook() {
         updateBookBtn.innerHTML = '<i class="fas fa-save"></i> Update Book';
         return;
       }
+      const fname = (file.name || '').toLowerCase();
+      const ftype = (file.type || '').toLowerCase();
+      if (!fname.endsWith('.pdf') && !fname.endsWith('.epub') && !ftype.includes('pdf') && !ftype.includes('epub')) {
+        showToast('❌ Book file must be a PDF or EPUB', 'error');
+        updateBookBtn.disabled = false;
+        updateBookBtn.innerHTML = '<i class="fas fa-save"></i> Update Book';
+        return;
+      }
       pdfUrl = await uploadFile(file, 'raw');
+      newBookFormat = (fname.endsWith('.epub') || ftype.includes('epub')) ? 'epub' : 'pdf';
     }
 
     const updateData = {
@@ -6327,7 +6350,7 @@ async function updateBook() {
     if (imageUrl) updateData.imageUrl = imageUrl;
     if (pdfUrl) {
       updateData.pdfUrl = pdfUrl;
-      updateData.bookFormat = 'pdf';
+      updateData.bookFormat = newBookFormat || 'pdf';
     }
     if (preorderReleaseDate) updateData.preorderReleaseDate = preorderReleaseDate;
 
@@ -6347,6 +6370,7 @@ async function updateBook() {
         subtitle: updateBookSubtitle.value.trim() || '',
         imageUrl: imageUrl || authorBooks[bookIndex].imageUrl,
         pdfUrl: pdfUrl || authorBooks[bookIndex].pdfUrl,
+        bookFormat: newBookFormat || authorBooks[bookIndex].bookFormat,
       };
     }
 
@@ -7142,8 +7166,8 @@ return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt
       body.appendChild(infoBadge);
     }
 
-    // Show reading progress if available
-    if (book.percentage > 0 && book.status === 'read') {
+    // Show reading progress if available (owned and reading books alike)
+    if (book.percentage > 0) {
       const progressWrapper = document.createElement('div');
       progressWrapper.style.cssText = 'margin-top:6px; width:100%;';
       progressWrapper.innerHTML = `
@@ -8889,7 +8913,7 @@ window.addEventListener('storage', function(e) {
       if (!window.location.pathname.includes('universal-login') && 
           !window.location.pathname.includes('verify-email')) {
         const currentPage = window.location.pathname + window.location.search;
-        window.location.href = 'universal-login.html?platform=reads&redirect=' + 
+        window.window.VolantAuth && window.VolantAuth.open('login', { platform: 'reads' }) + 
                               encodeURIComponent(currentPage);
       }
     }
@@ -8923,5 +8947,7 @@ window.addEventListener('storage', function(e) {
 </script>
 <script src="https://volantpoetry.vercel.app/shared/return-url-handler.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script src="../shared/auth-overlay.js?v=5"></script>
 </body>
 </html>

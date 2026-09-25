@@ -283,7 +283,7 @@
         var maxWidth = Math.max(1, viewerWrap.clientWidth - (window.innerWidth <= 600 ? 8 : 32));
         var baseViewport = page.getViewport({ scale: 1 });
         var scale = currentScale;
-        var shouldFitToContainer = fitToContainer && window.innerWidth <= 600;
+        var shouldFitToContainer = fitToContainer;
 
         if (shouldFitToContainer) {
           var widthScale = maxWidth / baseViewport.width;

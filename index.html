@@ -42,7 +42,7 @@
 
     <script>
         if ('serviceWorker' in navigator && location.protocol === 'https:') {
-            navigator.serviceWorker.register('./sw.js').catch(function() {});
+            navigator.serviceWorker.register('/sw.js?v=5', { scope: '/' }).catch(function() {});
         }
     </script>
 
@@ -4548,7 +4548,7 @@ header .logo-header {
         <p style="margin:4px 0;">
             <span style="background:rgba(183,110,75,0.12); padding:2px 14px; border-radius:20px; font-size:0.7rem; color:#b76e4b; font-weight:500;">Part of the Volant Foundry Platform</span>
         </p>
-        <p style="margin-top:6px; font-size:0.75rem; color:#6a5f55;">&copy; 2026 <strong style="color:#c4b8aa;">Volant Reads</strong>. All Rights Reserved.</p>
+        <p style="margin-top:6px; font-size:0.75rem; color:#6a5f55;">&copy; <span id="year"></span> <strong style="color:#c4b8aa;">Volant Reads</strong>. All Rights Reserved.</p>
     </div>
 </footer>
 
@@ -5695,7 +5695,7 @@ if (couponRemoveBtn) {
 checkoutBtn.addEventListener('click', async function() {
     if (!currentUser) {
         showToast('🔐 Please sign in to checkout.', 'error');
-        window.location.href = 'universal-login.html?platform=reads&platform=reads&redirect=store/index.html';
+        window.window.VolantAuth && window.VolantAuth.open('login', { platform: 'reads' });
         return;
     }
 
@@ -6187,7 +6187,7 @@ async function renderHeader(user) {
         `;
         document.getElementById('cartOpenBtn')?.addEventListener('click', openCart);
         document.getElementById('wishlistHeaderBtn')?.addEventListener('click', () => {
-            window.location.href = 'universal-login.html?platform=reads&platform=reads&redirect=store/index.html';
+            window.window.VolantAuth && window.VolantAuth.open('login', { platform: 'reads' });
         });
     }
     updateCartBadge();
@@ -7237,5 +7237,11 @@ window.addEventListener('storage', (e) => {
     });
 })();
 </script>
+
+<script>
+document.getElementById('year').textContent = new Date().getFullYear();
+</script>
+
+<script src="../shared/auth-overlay.js?v=5"></script>
 </body>
 </html>
