@@ -222,7 +222,7 @@
       <button id="prevPage" type="button">Prev</button>
       <span id="pageStatus" class="page-status">Page 1 / 1</span>
       <button id="nextPage" type="button">Next</button>
-      <a class="library-link" href="dashboard.html#library">My Library</a>
+      <a class="library-link" href="library.html">My Library</a>
     </div>
   </div>
 
@@ -248,6 +248,13 @@
     if (params.get('embedded') === '1') {
       document.body.classList.add('embedded');
     }
+    document.addEventListener('click', function (e) {
+        var t = e.target;
+        if (t && t.closest && (t.closest('.toolbar') || t.closest('button') || t.closest('a') || t.closest('input'))) return;
+        if (window.parent !== window) {
+          window.parent.postMessage({ type: 'pdf-chrome-tap' }, '*');
+        }
+      });
     var startPage = Math.max(1, parseInt(params.get('startPage')) || 1);
 
     // State variables

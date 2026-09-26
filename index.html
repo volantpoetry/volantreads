@@ -42,7 +42,7 @@
 
     <script>
         if ('serviceWorker' in navigator && location.protocol === 'https:') {
-            navigator.serviceWorker.register('/sw.js?v=8', { scope: '/' }).catch(function() {});
+            navigator.serviceWorker.register('/sw.js?v=19', { scope: '/' }).catch(function() {});
         }
     </script>
 
@@ -7129,7 +7129,7 @@ window.addEventListener('storage', (e) => {
     
 })();
 </script>
-<script src="shared/return-url-handler.js"></script>
+<script src="return-url-handler.js"></script>
 
 <!-- ===== PWA INSTALL PROMPT ===== -->
 <style>
@@ -7254,7 +7254,7 @@ window.addEventListener('storage', (e) => {
 document.getElementById('year').textContent = new Date().getFullYear();
 </script>
 
-<script src="shared/auth-overlay.js?v=5"></script>
+<script src="auth-overlay.js?v=11"></script>
 <script>
 // Robust sign-in helper: use the Volant Auth overlay when available,
 // otherwise fall back to the standalone universal-login page.

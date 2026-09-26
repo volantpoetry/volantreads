@@ -512,9 +512,9 @@
     <input type="hidden" id="signup-username-hidden">
     
     <label for="signup-email">Email address</label>
-    <input type="email" id="signup-email" placeholder="you@example.com" 
+    <input type="email" id="signup-email" placeholder="you@example.com"
            required autocomplete="email">
-    <div class="field-hint">We'll send a verification link</div>
+    <div class="field-hint">We'll send a verification link to this email</div>
 
     <div id="password-section">
       <label for="signup-password">Password</label>
@@ -1035,7 +1035,9 @@
           return;
         }
         
-        const emailQuery = query(collection(db, 'users'), where('email', '==', email));
+        const accountEmail = String(email || '').trim();
+
+        const emailQuery = query(collection(db, 'users'), where('email', '==', accountEmail));
         const emailSnap = await getDocs(emailQuery);
         if (!emailSnap.empty) {
           showStatus('❌ Email already registered');
@@ -1045,34 +1047,34 @@
           return;
         }
 
-        let baseUsername = email.split('@')[0];
+        let baseUsername = accountEmail.split('@')[0];
         if (!baseUsername || baseUsername.length < 3) {
           baseUsername = 'user';
         }
         const username = await generateUniqueUsername(baseUsername);
 
-        const userCred = await createUserWithEmailAndPassword(auth, email, password);
+        const userCred = await createUserWithEmailAndPassword(auth, accountEmail, password);
         user = userCred.user;
 
         await sendEmailVerification(user);
 
         await setDoc(doc(db, 'users', user.uid), {
           username: username,
-          email: email,
+          email: accountEmail,
           createdAt: serverTimestamp(),
           platform: platform,
           emailVerified: false,
           authProvider: 'email'
         });
 
+        await signOut(auth);
+
         showStatus('✅ Account created! Verification email sent. Redirecting…', 'success');
 
         const verifyParams = new URLSearchParams();
-        verifyParams.append('email', email);
+        verifyParams.append('email', accountEmail);
         verifyParams.append('platform', platform);
         if (redirectUrl) verifyParams.append('redirect', redirectUrl);
-
-        await signOut(auth);
 
         setTimeout(() => {
           window.location.href = `verify-email.html?${verifyParams.toString()}`;
@@ -1085,7 +1087,7 @@
       let errorMsg = '❌ ' + err.message;
       if (err.code === 'auth/email-already-in-use') errorMsg = '❌ Email already registered';
       else if (err.code === 'auth/weak-password') errorMsg = '❌ Password should be at least 6 characters';
-      else if (err.code === 'auth/invalid-email') errorMsg = '❌ Invalid email address';
+      else if (err.code === 'auth/invalid-email') errorMsg = '❌ Invalid email address. Double-check it and try again.';
       showStatus(errorMsg);
       signupButton.disabled = false;
       spinner.style.display = 'none';

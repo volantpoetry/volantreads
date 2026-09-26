@@ -317,7 +317,7 @@
     <hr>
 
     <div class="links">
-      <p>Wrong email? <a href="#" id="signupAgainLink">Sign up again</a> • <a href="#" id="homeLink">Back to Home</a></p>
+      <p>Wrong email? <a href="#" id="signupAgainLink">Sign up again</a></p>
     </div>
   </div>
 
@@ -417,15 +417,6 @@
       });
     }
 
-    // Setup home link
-    const homeLink = document.getElementById('homeLink');
-    if (homeLink) {
-      homeLink.addEventListener('click', (e) => {
-        e.preventDefault();
-        window.location.href = currentPlatform.homeUrl;
-      });
-    }
-
     // Check if user just clicked verification link
     if (mode === 'verifyEmail' && oobCode) {
       showStatus('✅ Verification link detected! Processing...', 'success');
@@ -511,7 +502,10 @@
 
     // Check auth state
     onAuthStateChanged(auth, (user) => {
-      if (user && !user.emailVerified) {
+      if (user && user.emailVerified) {
+        return;
+      }
+      if (user) {
         currentEmail = user.email;
         displayEmail.textContent = user.email;
         localStorage.setItem('pendingVerificationEmail', user.email);

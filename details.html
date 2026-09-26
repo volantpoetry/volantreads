@@ -42,7 +42,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <script>
     if ('serviceWorker' in navigator && location.protocol === 'https:') {
-      navigator.serviceWorker.register('/sw.js?v=8', { scope: '/' }).catch(function() {});
+      navigator.serviceWorker.register('/sw.js?v=19', { scope: '/' }).catch(function() {});
     }
   </script>
 
@@ -7073,6 +7073,9 @@ async function handleCartPaymentCallback(response, ctx) {
       }
     }
 
+    // Auto refresh: refresh the book details from Firestore when the connection returns.
+    window.addEventListener('online', () => { loadBook(); });
+
     function renderMoreByAuthor(book) {
       const authorName = book.authorName || '';
       if (!authorName) { authorBooksGrid.innerHTML = '<div class="no-more-books">No author name available.</div>'; return; }
@@ -8164,7 +8167,7 @@ async function handleCartPaymentCallback(response, ctx) {
       }
     })();
   </script>
-<script src="shared/return-url-handler.js"></script>
+<script src="return-url-handler.js"></script>
   <script type="module" src="./book-schema.js"></script>
 <style>
       .ratings-breakdown { margin: 0.9rem 0 0.2rem; padding-top: 0.8rem; border-top: 1px solid #ede7df; }
@@ -8176,6 +8179,6 @@ async function handleCartPaymentCallback(response, ctx) {
       .rating-count { font-size: 0.75rem; color: #8a7b6a; min-width: 18px; text-align: right; }
     </style>
 
-<script src="shared/auth-overlay.js?v=5"></script>
+<script src="auth-overlay.js?v=11"></script>
 </body>
 </html>

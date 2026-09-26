@@ -10,8 +10,19 @@
         return;
     }
     
-    const firebaseAuth = localStorage.getItem('firebase:authUser');
-    const hasAuth = firebaseAuth !== null && firebaseAuth !== 'null' && firebaseAuth !== 'undefined';
+    let hasAuth = false;
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k.indexOf('firebase:authUser') === 0) { hasAuth = true; break; }
+      }
+      if (!hasAuth) {
+        for (let j = 0; j < sessionStorage.length; j++) {
+          const k2 = sessionStorage.key(j);
+          if (k2 && k2.indexOf('firebase:authUser') === 0) { hasAuth = true; break; }
+        }
+      }
+    } catch (e) { }
     
     if (!hasAuth) {
         if (!sessionStorage.getItem('auth_redirect_attempted')) {
@@ -72,7 +83,7 @@
 
   <script>
         if ('serviceWorker' in navigator && location.protocol === 'https:') {
-            navigator.serviceWorker.register('/sw.js?v=8', { scope: '/' }).catch(function() {});
+            navigator.serviceWorker.register('/sw.js?v=19', { scope: '/' }).catch(function() {});
         }
     </script>
 
@@ -3710,6 +3721,15 @@ header .logo-header {
         <div class="validation-message" id="emailValidation"></div>
         <div class="hint">We'll send notifications to this email</div>
       </div>
+
+      <div class="settings-group" id="syntheticEmailHint" style="display:none;background:#fff8e1;border:1px solid #f0c36d;border-radius:10px;padding:12px 14px;">
+        <div style="font-weight:600;color:#7a5c00;display:flex;align-items:center;gap:8px;font-size:0.9rem;">
+          <i class="fas fa-envelope-circle-check" style="color:#d97706;"></i> Add &amp; verify your email
+        </div>
+        <div style="font-size:0.83rem;color:#7a5c00;margin-top:4px;line-height:1.45;">
+          You signed up with a username, so no real email is attached yet. Type your Gmail above and hit Save to receive a verification link.
+        </div>
+      </div>
       
       <div class="settings-group">
         <label>Bio</label>
@@ -4334,6 +4354,9 @@ header .logo-header {
   import { initializeApp } from "firebase/app";
   import { 
     getFirestore, 
+    initializeFirestore,
+    persistentLocalCache,
+    persistentMultipleTabManager,
     collection, 
     query, 
     where, 
@@ -4350,7 +4373,7 @@ header .logo-header {
     orderBy,
     writeBatch
   } from "firebase/firestore";
-  import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
+  import { getAuth, onAuthStateChanged, signOut, updateEmail as updateAuthEmail, sendEmailVerification } from "firebase/auth";
 
   const firebaseConfig = {
     apiKey: "AIzaSyC4DHI8aBVY4JjTvJ-r-TGIDPsewtEWxzU",
@@ -4362,8 +4385,37 @@ header .logo-header {
   };
 
   const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
+  let db;
+  try {
+    // Firestore persistent cache: keeps the dashboard usable offline and makes
+    // the onSnapshot listener below auto-refresh when the connection returns.
+    db = initializeFirestore(app, {
+      localCache: persistentLocalCache({
+        tabManager: persistentMultipleTabManager()
+      })
+    });
+  } catch (e) {
+    db = getFirestore(app);
+  }
   const auth = getAuth(app);
+
+  // ===== VERIFICATION GATE: unverified accounts must verify before the dashboard opens =====
+  (function () {
+    onAuthStateChanged(auth, async (u) => {
+      if (!u || u.emailVerified) return;
+      let docOk = false;
+      try {
+        const snap = await getDoc(doc(db, "users", u.uid));
+        if (snap.exists() && snap.data().emailVerified === true) docOk = true;
+      } catch (e) {}
+      if (docOk) return;
+      const sp = new URLSearchParams();
+      sp.append('email', u.email || '');
+      sp.append('platform', 'reads');
+      sp.append('redirect', encodeURIComponent(window.location.pathname + window.location.search));
+      window.location.href = 'verify-email.html?' + sp.toString();
+    });
+  })();
 
   // Cloudinary config
   const CLOUDINARY_CONFIG = {
@@ -4504,6 +4556,7 @@ header .logo-header {
   let emailValid = false;
   let originalUsername = '';
   let originalEmail = '';
+  let isUsernamedAccount = false;
   let originalPrefs = { all: true, comments: true, replies: true, messages: true };
 
   function syncPrefToggles(prefs) {
@@ -5471,6 +5524,9 @@ header .logo-header {
         // Update original values to match new data
         originalUsername = data.username || currentUser.displayName || '';
         originalEmail = data.email || currentUser.email || '';
+        isUsernamedAccount = /@volantreads\.com$/i.test(originalEmail || '');
+        const emailVerifHint = document.getElementById('syntheticEmailHint');
+        if (emailVerifHint) emailVerifHint.style.display = isUsernamedAccount ? 'block' : 'none';
         
         // Re-validate
         usernameValid = true;
@@ -7005,9 +7061,59 @@ return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt
   // ============================================================
   // ====== LOAD AUTHOR DATA - OPTIMIZED ======
   // ============================================================
+
+  function toAuthorBook(id, data) {
+    let bookPrice = 0;
+    let bookCurrency = 'GHS';
+    if (data.pricing) {
+      bookPrice = data.pricing.amount || 0;
+      bookCurrency = data.pricing.currency || 'GHS';
+    } else {
+      bookPrice = data.price || 0;
+      bookCurrency = data.currency || 'GHS';
+    }
+    return {
+      id: id,
+      title: data.title || 'Untitled',
+      subtitle: data.subtitle || '',
+      authorName: data.authorName || 'Anonymous',
+      imageUrl: data.imageUrl || '',
+      pdfUrl: data.pdfUrl || '',
+      price: bookPrice,
+      currency: bookCurrency,
+      pricing: data.pricing || { currency: bookCurrency, amount: bookPrice },
+      status: data.status || 'draft',
+      sales: data.sales || 0,
+      downloads: data.downloads || 0,
+      downloadLimit: data.downloadLimit || data.downloads || 5,
+      views: data.views || 0,
+      rating: data.rating || 0,
+      approvedAt: data.approvedAt || data.createdAt || null,
+      preorder: data.preorder === true || data.preorder === 'true',
+      released: data.released === true || data.released === 'true',
+      preorderReleaseDate: data.preorderReleaseDate || ''
+    };
+  }
+
+  // Live book updates: re-renders the dashboard whenever the author's books
+  // change in Firestore (works from cache offline, refreshes when online).
+  let booksListener = null;
+  function setupBooksListener(uid) {
+    if (booksListener) booksListener();
+    const q = query(collection(db, "books"), where("submittedBy", "==", uid));
+    booksListener = onSnapshot(q, (snap) => {
+      authorBooks = snap.docs.map(doc => toAuthorBook(doc.id, doc.data()));
+      authorBooks.sort((a, b) => {
+        const da = a.approvedAt?.toDate?.() || new Date(a.approvedAt) || new Date(0);
+        const db2 = b.approvedAt?.toDate?.() || new Date(b.approvedAt) || new Date(0);
+        return db2 - da;
+      });
+      renderAll();
+    }, (err) => console.warn('Books listener error:', err));
+  }
+
   async function loadAuthorData(user) {
     try {
-      let allBooksData = [];
       let userData = {};
       
       // Fetch user data and books in parallel
@@ -7054,44 +7160,7 @@ return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt
       }
 
       console.log('📊 Books found:', booksSnapshot.size);
-      booksSnapshot.forEach(doc => {
-        allBooksData.push({ id: doc.id, ...doc.data() });
-      });
-
-      authorBooks = [];
-allBooksData.forEach(data => {
-  let bookPrice = 0;
-  let bookCurrency = 'GHS';
-  if (data.pricing) {
-    bookPrice = data.pricing.amount || 0;
-    bookCurrency = data.pricing.currency || 'GHS';
-  } else {
-    bookPrice = data.price || 0;
-    bookCurrency = data.currency || 'GHS';
-  }
-  
-  authorBooks.push({
-    id: data.id,
-    title: data.title || 'Untitled',
-    subtitle: data.subtitle || '',
-    authorName: data.authorName || 'Anonymous',
-    imageUrl: data.imageUrl || '',
-    pdfUrl: data.pdfUrl || '',
-    price: bookPrice,
-    currency: bookCurrency,
-    pricing: data.pricing || { currency: bookCurrency, amount: bookPrice },
-    status: data.status || 'draft',
-    sales: data.sales || 0,
-    downloads: data.downloads || 0,
-    downloadLimit: data.downloadLimit || data.downloads || 5,
-    views: data.views || 0,
-    rating: data.rating || 0,
-    approvedAt: data.approvedAt || data.createdAt || null,
-    preorder: data.preorder === true || data.preorder === 'true',
-    released: data.released === true || data.released === 'true',
-    preorderReleaseDate: data.preorderReleaseDate || '',
-  });
-});
+      authorBooks = booksSnapshot.docs.map(doc => toAuthorBook(doc.id, doc.data()));
 
       authorBooks.sort((a, b) => {
         const da = a.approvedAt?.toDate?.() || new Date(a.approvedAt) || new Date(0);
@@ -7110,6 +7179,9 @@ allBooksData.forEach(data => {
       ]);
       
       await renderAll();
+
+      setupBooksListener(user.uid);
+      updateUserUI(user);
       
     } catch (err) {
       console.error("❌ Error loading data:", err);
@@ -7469,6 +7541,15 @@ window.addEventListener('storage', function(e) {
     }
 });
 
+// ===== ONLINE REFRESH: when the connection returns, pull fresh books, stats,
+// earnings and the profile picture so everything is up to date again. =====
+window.addEventListener('online', function() {
+    if (currentUser) {
+        loadAuthorData(currentUser);
+        updateUserUI(currentUser);
+    }
+});
+
   // ===== USER UI =====
   async function updateUserUI(user) {
     try {
@@ -7720,14 +7801,13 @@ window.addEventListener('storage', function(e) {
 
   document.querySelectorAll('.nav a').forEach(item => {
     item.addEventListener('click', function(e) {
-      e.preventDefault();
       const page = this.dataset.page;
-      if (page) {
-        showPage(page, true);
-        if (page === 'messages') openMsgTab('messages');
-        if (window.innerWidth <= 920) {
-          toggleSidebar();
-        }
+      if (!page) return;
+      e.preventDefault();
+      showPage(page, true);
+      if (page === 'messages') openMsgTab('messages');
+      if (window.innerWidth <= 920) {
+        toggleSidebar();
       }
     });
   });
@@ -7741,7 +7821,10 @@ window.addEventListener('storage', function(e) {
     const notifPanel = document.getElementById('msgTabNotifications');
     if (msgPanel) msgPanel.style.display = tabId === 'messages' ? '' : 'none';
     if (notifPanel) notifPanel.style.display = tabId === 'notifications' ? '' : 'none';
-    if (tabId === 'notifications') loadNotificationsPage();
+    if (tabId === 'notifications') {
+      const nl = document.getElementById('notificationsList');
+      if (!notificationsPreloaded || !nl || !nl.children.length) loadNotificationsPage();
+    }
   }
   document.querySelectorAll('#page-messages .msg-tab').forEach(t => {
     t.addEventListener('click', () => openMsgTab(t.dataset.msgTab));
@@ -7822,6 +7905,30 @@ window.addEventListener('storage', function(e) {
         emailPrefs: emailPrefsValue(),
         updatedAt: new Date().toISOString()
       };
+
+      const oldAuthEmail = (currentUser.email || '').toLowerCase();
+      if (isUsernamedAccount && email.toLowerCase() !== oldAuthEmail) {
+        updateData.emailVerified = false;
+        try {
+          await updateAuthEmail(auth, email);
+          await sendEmailVerification(auth.currentUser);
+        } catch (authErr) {
+          if (authErr && authErr.code === 'auth/requires-recent-login') {
+            showToast('⚠️ For security, sign out and sign back in, then update your email.', 'error');
+            return;
+          }
+          throw authErr;
+        }
+        await updateDoc(doc(db, "users", currentUser.uid), updateData);
+        showToast('📧 Verification link sent to ' + email + '. Click it, then sign back in.', 'success');
+        try {
+          await signOut(auth);
+        } catch (e) {}
+        setTimeout(() => {
+          window.location.href = 'universal-login.html?platform=reads&redirect=' + encodeURIComponent(window.location.href);
+        }, 1800);
+        return;
+      }
       
       await updateDoc(doc(db, "users", currentUser.uid), updateData);
       
@@ -8023,10 +8130,56 @@ window.addEventListener('storage', function(e) {
   // ===== SETUP VALIDATION =====
   setupValidation();
 
+  // ===== AUTH ENFORCEMENT =====
+  function closeAuthOverlayIfOpen() {
+    try {
+      if (window.VolantAuth && typeof window.VolantAuth.close === 'function') {
+        window.VolantAuth.close();
+      } else {
+        var ov = document.querySelector('.va-overlay');
+        if (ov) ov.classList.remove('va-open');
+      }
+    } catch (e) {}
+  }
+
+  var authEnforceTimer = null;
+
+  function closeAuthLock() {
+    if (authEnforceTimer) { clearInterval(authEnforceTimer); authEnforceTimer = null; }
+  }
+
+  function enforceLogin() {
+    if (authEnforceTimer) return;
+    if (window.location.pathname.includes('universal-login') ||
+        window.location.pathname.includes('verify-email')) return;
+    if (typeof window.goToLogin === 'function') window.goToLogin();
+    authEnforceTimer = setInterval(function () {
+      if (auth.currentUser) { closeAuthLock(); closeAuthOverlayIfOpen(); return; }
+      var ov = document.querySelector('.va-overlay');
+      var open = ov && ov.classList.contains('va-open');
+      if (!open && !window.location.pathname.includes('universal-login')) {
+        if (typeof window.goToLogin === 'function') window.goToLogin();
+      }
+    }, 1200);
+  }
+
+  var notificationsPreloaded = false;
+  function preloadNotifications() {
+    if (!currentUser || notificationsPreloaded) return;
+    notificationsPreloaded = true;
+    setTimeout(function () {
+      if (currentUser && typeof loadNotificationsPage === 'function') {
+        loadNotificationsPage().catch(function (e) { /* ignore */ });
+      }
+    }, 350);
+  }
+
   // ===== AUTH =====
   onAuthStateChanged(auth, async (user) => {
     if (user) {
       currentUser = user;
+      closeAuthLock();
+      closeAuthOverlayIfOpen();
       await updateUserUI(user);
       await loadAuthorData(user);
       
@@ -8036,10 +8189,12 @@ window.addEventListener('storage', function(e) {
       showPage(page, true);
       
       sessionStorage.removeItem('auth_redirect_attempted');
+      preloadNotifications();
     } else {
       if (!window.location.pathname.includes('universal-login') && 
           !window.location.pathname.includes('verify-email')) {
-window.goToLogin();
+        closeAuthLock();
+        enforceLogin();
       }
     }
   });
@@ -8070,14 +8225,16 @@ window.addEventListener('storage', function(e) {
   }
 });
 </script>
-<script src="shared/return-url-handler.js"></script>
+<script src="return-url-handler.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-<script src="shared/auth-overlay.js?v=5"></script>
+<script src="auth-overlay.js?v=11"></script>
 <script>
 // Robust sign-in helper: use the Volant Auth overlay when available,
 // otherwise fall back to the standalone universal-login page.
 window.goToLogin = function () {
+    var ov = document.querySelector('.va-overlay');
+    if (ov && ov.classList.contains('va-open')) return;
     var target = encodeURIComponent(window.location.pathname + window.location.search);
     if (window.VolantAuth && typeof window.VolantAuth.open === 'function') {
         try { window.VolantAuth.open('login', { platform: 'reads', redirect: target }); return; } catch (e) { }
