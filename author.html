@@ -284,6 +284,13 @@
       font-weight: 600; cursor: pointer; transition: 0.2s;
     }
     .share-btn:hover { background: #fff; border-color: #fff; color: var(--store-grad-end); }
+    .contact-author-btn {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: var(--store-accent); border: 1px solid var(--store-accent); color: #2c1674;
+      padding: 6px 14px; border-radius: 20px; font-size: 0.82rem;
+      font-weight: 700; cursor: pointer; transition: 0.2s;
+    }
+    .contact-author-btn:hover { background: #ffb84d; border-color: #ffb84d; color: #2c1674; transform: translateY(-1px); }
     .author-stats {
       display: flex; gap: 20px; margin-top: 18px; flex-wrap: wrap;
     }
@@ -498,6 +505,132 @@
 /* Hide Followers stat — Volant Poetry leftover, unused on Reads */
 .stat-followers { display: none !important; }
 
+    /* ===== CONTACT AUTHOR MODAL ===== */
+    .contact-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10001;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .contact-modal.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .contact-modal .contact-modal-content {
+      background: #fff;
+      max-width: 500px;
+      width: 92%;
+      padding: 2rem;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      transform: scale(0.95);
+      transition: transform 0.3s ease;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .contact-modal.active .contact-modal-content {
+      transform: scale(1);
+    }
+    .contact-modal .contact-modal-content .contact-modal-close {
+      float: right;
+      font-size: 1.8rem;
+      font-weight: 300;
+      color: #999;
+      cursor: pointer;
+      transition: 0.3s;
+      line-height: 1;
+    }
+    .contact-modal .contact-modal-content .contact-modal-close:hover {
+      color: var(--secondary);
+      transform: rotate(90deg);
+    }
+    .contact-modal .contact-modal-content h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.6rem;
+      color: var(--text-dark);
+      margin-bottom: 0.3rem;
+    }
+    .contact-modal .contact-modal-content .contact-book-title {
+      color: var(--text-light);
+      font-size: 0.95rem;
+      margin-bottom: 1.2rem;
+      font-style: italic;
+    }
+    .contact-modal .contact-modal-content .form-group {
+      margin-bottom: 1rem;
+    }
+    .contact-modal .contact-modal-content .form-group label {
+      display: block;
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: var(--text-dark);
+      margin-bottom: 0.3rem;
+    }
+    .contact-modal .contact-modal-content .form-group input,
+    .contact-modal .contact-modal-content .form-group textarea {
+      width: 100%;
+      padding: 0.7rem 1rem;
+      border: 1.5px solid var(--border-light, #ede7df);
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-family: 'Inter', sans-serif;
+      transition: 0.3s;
+      background: #fcfcfc;
+      color: var(--text-dark);
+    }
+    .contact-modal .contact-modal-content .form-group input:focus,
+    .contact-modal .contact-modal-content .form-group textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(75, 42, 173, 0.1);
+      background: #fff;
+    }
+    .contact-modal .contact-modal-content .form-group textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+    .contact-modal .contact-modal-content .form-group input[readonly] {
+      background: #f2f0f6;
+      color: #6b6472;
+      cursor: default;
+    }
+    .btn-send-message {
+      width: 100%;
+      padding: 0.8rem;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 40px;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: 0.3s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn-send-message:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(75, 42, 173, 0.3);
+    }
+    .btn-send-message:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
   </style>
 </head>
 <body>
@@ -528,6 +661,33 @@
   </footer>
   <div id="toast"></div>
 
+  <div class="contact-modal" id="contactModal">
+    <div class="contact-modal-content">
+      <span class="contact-modal-close" id="contactModalClose">&times;</span>
+      <h3><i class="fas fa-envelope" style="color:var(--secondary);margin-right:8px;"></i>Contact Author</h3>
+      <p class="contact-book-title" id="contactBookTitle">About: Author</p>
+      <div class="form-group">
+        <label>Your Name</label>
+        <input type="text" id="contactName" readonly placeholder="Enter your name" />
+      </div>
+      <div class="form-group">
+        <label>Your Email</label>
+        <input type="email" id="contactEmail" readonly placeholder="Enter your email" />
+      </div>
+      <div class="form-group">
+        <label>Subject</label>
+        <input type="text" id="contactSubject" placeholder="What's this about?" />
+      </div>
+      <div class="form-group">
+        <label>Message</label>
+        <textarea id="contactMessage" rows="4" placeholder="Write your message here..."></textarea>
+      </div>
+      <button class="btn-send-message" id="sendMessageBtn">
+        <i class="fas fa-paper-plane"></i> Send Message
+      </button>
+    </div>
+  </div>
+
   <script type="importmap">
     { "imports": {
         "firebase/app": "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js",
@@ -538,7 +698,7 @@
 
   <script type="module">
     import { initializeApp } from "firebase/app";
-    import { getFirestore, collection, query, where, getDocs, doc, getDoc, onSnapshot, limit } from "firebase/firestore";
+    import { getFirestore, collection, query, where, getDocs, doc, getDoc, addDoc, serverTimestamp, onSnapshot, limit } from "firebase/firestore";
     import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 
     const firebaseConfig = {
@@ -558,6 +718,19 @@
     const toastEl = document.getElementById('toast');
     document.getElementById('year').textContent = new Date().getFullYear();
 
+    /* ===== CONTACT AUTHOR MODAL ===== */
+    const contactModal = document.getElementById('contactModal');
+    const contactModalClose = document.getElementById('contactModalClose');
+    const contactBookTitle = document.getElementById('contactBookTitle');
+    const contactName = document.getElementById('contactName');
+    const contactEmail = document.getElementById('contactEmail');
+    const contactSubject = document.getElementById('contactSubject');
+    const contactMessage = document.getElementById('contactMessage');
+    const sendMessageBtn = document.getElementById('sendMessageBtn');
+    let profileAuthorUid = null;
+    let profileAuthorEmail = '';
+    let profileAuthorName = '';
+
     let toastTimer = null;
     function showToast(msg) {
       toastEl.textContent = msg;
@@ -574,6 +747,89 @@ function goToLogin() {
       }
       window.location.href = 'universal-login.html?platform=reads&redirect=' + target;
     }
+
+    function notifyActivityEmail(type, toUid, fromUid, data) {
+      if (!toUid || !fromUid || toUid === fromUid) return;
+      try {
+        fetch('/api/notify-activity', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ toUid, type, fromUid, data: data || {} })
+        });
+      } catch (err) {}
+    }
+
+    async function openContactModal() {
+      const user = auth.currentUser;
+      if (!user) { showToast('🔐 Please sign in to contact the author.'); goToLogin(); return; }
+      if (!profileAuthorUid) { showToast('Author unavailable.'); return; }
+      contactBookTitle.textContent = `About: ${profileAuthorName}`;
+      let senderName = user.displayName || user.email?.split('@')[0] || '';
+      try {
+        const snap = await getDoc(doc(db, 'users', user.uid));
+        if (snap.exists()) {
+          const ud = snap.data();
+          senderName = ud.username || ud.displayName || ud.authorName || senderName;
+        }
+      } catch (err) {}
+      contactName.value = senderName;
+      contactEmail.value = user.email || '';
+      contactSubject.value = '';
+      contactMessage.value = '';
+      contactModal.classList.add('active');
+    }
+
+    function closeContactModal() { contactModal.classList.remove('active'); }
+
+    async function sendMessageToAuthor() {
+      const name = contactName.value.trim();
+      const email = contactEmail.value.trim();
+      const subject = contactSubject.value.trim();
+      const message = contactMessage.value.trim();
+      if (!name) { showToast('❌ Please enter your name.'); return; }
+      if (!email) { showToast('❌ Please enter your email.'); return; }
+      if (!message) { showToast('❌ Please enter a message.'); return; }
+      sendMessageBtn.disabled = true;
+      sendMessageBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+      try {
+        const user = auth.currentUser;
+        await addDoc(collection(db, "messages"), {
+          toUserId: profileAuthorUid,
+          toUserEmail: profileAuthorEmail,
+          authorId: profileAuthorUid,
+          authorEmail: profileAuthorEmail,
+          senderId: user.uid,
+          senderName: name,
+          senderEmail: email,
+          bookId: '',
+          bookTitle: profileAuthorName,
+          subject: subject || 'Profile Inquiry',
+          message: message,
+          status: 'unread',
+          createdAt: serverTimestamp()
+        });
+        notifyActivityEmail('message', profileAuthorUid, user.uid, {
+          fromUserName: name,
+          bookTitle: profileAuthorName,
+          text: message,
+          site: 'reads'
+        });
+        showToast('✅ Message sent to author successfully!');
+        closeContactModal();
+      } catch (err) {
+        console.error('Send error:', err);
+        showToast('❌ Error sending message. Please try again.');
+      } finally {
+        sendMessageBtn.disabled = false;
+        sendMessageBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Send Message';
+      }
+    }
+
+    contactModalClose.addEventListener('click', closeContactModal);
+    contactModal.addEventListener('click', function(e) {
+      if (e.target === contactModal) closeContactModal();
+    });
+    sendMessageBtn.addEventListener('click', sendMessageToAuthor);
 
     /* ===== HEADER ===== */
 function renderHeader(user) {
@@ -800,6 +1056,10 @@ function formatNum(n) { return Number(n || 0).toLocaleString(); }
       const country = userData?.country || '';
       const avatar = userData?.photoURL || userData?.cachedAvatarURL || '';
 
+      profileAuthorUid = uid;
+      profileAuthorEmail = userData?.email || '';
+      profileAuthorName = name;
+
       /* Aggregated stats */
       const totalBooks = books.length;
       const totalSales = books.reduce((s, b) => s + (Number(b.saleCount) || 0), 0);
@@ -822,6 +1082,7 @@ function formatNum(n) { return Number(n || 0).toLocaleString(); }
               <div class="author-meta-row">
                 ${country ? `<span class="author-badge"><i class="fas fa-map-marker-alt"></i> ${esc(country)}</span>` : ''}
                 <button class="share-btn" id="shareBtn"><i class="fas fa-share-alt"></i> Share Profile</button>
+                <button class="contact-author-btn" id="contactAuthorBtn" type="button"><i class="fas fa-envelope"></i> Contact Author</button>
               </div>
               <div class="author-stats">
                 <div class="stat"><span class="num">${formatNum(totalBooks)}</span><span class="label">Books</span></div>
@@ -851,13 +1112,18 @@ ${followerCount > 0 ? `<div class="stat stat-followers"><span class="num">${form
       if (grid) books.forEach(b => grid.appendChild(buildBookCard(b)));
 
       /* Share */
-      document.getElementById('shareBtn')?.addEventListener('click', () => {
-        const url = `${location.origin}${location.pathname.replace(/[?#].*$/, '')}?uid=${encodeURIComponent(uid)}`;
+document.getElementById('shareBtn')?.addEventListener('click', () => {
+        const url = `${location.origin}/store/author.html?uid=${encodeURIComponent(uid)}`;
         if (navigator.share) {
           navigator.share({ title: `${name} on Volant Reads`, url });
         } else {
           navigator.clipboard.writeText(url).then(() => showToast('Profile link copied!')).catch(() => showToast('Could not copy link.'));
         }
+      });
+
+      document.getElementById('contactAuthorBtn')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        openContactModal();
       });
     }
 

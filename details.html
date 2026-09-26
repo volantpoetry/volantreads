@@ -1786,6 +1786,7 @@ header {
       position: fixed;
       bottom: 2rem;
       right: 2rem;
+      max-width: 420px;
       padding: 1rem 1.5rem;
       border-radius: 12px;
       color: white;
@@ -1808,6 +1809,17 @@ header {
     }
     .toast.error {
       background: var(--secondary);
+    }
+    @media (max-width: 640px) {
+      .toast {
+        bottom: max(1rem, env(safe-area-inset-bottom));
+        left: 1rem;
+        right: 1rem;
+        max-width: none;
+        text-align: center;
+        font-size: 0.85rem;
+        padding: 0.85rem 1rem;
+      }
     }
 
     .not-found {
@@ -4144,11 +4156,11 @@ function goToLogin() {
       <p class="contact-book-title" id="contactBookTitle">About: Book Title</p>
       <div class="form-group">
         <label>Your Name</label>
-        <input type="text" id="contactName" placeholder="Enter your name" />
+        <input type="text" id="contactName" readonly placeholder="Enter your name" />
       </div>
       <div class="form-group">
         <label>Your Email</label>
-        <input type="email" id="contactEmail" placeholder="Enter your email" />
+        <input type="email" id="contactEmail" readonly placeholder="Enter your email" />
       </div>
       <div class="form-group">
         <label>Subject</label>
@@ -4596,6 +4608,7 @@ function goToLogin() {
 
     let selectedRating = 0;
     let currentUser = null;
+let storedSenderName = '';
     let currentBook = null;
     let toastTimeout = null;
     let allBooks = [];
@@ -5006,7 +5019,7 @@ function goToLogin() {
         return;
       }
       contactBookTitle.textContent = `About: ${book.title || 'Untitled'}`;
-      contactName.value = currentUser.displayName || currentUser.email?.split('@')[0] || '';
+      contactName.value = storedSenderName || currentUser.displayName || currentUser.email?.split('@')[0] || '';
       contactEmail.value = currentUser.email || '';
       contactSubject.value = '';
       contactMessage.value = '';
@@ -5320,6 +5333,7 @@ function goToLogin() {
             }
           }
         } catch (err) {}
+        storedSenderName = storedName;
         let hasAuthorMaterial = false;
         try {
           const ud = await getDoc(doc(db, "users", user.uid));
@@ -5374,7 +5388,7 @@ function goToLogin() {
         const dashLink = document.getElementById('navAcctDashboard');
         if (dashLink) dashLink.style.display = hasAuthorMaterial ? 'block' : 'none';
         document.getElementById('navAcctSignOut')?.addEventListener('click', async () => {
-          try { await signOut(auth); showToast('👋 Signed out.', 'info'); window.location.reload(); } catch (e) { showToast('Error signing out.', 'error'); }
+          try { await signOut(auth); showToast('👋 Signed out.', 'info'); } catch (e) { showToast('Error signing out.', 'error'); }
         });
         const acctMenuEl = document.getElementById('accountMenu');
         document.addEventListener('click', (e) => {
@@ -5385,6 +5399,7 @@ function goToLogin() {
         document.getElementById('cartHeaderBtn')?.addEventListener('click', openCart);
         document.getElementById('wishlistHeaderBtn')?.addEventListener('click', openWishlist);
       } else {
+        storedSenderName = '';
         wishlistCount = 0;
         updateWishlistBadge();
         navRight.innerHTML = `
