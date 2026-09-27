@@ -5,28 +5,63 @@
 
   <url>
     <loc>https://volantreads.vercel.app</loc>
-    <lastmod>2026-09-27T01:24:55.391Z</lastmod>
+    <lastmod>2026-09-27T07:14:14.240Z</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
 
   <url>
     <loc>https://volantreads.vercel.app/submit.html</loc>
-    <lastmod>2026-09-27T01:24:55.412Z</lastmod>
+    <lastmod>2026-09-27T07:14:14.263Z</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
 
   <url>
     <loc>https://volantreads.vercel.app/faq.html</loc>
-    <lastmod>2026-09-27T01:24:55.387Z</lastmod>
+    <lastmod>2026-09-27T07:14:14.236Z</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
     <loc>https://volantreads.vercel.app/refund.html</loc>
-    <lastmod>2026-09-27T01:24:55.411Z</lastmod>
+    <lastmod>2026-09-27T07:14:14.262Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://volantreads.vercel.app/details.html?id=47DM16cNlUy5UasiVyqa</loc>
+    <lastmod>2026-09-22T01:14:20.346Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://volantreads.vercel.app/details.html?id=FpYHUybFutxwiDDdHMbO</loc>
+    <lastmod>2026-08-30T04:58:36.414Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://volantreads.vercel.app/details.html?id=TjXT7MciML4rB0kAuvpu</loc>
+    <lastmod>2026-08-31T17:09:38.549Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://volantreads.vercel.app/details.html?id=lBp0Kq3NsqhpwiPnu3o6</loc>
+    <lastmod>2026-09-14T01:32:27.603Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://volantreads.vercel.app/details.html?id=o9qWTPKDZ0hJeDc3ybpn</loc>
+    <lastmod>2026-08-30T05:51:36.611Z</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
