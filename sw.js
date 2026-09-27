@@ -1,7 +1,28 @@
-// store/sw.js
-// v7: offline bookstore shell + offline book reading (PDF & EPUB).
-const CACHE_NAME = 'volant-reads-v19';
+// store1/sw.js
+// v20: every previous version of this app's caches is dropped when this worker
+// takes over, and the new shell is always fetched past the HTTP disk cache.
+//
+// Cache ownership matters here: this worker is scoped to the store, but
+// CacheStorage is shared by every worker on the origin. An earlier version
+// deleted *every* cache that was not its own, which meant a store worker could
+// wipe the Poetry app's cache and the other store's cache. Cleanup is now
+// limited to the prefixes this app owns.
+const APP_TAG = 'store1';
+const CACHE_PREFIX = `volant-${APP_TAG}-`;
+const CACHE_NAME = `${CACHE_PREFIX}v20`;
+
+// Downloaded books are user data, not a version, so this cache survives upgrades.
 const BOOK_CACHE = 'volant-reads-pdfs';
+
+// Prefixes this app is allowed to clean.
+//
+// This app is hosted on its own origin (Reads), where nothing else runs, so it
+// also owns the old 'volant-reads-' names its earlier versions shipped. The
+// store worker reclaims those same names on the Poetry origin instead, but the
+// two never meet: neither worker is ever registered on the other's origin, so
+// there is no race and no shared cache to protect.
+const OWNED_PREFIXES = [CACHE_PREFIX, 'volant-reads-'];
+const PROTECTED_CACHES = [CACHE_NAME, BOOK_CACHE];
 
 // Pages that change with the signed-in user and must always hit the network.
 const NO_CACHE_PAGES = [
@@ -53,9 +74,15 @@ async function putInCache(cacheName, request, response) {
     }
 }
 
+// Always look inside one named cache. A global caches.match() would happily
+// serve a copy of the request that belongs to another app on this origin.
+function matchIn(cacheName, request) {
+    return caches.open(cacheName).then((cache) => cache.match(request)).catch(() => undefined);
+}
+
 // Cache-first, then network (falls back to a 503 if offline and uncached).
 function cacheFirst(request, cacheName) {
-    return caches.match(request).then((cached) => {
+    return matchIn(cacheName, request).then((cached) => {
         if (cached) return cached;
         return fetch(request).then((response) => {
             putInCache(cacheName, request, response);
@@ -69,7 +96,7 @@ function networkFirst(request, cacheName) {
     return fetch(request).then((response) => {
         putInCache(cacheName, request, response);
         return response;
-    }).catch(() => caches.match(request).then((cached) => cached || new Response('Content not available offline.', { status: 503 })));
+    }).catch(() => matchIn(cacheName, request).then((cached) => cached || new Response('Content not available offline.', { status: 503 })));
 }
 
 // Stale-while-revalidate: serve the cached copy instantly (online or offline)
@@ -85,7 +112,7 @@ async function staleWhileRevalidate(request, cacheName) {
         if (cached) return cached;
         return (await networkPromise) || new Response('Image not available offline.', { status: 503 });
     } catch (err) {
-        const hit = await caches.match(request);
+        const hit = await matchIn(cacheName, request);
         return hit || new Response('Image not available offline.', { status: 503 });
     }
 }
@@ -99,13 +126,12 @@ function navigateFirst(request) {
         }
         return response;
     }).catch(async () => {
-        const hit = await caches.match(request);
+        const hit = await matchIn(CACHE_NAME, request);
         if (hit) return hit;
         const url = new URL(request.url);
-        const pathRequest = new Request(url.origin + url.pathname);
-        const pathHit = await caches.match(pathRequest);
+        const pathHit = await matchIn(CACHE_NAME, new Request(url.origin + url.pathname));
         if (pathHit) return pathHit;
-        const fallback = await caches.match('./index.html');
+        const fallback = await matchIn(CACHE_NAME, './index.html');
         if (fallback) return fallback;
         return new Response('Offline', { status: 503 });
     });
@@ -125,30 +151,57 @@ function isCoverOrAvatar(url) {
            !isBookFile(url);
 }
 
-self.addEventListener('install', event => {
-    event.waitUntil(
-        caches.open(CACHE_NAME)
-            .then(cache => cache.addAll(APP_SHELL))
-            .catch(err => {
-                console.warn('⚠️ App shell cache partial:', err);
-            })
+// Drops the caches this app owns that are not the ones this version needs.
+// Nothing outside OWNED_PREFIXES is ever touched, so Poetry and the other store
+// keep their caches, and downloaded books survive the upgrade.
+async function purgeStaleCaches() {
+    const names = await caches.keys();
+    const stale = names.filter((name) =>
+        !PROTECTED_CACHES.includes(name) && OWNED_PREFIXES.some((p) => name.startsWith(p))
     );
-    self.skipWaiting();
+    if (!stale.length) return [];
+    await Promise.all(stale.map((name) => caches.delete(name).catch(() => false)));
+    console.log('[store1 sw] removed superseded caches:', stale.join(', '));
+    return stale;
+}
+
+self.addEventListener('install', event => {
+    event.waitUntil((async () => {
+        // Reclaim the previous versions before filling the new cache, so a
+        // returning user never sees files from an older deployment.
+        await purgeStaleCaches();
+
+        const cache = await caches.open(CACHE_NAME);
+
+        // cache: 'reload' is the important part. Without it the browser may
+        // satisfy these from its own HTTP disk cache, so the worker can
+        // "update" into a brand new cache full of the OLD html/css/js and the
+        // user never sees this deployment at all.
+        // allSettled instead of addAll: one missing file must not abort the rest.
+        const results = await Promise.allSettled(
+            APP_SHELL.map((url) => cache.add(new Request(url, { cache: 'reload' })))
+        );
+        const failed = APP_SHELL.filter((_, i) => results[i].status === 'rejected');
+        if (failed.length) {
+            console.warn('[store1 sw] app-shell misses:', failed.join(', '));
+        }
+
+        await self.skipWaiting();
+    })());
 });
 
 self.addEventListener('activate', event => {
-    event.waitUntil(
-        caches.keys().then(cacheNames => {
-            return Promise.all(
-                cacheNames.filter(name => name !== CACHE_NAME && name !== BOOK_CACHE)
-                    .map(name => {
-                        console.log('🗑️ Deleting old cache:', name);
-                        return caches.delete(name);
-                    })
-            );
-        }).catch(err => console.warn('SW activate cleanup error:', err))
-    );
-    self.clients.claim();
+    event.waitUntil((async () => {
+        // Runs again here because install's cleanup happens before this worker
+        // owns the scope, and an older version may have re-created a cache.
+        await purgeStaleCaches();
+        await self.clients.claim();
+    })());
+});
+
+// Lets a page hand over to the waiting worker without a full reload cycle.
+self.addEventListener('message', event => {
+    if (event.data && event.data.type === 'SKIP_WAITING') self.skipWaiting();
 });
 
 self.addEventListener('fetch', event => {
