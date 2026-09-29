@@ -1,6 +1,24 @@
-// store1/sw.js
-// v20: every previous version of this app's caches is dropped when this worker
+﻿// store/sw.js
+// v29: every previous version of this app's caches is dropped when this worker
 // takes over, and the new shell is always fetched past the HTTP disk cache.
+// v21 -> v22: ships the standalone EPUB preview page in the app shell.
+// v22 -> v23: storefront pages route EPUB previews to epub-preview.html.
+// v23 -> v24: the preview page renders its first page (missing rendition.display
+// in v23) and loads books the way the shipped reader does.
+// v24 -> v25: the preview page reads like the shipped EPUB reader (scrolled-doc,
+// loading chain, sign-in overlay) with the PDF preview's cutoff: everyone stops
+// at the slice and gets the entitlement page (Buy Now / Sign In / Read Online).
+// v25 -> v26: epub-preview.html is a copy of epubjs/reader.html with the page
+// limit applied — one reader for preview and admin, hard slice for everyone.
+// v26 -> v27: a stale worker can keep serving the old bespoke preview page from
+// its own cache, so install/activate now purge every cached copy of the preview
+// document by URL as well as by cache name.
+// v27 -> v28: the dedicated preview page is gone — every EPUB preview (store,
+// store1, approvals) embeds epubjs/reader.html exactly, so the shell no longer
+// ships ./epub-preview.html and the emoji text across the pages was repaired.
+// v28 -> v29: EPUB previews route back to the standalone store/epub-preview.html,
+// which loads its viewer from ./preview/reader.html + ./preview/ libs; the
+// shell ships those assets so previews keep working offline.
 //
 // Cache ownership matters here: this worker is scoped to the store, but
 // CacheStorage is shared by every worker on the origin. An earlier version
@@ -9,18 +27,13 @@
 // limited to the prefixes this app owns.
 const APP_TAG = 'store1';
 const CACHE_PREFIX = `volant-${APP_TAG}-`;
-const CACHE_NAME = `${CACHE_PREFIX}v20`;
+const CACHE_NAME = `${CACHE_PREFIX}v29`;
 
 // Downloaded books are user data, not a version, so this cache survives upgrades.
 const BOOK_CACHE = 'volant-reads-pdfs';
 
-// Prefixes this app is allowed to clean.
-//
-// This app is hosted on its own origin (Reads), where nothing else runs, so it
-// also owns the old 'volant-reads-' names its earlier versions shipped. The
-// store worker reclaims those same names on the Poetry origin instead, but the
-// two never meet: neither worker is ever registered on the other's origin, so
-// there is no race and no shared cache to protect.
+// Prefixes this app is allowed to clean. 'volant-reads-' covers the names this
+// worker used before the rename, so the last of the old caches is reclaimed too.
 const OWNED_PREFIXES = [CACHE_PREFIX, 'volant-reads-'];
 const PROTECTED_CACHES = [CACHE_NAME, BOOK_CACHE];
 
@@ -31,16 +44,28 @@ const NO_CACHE_PAGES = [
 ];
 
 // App shell cached at install so the bookstore opens offline even on first launch.
+// The three viewer PAGES belong here as much as the viewer LIBRARIES: details.html
+// loads them into an iframe, and an iframe fetch is a fresh navigation, so a
+// cached epub.min.js is useless if the reader page itself is not cached. PDF uses
+// pdfjs/multi-page-viewer.html, full reads use epubjs/reader.html, and EPUB
+// previews use the standalone ../epub-preview.html, which loads its own viewer
+// from ./preview/reader.html + ./preview/ libs - so those are precached alongside.
 const APP_SHELL = [
     './index.html',
     './details.html',
     './reader.html',
     './library.html',
     './pdfjs/local-viewer.html',
+    './pdfjs/multi-page-viewer.html',
     './pdfjs/pdf.min.js',
     './pdfjs/pdf.worker.min.js',
+    './epubjs/reader.html',
     './epubjs/epub.min.js',
     './epubjs/jszip.min.js',
+    './epub-preview.html',
+    './preview/reader.html',
+    './preview/epub.min.js',
+    './preview/jszip.min.js',
     './manifest.json',
     './icons/icon-192.png',
     './icons/icon-512.png'
@@ -161,8 +186,30 @@ async function purgeStaleCaches() {
     );
     if (!stale.length) return [];
     await Promise.all(stale.map((name) => caches.delete(name).catch(() => false)));
-    console.log('[store1 sw] removed superseded caches:', stale.join(', '));
+    console.log('[store sw] removed superseded caches:', stale.join(', '));
     return stale;
+}
+
+// EPUB previews now route to the standalone store1/epub-preview.html, which the
+// new shell precaches - but an old worker can still hold a stale bespoke copy of
+// that page from a previous version. Purging the page by URL in the caches this
+// worker owns keeps a returning user off an outdated preview; the current shell
+// cache and the book cache are always left untouched.
+async function purgeLegacyPreviewPages() {
+    const names = await caches.keys();
+    await Promise.all(names.map(async (name) => {
+        if (name === CACHE_NAME || name === BOOK_CACHE) return;
+        if (!OWNED_PREFIXES.some((p) => name.startsWith(p))) return;
+        const cache = await caches.open(name);
+        const keys = await cache.keys();
+        await Promise.all(keys.map(async (req) => {
+            const url = new URL(req.url);
+            if (url.pathname.endsWith('epub-preview.html')) {
+                await cache.delete(req);
+                console.log('[store sw] purged legacy preview copy:', name, req.url);
+            }
+        }));
+    }));
 }
 
 self.addEventListener('install', event => {
@@ -170,6 +217,7 @@ self.addEventListener('install', event => {
         // Reclaim the previous versions before filling the new cache, so a
         // returning user never sees files from an older deployment.
         await purgeStaleCaches();
+        await purgeLegacyPreviewPages();
 
         const cache = await caches.open(CACHE_NAME);
 
@@ -183,7 +231,7 @@ self.addEventListener('install', event => {
         );
         const failed = APP_SHELL.filter((_, i) => results[i].status === 'rejected');
         if (failed.length) {
-            console.warn('[store1 sw] app-shell misses:', failed.join(', '));
+            console.warn('[store sw] app-shell misses:', failed.join(', '));
         }
 
         await self.skipWaiting();
@@ -195,6 +243,7 @@ self.addEventListener('activate', event => {
         // Runs again here because install's cleanup happens before this worker
         // owns the scope, and an older version may have re-created a cache.
         await purgeStaleCaches();
+        await purgeLegacyPreviewPages();
         await self.clients.claim();
     })());
 });

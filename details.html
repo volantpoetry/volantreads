@@ -42,7 +42,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <script>
     if ('serviceWorker' in navigator && location.protocol === 'https:') {
-      navigator.serviceWorker.register('./sw.js?v=20', { scope: './' }).catch(function() {});
+      navigator.serviceWorker.register('./sw.js?v=29', { scope: './' }).catch(function() {});
     }
   </script>
 
@@ -3625,8 +3625,8 @@ header .logo-header {
     position: fixed;
     top: 20px;
     right: 24px;
-    background: rgba(255, 255, 255, 0.15);
-    border: none;
+    background: #2d2a24;
+    border: 1px solid rgba(255, 255, 255, 0.35);
     color: white;
     font-size: 1.5rem;
     width: 48px;
@@ -3642,7 +3642,8 @@ header .logo-header {
 }
 
 .preview-close-fullscreen:hover {
-    background: rgba(255, 255, 255, 0.3);
+    background: #141210;
+    border-color: rgba(255, 255, 255, 0.6);
     transform: rotate(90deg);
 }
 
@@ -3661,6 +3662,11 @@ header .logo-header {
     border-radius: 30px;
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: opacity 0.8s ease;
+}
+
+.preview-title-fullscreen.fade-out {
+    opacity: 0;
 }
 
 .preview-title-fullscreen i {
@@ -7433,9 +7439,9 @@ async function handleCartPaymentCallback(response, ctx) {
       const amount = currentBook.pricing?.amount || 0;
 
       // ===== BUILD PREVIEW URL WITH STATUS =====
-      const viewerBase = isEpub ? 'epubjs/reader.html' : 'pdfjs/multi-page-viewer.html';
+      const viewerBase = isEpub ? 'epub-preview.html' : 'pdfjs/multi-page-viewer.html';
       const previewPct = isEpub ? Math.round((previewPages / totalPages) * 100) : 0;
-      const previewUrl = `${viewerBase}?viewerVersion=3&file=${encodeURIComponent(currentBook.pdfUrl)}&startPage=1&endPage=${previewPages}&totalPages=${totalPages || 100}&previewPct=${previewPct}&isFree=${isFree}&isPurchased=${isPurchased}&isSignedIn=${isSignedIn}&currency=${currency}&amount=${amount}`;
+      const previewUrl = `${viewerBase}?viewerVersion=4&file=${encodeURIComponent(currentBook.pdfUrl)}&title=${encodeURIComponent(currentBook.title || '')}&author=${encodeURIComponent(currentBook.authorName || '')}&startPage=1&endPage=${previewPages}&totalPages=${totalPages || 100}&previewPct=${previewPct}&isFree=${isFree}&isPurchased=${isPurchased}&isSignedIn=${isSignedIn}&currency=${currency}&amount=${amount}`;
       
       console.log('📄 Preview URL:', previewUrl);
 
@@ -7448,6 +7454,14 @@ async function handleCartPaymentCallback(response, ctx) {
       const previewTitle = document.getElementById('previewBookTitle');
       if (previewTitle) {
         previewTitle.textContent = currentBook.title || 'Book';
+      }
+      const titleChip = document.getElementById('previewTitle');
+      if (titleChip) {
+        titleChip.classList.remove('fade-out');
+        clearTimeout(window.__previewTitleTimer);
+        window.__previewTitleTimer = setTimeout(function() {
+          titleChip.classList.add('fade-out');
+        }, 4000);
       }
       
       // ===== UPDATE INFO TEXT =====
@@ -7511,6 +7525,11 @@ async function handleCartPaymentCallback(response, ctx) {
       const previewBuyBtn = document.getElementById('previewBuyBtn');
       if (previewBuyBtn) {
         previewBuyBtn.style.display = 'flex'; // Reset to default
+      }
+      clearTimeout(window.__previewTitleTimer);
+      const titleChip = document.getElementById('previewTitle');
+      if (titleChip) {
+        titleChip.classList.remove('fade-out');
       }
     }
 

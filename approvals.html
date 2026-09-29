@@ -651,76 +651,6 @@
             transition: 0.2s;
             white-space: nowrap;
         }
-
-        /* ===== COUPONS TAB ===== */
-        .coupon-form {
-            display: grid;
-            grid-template-columns: repeat(6, 1fr);
-            gap: 0.6rem;
-            align-items: center;
-            margin-bottom: 0.5rem;
-        }
-        .coupon-form input,
-        .coupon-form select {
-            padding: 0.55rem 0.7rem;
-            border: 1px solid #d9d2c6;
-            border-radius: 8px;
-            font-size: 0.8rem;
-        }
-        .coupon-form input:focus,
-        .coupon-form select:focus {
-            outline: none;
-            border-color: #b76e4b;
-        }
-        .btn-admin {
-            background: #b76e4b;
-            color: white;
-            border: none;
-            padding: 0.6rem 1rem;
-            border-radius: 8px;
-            font-weight: 700;
-            font-size: 0.8rem;
-            cursor: pointer;
-        }
-        .btn-admin:hover { background: #9f5e3f; }
-        .btn-admin:disabled { background: #ccc; cursor: not-allowed; }
-        .coupon-msg {
-            font-size: 0.8rem;
-            color: #c62828;
-            min-height: 1rem;
-            margin-top: 0.2rem;
-        }
-        .bg-success {
-            background: #e6f4ea !important;
-            color: #1d7a3a !important;
-        }
-        .bg-danger {
-            background: #fdecea !important;
-            color: #b3261e !important;
-        }
-        .bg-outline {
-            background: #f0ece6 !important;
-            color: #6b6152 !important;
-        }
-        .coupon-action {
-            border: 1px solid #d9d2c6;
-            background: #fff;
-            color: #333;
-            padding: 0.25rem 0.6rem;
-            border-radius: 6px;
-            font-size: 0.7rem;
-            font-weight: 600;
-            cursor: pointer;
-        }
-        .coupon-action:hover { background: #f0ece6; }
-        .coupon-action.danger { color: #c62828; }
-        .coupon-action.danger:hover { background: #fdecea; }
-        @media (max-width: 980px) {
-            .coupon-form { grid-template-columns: repeat(2, 1fr); }
-        }
-        @media (max-width: 520px) {
-            .coupon-form { grid-template-columns: 1fr; }
-        }
         .manage-table .btn-delete-manage:hover {
             background: #b71c1c;
             transform: scale(1.05);
@@ -1398,6 +1328,76 @@
             border-radius: 20px;
         }
         .settle-status { font-size: 0.7rem; color: #8a7b6a; }
+
+        /* ===== COUPONS TAB ===== */
+        .coupon-form {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 0.6rem;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        .coupon-form input,
+        .coupon-form select {
+            padding: 0.55rem 0.7rem;
+            border: 1px solid #d9d2c6;
+            border-radius: 8px;
+            font-size: 0.8rem;
+        }
+        .coupon-form input:focus,
+        .coupon-form select:focus {
+            outline: none;
+            border-color: #b76e4b;
+        }
+        .btn-admin {
+            background: #b76e4b;
+            color: white;
+            border: none;
+            padding: 0.6rem 1rem;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+        .btn-admin:hover { background: #9f5e3f; }
+        .btn-admin:disabled { background: #ccc; cursor: not-allowed; }
+        .coupon-msg {
+            font-size: 0.8rem;
+            color: #c62828;
+            min-height: 1rem;
+            margin-top: 0.2rem;
+        }
+        .bg-success {
+            background: #e6f4ea !important;
+            color: #1d7a3a !important;
+        }
+        .bg-danger {
+            background: #fdecea !important;
+            color: #b3261e !important;
+        }
+        .bg-outline {
+            background: #f0ece6 !important;
+            color: #6b6152 !important;
+        }
+        .coupon-action {
+            border: 1px solid #d9d2c6;
+            background: #fff;
+            color: #333;
+            padding: 0.25rem 0.6rem;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .coupon-action:hover { background: #f0ece6; }
+        .coupon-action.danger { color: #c62828; }
+        .coupon-action.danger:hover { background: #fdecea; }
+        @media (max-width: 980px) {
+            .coupon-form { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 520px) {
+            .coupon-form { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
@@ -1763,7 +1763,7 @@
     import { initializeApp } from "firebase/app";
     import { 
         getFirestore, collection, query, where, getDocs, 
-        doc, updateDoc, deleteDoc, orderBy, getDoc, writeBatch, addDoc, serverTimestamp, limit, increment
+        doc, updateDoc, deleteDoc, orderBy, getDoc, writeBatch, addDoc, serverTimestamp, limit
     } from "firebase/firestore";
     import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 
@@ -1907,7 +1907,7 @@
         }
     };
 
-    function openPDFModal(pdfUrl, title, format) {
+    function openPDFModal(pdfUrl, title, format, author) {
         currentPdfUrl = pdfUrl;
         currentPdfTitle = title || 'PDF Viewer';
         const isEpub = format === 'epub' || /\.epub(\?|#|$)/i.test(pdfUrl || '');
@@ -1916,8 +1916,8 @@
         pdfTitle.textContent = `${isEpub ? '📖' : '📄'} ${currentPdfTitle}`;
 
         // Inbuilt preview (EPUB → dedicated EPUB viewer, PDF → multi-page viewer)
-        const viewerBase = isEpub ? 'epubjs/reader.html' : 'pdfjs/multi-page-viewer.html';
-        const viewerUrl = `${viewerBase}?viewerVersion=3&file=${encodeURIComponent(pdfUrl)}&startPage=1&endPage=${isEpub ? 10 : 8}&totalPages=${isEpub ? 100 : 20}&isFree=false&isPurchased=true&isSignedIn=true&currency=GHS&amount=0`;
+        const viewerBase = isEpub ? 'epub-preview.html' : 'pdfjs/multi-page-viewer.html';
+        const viewerUrl = `${viewerBase}?viewerVersion=4&file=${encodeURIComponent(pdfUrl)}&title=${encodeURIComponent(currentPdfTitle || '')}&author=${encodeURIComponent(author || '')}&startPage=1&endPage=${isEpub ? 10 : 8}&totalPages=${isEpub ? 100 : 20}&isFree=false&isPurchased=true&isSignedIn=true&currency=GHS&amount=0`;
 
         pdfContainer.innerHTML = `
             <div class="pdf-embed-wrap">
@@ -1957,7 +1957,7 @@
         }
     };
 
-    window.viewPDF = function(pdfUrl, title, format) {
+    window.viewPDF = function(pdfUrl, title, format, author) {
         if (!pdfUrl) {
             showToast('❌ No book file available.', 'error');
             return;
@@ -1965,7 +1965,7 @@
         currentPdfUrl = pdfUrl;
         currentPdfTitle = title || 'PDF Viewer';
         currentPdfFormat = format || '';
-        openPDFModal(pdfUrl, title, format);
+        openPDFModal(pdfUrl, title, format, author);
     };
 
     window.downloadPDF = function(pdfUrl, title, format) {
@@ -2137,7 +2137,7 @@ Volant Reads Team
                     day: 'numeric' 
                 })
                 : 'Unknown date',
-            '[Book Link]': `${window.location.origin}/details.html?id=${encodeURIComponent(book.id)}`
+            '[Book Link]': window.location.origin + '/store/volant-reads.html'
         };
 
         for (const [key, value] of Object.entries(substitutions)) {
@@ -2282,6 +2282,14 @@ Volant Reads Team
             if (m === '"') return '&quot;';
             return m;
         });
+
+        const safeAuthor = (book.authorName || '').replace(/[&<>"]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            if (m === '"') return '&quot;';
+            return m;
+        });
         
         const submittedDate = book.submittedAt?.toDate 
             ? book.submittedAt.toDate().toLocaleDateString('en-US', { 
@@ -2413,7 +2421,7 @@ Volant Reads Team
                         </a>
                     ` : ''}
                     ${pdfUrl ? `
-                        <button onclick="window.viewPDF('${pdfUrl}', '${safeTitle}', '${bookFormat}')" class="view-pdf">
+                        <button onclick="window.viewPDF('${pdfUrl}', '${safeTitle}', '${bookFormat}', '${safeAuthor}')" class="view-pdf">
                             <i class="fas fa-eye"></i> View ${bookFormat === 'epub' ? 'EPUB' : 'PDF'}
                         </button>
                         <button onclick="window.downloadPDF('${pdfUrl}', '${safeTitle}', '${bookFormat}')" class="download-pdf">
@@ -3596,7 +3604,7 @@ ${msg.message || msg.content || ''}
     console.log('💬 Messages: View, copy, reset, delete messages sent to authors');
 </script>
 
-<script src="../return-url-handler.js"></script>
+<script src="../shared/return-url-handler.js"></script>
 <script type="module" src="./admin-ops.js"></script>
 </body>
 </html>
