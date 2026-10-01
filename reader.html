@@ -10,7 +10,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-<title>Volant Reads · Reader
+<title>Volant Reads Â· Reader
 
 </title>  <script>
 
@@ -199,7 +199,7 @@
 
         }
 
-        body.reader-pdf.pdf-immersive .reader-content .pdf-viewer-wrapper {
+        body.reader-pdf .reader-content .pdf-viewer-wrapper {
 
             height: 100vh !important;
 
@@ -3027,7 +3027,7 @@ body.reader-epub .epub-controls.show {
 
 <nav class="reader-main-nav" aria-label="Reader navigation">
 
-<button type="button" id="mainZoomOut" aria-label="Zoom out">−
+<button type="button" id="mainZoomOut" aria-label="Zoom out">âˆ’
 
 </button>
 
@@ -3101,7 +3101,7 @@ body.reader-epub .epub-controls.show {
 
 <span id="epubControls" class="epub-controls">
 
-<button type="button" onclick="epubSetFont(-10)" class="epub-font-btn" title="Decrease font size" aria-label="Decrease font size">A−
+<button type="button" onclick="epubSetFont(-10)" class="epub-font-btn" title="Decrease font size" aria-label="Decrease font size">Aâˆ’
 
 </button>
 
@@ -3374,7 +3374,7 @@ body.reader-epub .epub-controls.show {
 
 <div class="epub-swatches mobile" id="epubMobileSwatches" aria-hidden="true"></div>
 
-<button type="button" onclick="epubSetFont(-10)" aria-label="Decrease font size" title="Smaller text">A−
+<button type="button" onclick="epubSetFont(-10)" aria-label="Decrease font size" title="Smaller text">Aâˆ’
 
 </button>
 
@@ -3564,7 +3564,7 @@ body.reader-epub .epub-controls.show {
  // Update UI
                 updateProgressUI(page, percentage);
  // Track reading streak
-                trackReadingStreak();                                console.log(`✅ Progress saved: Page ${page} (${percentage}%)`);                            } catch (err) {                console.warn('Could not save progress:', err);
+                trackReadingStreak();                                console.log(`âœ… Progress saved: Page ${page} (${percentage}%)`);                            } catch (err) {                console.warn('Could not save progress:', err);
  // Retry after 2 seconds if failed
                 saveTimeout = setTimeout(() => {                    saveReadingProgress(page, percentage, cfi);
                 }, 2000);
@@ -3634,16 +3634,16 @@ body.reader-epub .epub-controls.show {
         function checkStreakBadges(streak) {
             const badges = JSON.parse(localStorage.getItem('volant_badges') || '[]');
             const badgeMap = {
-                7: { name: 'Week Warrior', icon: '🔥' },
-                14: { name: 'Fortnight Reader', icon: '📚' },
-                30: { name: 'Monthly Master', icon: '🏆' },
-                100: { name: 'Century Club', icon: '👑' }
+                7: { name: 'Week Warrior', icon: 'ðŸ”¥' },
+                14: { name: 'Fortnight Reader', icon: 'ðŸ“š' },
+                30: { name: 'Monthly Master', icon: 'ðŸ†' },
+                100: { name: 'Century Club', icon: 'ðŸ‘‘' }
             };
             
             if (badgeMap[streak] && !badges.includes(streak)) {
                 badges.push(streak);
                 localStorage.setItem('volant_badges', JSON.stringify(badges));
-                showToast(`🎉 New Badge: ${badgeMap[streak].name}!`, 'success');
+                showToast(`ðŸŽ‰ New Badge: ${badgeMap[streak].name}!`, 'success');
             }
         }
         
@@ -3674,7 +3674,7 @@ body.reader-epub .epub-controls.show {
                     readingStreak = parseInt(localStorage.getItem('volant_streak') || '0');
                     updateStreakUI(readingStreak);
                     
-                    console.log(`📖 Resumed at page ${currentPage} (${data.percentage}%)`);
+                    console.log(`ðŸ“– Resumed at page ${currentPage} (${data.percentage}%)`);
                     return data;
                 }
             } catch (err) {
@@ -3705,13 +3705,13 @@ body.reader-epub .epub-controls.show {
             const title = currentBook?.title || 'a book';
             const author = currentBook?.authorName || 'an author';
             const progress = document.getElementById('miniProgress')?.textContent || '0%';
-            return `📖 Reading "${title}" by ${author} on Volant Reads! (${progress} complete)`;
+            return `ðŸ“– Reading "${title}" by ${author} on Volant Reads! (${progress} complete)`;
         }
         
         window.toggleShareDropdown = function(btn) {            const host = btn && btn.closest ? btn.closest('.share-dropdown') : null;            if (host) {                const menu = host.querySelector('.share-dropdown-content');                if (menu) menu.classList.toggle('show');                return;            }            const dropdown = document.getElementById('shareDropdown');            if (dropdown) dropdown.classList.toggle('show');        };                document.addEventListener('click', function(e) {            document.querySelectorAll('.share-dropdown-content.show').forEach(menu => {                const host = menu.closest('.share-dropdown');                if (host && !host.contains(e.target)) menu.classList.remove('show');            });        });                window.shareBook = function(platform) {            const url = getBookUrl();            const text = getShareText();            const encodedUrl = encodeURIComponent(url);            const encodedText = encodeURIComponent(text);                        let shareUrl = '';                        switch(platform) {                case 'whatsapp':                    shareUrl = `https://api.whatsapp.com/send?text=${encodedText}%20${encodedUrl}`;
                     break;                case 'twitter':                    shareUrl = `https://twitter.com/intent/tweet?text=${encodedText}&url=${encodedUrl}`;
                     break;                case 'facebook':                    shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}&quote=${encodedText}`;
-                    break;                case 'email':                    shareUrl = `mailto:?subject=${encodedText}&body=Check%20out%20this%20book%3A%20${encodedUrl}`;                    break;                case 'copy':                    if (navigator.clipboard && navigator.clipboard.writeText) {                        navigator.clipboard.writeText(url).then(() => {                            showToast('✅ Link copied to clipboard!', 'success');                        }).catch(() => {                            fallbackCopy(url);                        });                    } else {                        fallbackCopy(url);                    }                    document.querySelectorAll('.share-dropdown-content').forEach(m => m.classList.remove('show'));                    return;                case 'native':                    if (navigator.share) {                        navigator.share({                            title: currentBook?.title || 'Volant Reads Book',                            text: text,                            url: url                        }).then(() => {                            console.log('✅ Shared successfully');                        }).catch((err) => {                            if (err.name !== 'AbortError') {                                console.warn('Share cancelled or failed:', err);                            }                        });                    } else {                        showToast('📱 Native sharing not supported on this device. Try copying the link.', 'info');                        fallbackCopy(url);                    }                    document.querySelectorAll('.share-dropdown-content').forEach(m => m.classList.remove('show'));                    return;                default:                    showToast('❌ Invalid share option', 'error');                    return;            }                        if (shareUrl) {                window.open(shareUrl, '_blank', 'width=600,height=500');            }                        document.querySelectorAll('.share-dropdown-content').forEach(m => m.classList.remove('show'));
+                    break;                case 'email':                    shareUrl = `mailto:?subject=${encodedText}&body=Check%20out%20this%20book%3A%20${encodedUrl}`;                    break;                case 'copy':                    if (navigator.clipboard && navigator.clipboard.writeText) {                        navigator.clipboard.writeText(url).then(() => {                            showToast('âœ… Link copied to clipboard!', 'success');                        }).catch(() => {                            fallbackCopy(url);                        });                    } else {                        fallbackCopy(url);                    }                    document.querySelectorAll('.share-dropdown-content').forEach(m => m.classList.remove('show'));                    return;                case 'native':                    if (navigator.share) {                        navigator.share({                            title: currentBook?.title || 'Volant Reads Book',                            text: text,                            url: url                        }).then(() => {                            console.log('âœ… Shared successfully');                        }).catch((err) => {                            if (err.name !== 'AbortError') {                                console.warn('Share cancelled or failed:', err);                            }                        });                    } else {                        showToast('ðŸ“± Native sharing not supported on this device. Try copying the link.', 'info');                        fallbackCopy(url);                    }                    document.querySelectorAll('.share-dropdown-content').forEach(m => m.classList.remove('show'));                    return;                default:                    showToast('âŒ Invalid share option', 'error');                    return;            }                        if (shareUrl) {                window.open(shareUrl, '_blank', 'width=600,height=500');            }                        document.querySelectorAll('.share-dropdown-content').forEach(m => m.classList.remove('show'));
         };
         
         function fallbackCopy(text) {
@@ -3724,13 +3724,33 @@ body.reader-epub .epub-controls.show {
             textarea.select();
             try {
                 document.execCommand('copy');
-                showToast('✅ Link copied to clipboard!', 'success');
+                showToast('âœ… Link copied to clipboard!', 'success');
             } catch (err) {
-                showToast('❌ Could not copy link. Please copy manually.', 'error');
+                showToast('âŒ Could not copy link. Please copy manually.', 'error');
             }
             document.body.removeChild(textarea);
         }
         
+        // ================================================================
+        // ===== FULL FILE RESOLUTION (entitled reader only) =====
+        // ================================================================
+        // The full Cloudinary URL is no longer on the public book doc; it lives
+        // in books/{id}/files/full, which Firestore rules gate to the buyer,
+        // the author and admins. The reader is only opened by an entitled user
+        // (entitlement is checked before displayBook), so it resolves the full
+        // URL here and everything downstream keeps reading .pdfUrl. Previews
+        // never come through this path: they get a server-truncated sample.
+        async function resolveFullFileUrl(bookId) {
+            if (!bookId) return '';
+            try {
+                const snap = await getDoc(doc(db, "books", bookId, "files", "full"));
+                if (snap.exists() && snap.data().url) return snap.data().url;
+            } catch (err) {
+                console.warn('Could not resolve the full book file:', err);
+            }
+            return '';
+        }
+
         // ================================================================
         // ===== OFFLINE STORAGE FUNCTIONS =====
         // ================================================================
@@ -3748,7 +3768,7 @@ body.reader-epub .epub-controls.show {
                     savedAt: new Date().toISOString()
                 };
                 localStorage.setItem('volant_offline_books_data', JSON.stringify(offlineBooks));
-                console.log('✅ Book saved to localStorage');
+                console.log('âœ… Book saved to localStorage');
                 return true;
             } catch (err) {
                 console.warn('Could not save to localStorage:', err);
@@ -3770,7 +3790,7 @@ body.reader-epub .epub-controls.show {
                 const offlineBooks = JSON.parse(localStorage.getItem('volant_offline_books_data') || '{}');
                 delete offlineBooks[bookId];
                 localStorage.setItem('volant_offline_books_data', JSON.stringify(offlineBooks));
-                console.log('🗑️ Book removed from localStorage cache');
+                console.log('ðŸ—‘ï¸ Book removed from localStorage cache');
                 return true;
             } catch (err) {
                 console.warn('Could not clear localStorage:', err);
@@ -3838,7 +3858,7 @@ body.reader-epub .epub-controls.show {
         
         window.addEventListener('online', () => {
             updateConnectionStatus();
-            showToast('📶 Back online!', 'success');
+            showToast('ðŸ“¶ Back online!', 'success');
             if (currentUser && currentBook) {
                 updateDownloadButton();
             }
@@ -3846,7 +3866,7 @@ body.reader-epub .epub-controls.show {
         
         window.addEventListener('offline', () => {
             updateConnectionStatus();
-            showToast('📶 You are offline. Reading cached content.', 'info');
+            showToast('ðŸ“¶ You are offline. Reading cached content.', 'info');
         });
         
         // ================================================================
@@ -3856,7 +3876,7 @@ body.reader-epub .epub-controls.show {
         window.refreshBook = async function() {
             if (isLoading) return;
             if (isOffline) {
-                showToast('📶 Cannot refresh while offline. Please connect to the internet.', 'error');
+                showToast('ðŸ“¶ Cannot refresh while offline. Please connect to the internet.', 'error');
                 return;
             }
             
@@ -3864,7 +3884,7 @@ body.reader-epub .epub-controls.show {
             refreshBtn.disabled = true;
             refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
             
-            showToast('🔄 Refreshing book data...', 'info');
+            showToast('ðŸ”„ Refreshing book data...', 'info');
             
             try {
                 clearBookFromLocalStorage(bookId);
@@ -3873,29 +3893,30 @@ body.reader-epub .epub-controls.show {
                 const bookSnap = await getDoc(bookRef);
                 
                 if (!bookSnap.exists()) {
-                    showToast('❌ Book not found on server.', 'error');
+                    showToast('âŒ Book not found on server.', 'error');
                     refreshBtn.disabled = false;
                     refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i>';
                     return;
                 }
                 
                 const freshData = { id: bookSnap.id, ...bookSnap.data() };
-                
+                const fullUrl = await resolveFullFileUrl(freshData.id) || freshData.pdfUrl || '';
+
                 saveBookToLocalStorage({
                     id: freshData.id,
                     title: freshData.title,
                     authorName: freshData.authorName,
-                    pdfUrl: freshData.pdfUrl,
+                    pdfUrl: fullUrl,
                     bookFormat: freshData.bookFormat || '',
                     content: freshData.content || '',
                     downloadLimit: freshData.downloadLimit || 5
                 });
-                
+
                 currentBook = {
                     id: freshData.id,
                     title: freshData.title,
                     authorName: freshData.authorName,
-                    pdfUrl: freshData.pdfUrl,
+                    pdfUrl: fullUrl,
                     bookFormat: freshData.bookFormat || '',
                     content: freshData.content || '',
                     downloadLimit: freshData.downloadLimit || 5
@@ -3908,11 +3929,11 @@ body.reader-epub .epub-controls.show {
                 await checkOfflineAvailability(currentBook.pdfUrl);
                 await updateDownloadButton();
                 
-                showToast('✅ Book data refreshed!', 'success');
+                showToast('âœ… Book data refreshed!', 'success');
                 
             } catch (err) {
                 console.error('Refresh error:', err);
-                showToast('❌ Error refreshing book data', 'error');
+                showToast('âŒ Error refreshing book data', 'error');
             } finally {
                 refreshBtn.disabled = false;
                 refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i>';
@@ -3925,7 +3946,7 @@ body.reader-epub .epub-controls.show {
         
         window.saveForOffline = async function() {
             if (!currentBook) {
-                showToast('❌ No content to save.', 'error');
+                showToast('âŒ No content to save.', 'error');
                 return;
             }
             
@@ -3950,14 +3971,14 @@ body.reader-epub .epub-controls.show {
                         if (response.ok) {
                             const cache = await caches.open('volant-reads-pdfs');
                             await cache.put(currentBook.pdfUrl, response.clone());
-                            console.log('✅ PDF cached');
+                            console.log('âœ… PDF cached');
                         }
                     } catch (cacheErr) {
                         console.warn('Could not cache PDF:', cacheErr);
                     }
                 }
                 
-                showToast('✅ Book saved for offline reading! 📖', 'success');
+                showToast('âœ… Book saved for offline reading! ðŸ“–', 'success');
                 btn.innerHTML = '<i class="fas fa-check-circle"></i>';
                 btn.className = 'btn-save-offline saved';
                 btn.disabled = true;
@@ -3971,7 +3992,7 @@ body.reader-epub .epub-controls.show {
                 
             } catch (err) {
                 console.error('Error saving for offline:', err);
-                showToast('❌ Error saving for offline', 'error');
+                showToast('âŒ Error saving for offline', 'error');
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fas fa-download"></i>';
             }
@@ -3983,39 +4004,39 @@ body.reader-epub .epub-controls.show {
         
         window.downloadBook = async function() {
             if (!currentUser) {
-                showToast('🔐 Please sign in to download.', 'error');
+                showToast('ðŸ” Please sign in to download.', 'error');
                 return;
             }
             
             if (!currentBook || !currentBook.pdfUrl) {
-                showToast('❌ No book file available to download.', 'error');
+                showToast('âŒ No book file available to download.', 'error');
                 return;
             }
 
             if (currentBook.preorder === true && currentBook.released !== true) {
                 const rd = currentBook.preorderReleaseDate;
                 if (!rd || new Date(String(rd) + 'T00:00:00') > new Date()) {
-                    showToast('🔒 This book releases on ' + (rd || 'the release date') + '. Download unlocks automatically.', 'error');
+                    showToast('ðŸ”’ This book releases on ' + (rd || 'the release date') + '. Download unlocks automatically.', 'error');
                     return;
                 }
             }
             
             const purchased = await checkPurchaseStatus(currentUser.uid, bookId);
             if (!purchased) {
-                showToast('❌ You don\'t own this book. Please purchase it first.', 'error');
+                showToast('âŒ You don\'t own this book. Please purchase it first.', 'error');
                 return;
             }
             
             const canDownload = await canUserDownload(currentUser.uid, bookId, downloadLimit);
             if (!canDownload) {
-                showToast('❌ Download limit reached. Please contact the author for more downloads.', 'error');
+                showToast('âŒ Download limit reached. Please contact the author for more downloads.', 'error');
                 return;
             }
             
             const btn = document.getElementById('readerDownloadBtn');
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-            showToast('⬇️ Downloading... this will continue in the background.', 'info');
+            showToast('â¬‡ï¸ Downloading... this will continue in the background.', 'info');
             
             let fileName = '';
             const title = currentBook.title ? currentBook.title.trim() : 'Untitled';
@@ -4056,11 +4077,11 @@ body.reader-epub .epub-controls.show {
                 
                 await updateDownloadButton();
                 
-                showToast(`📄 Downloaded "${currentBook.title}"!`, 'success');
+                showToast(`ðŸ“„ Downloaded "${currentBook.title}"!`, 'success');
                 
             } catch (err) {
                 console.error('Download error:', err);
-                showToast('⚠️ Unable to download PDF. Please try again.', 'error');
+                showToast('âš ï¸ Unable to download PDF. Please try again.', 'error');
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fas fa-download"></i>';
@@ -4253,12 +4274,12 @@ body.reader-epub .epub-controls.show {
 
         function registerServiceWorker() {
             if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('./sw.js?v=29', { scope: './' })
+                navigator.serviceWorker.register('./sw.js?v=30', { scope: './' })
                     .then(registration => {
-                        console.log('✅ Service Worker registered successfully');
+                        console.log('âœ… Service Worker registered successfully');
                     })
                     .catch(err => {
-                        console.warn('⚠️ Service Worker registration failed:', err);
+                        console.warn('âš ï¸ Service Worker registration failed:', err);
                     });
             }
         }
@@ -4327,7 +4348,7 @@ function isDesktop() {            return window.matchMedia && window.matchMedia(
  // palette. A single sheet (rewritten in place) means no cascade conflicts.
         function epubApplyThemeInside() {            const r = window.__epubRendition;            const p = EPUB_THEMES[epubTheme] || EPUB_THEMES.light;            if (!r) return;            const css = [                'html, body { background: ' + p.bg + ' !important; }',                'body { color: ' + p.text + ' !important; }',                'h1, h2, h3, h4, h5, h6 { color: ' + p.head + ' !important; }',                'a { color: ' + p.link + ' !important; }',                '::selection { background: ' + p.sel + ' !important; }'            ].join('\n');            try {                const contents = r.getContents() || [];                contents.forEach(c => {                    try {                        if (c.iframe) c.iframe.style.background = p.bg;                        if (c.document) {                            let st = c.document.getElementById('volant-epub-theme');                            if (!st) {                                st = c.document.createElement('style');                                st.id = 'volant-epub-theme';                                (c.document.head || c.document.documentElement).appendChild(st);                            }                            st.textContent = css;                        }                    } catch (e) { /* iframe may be detached */ }                });            } catch (err) { /* ignore */ }            const frame = document.querySelector('.epub-frame');            if (frame) frame.style.background = p.edge;        }        function epubApplyTheme() {            epubApplyThemeInside();            const pill = document.getElementById('epubNavPill');            if (pill) pill.setAttribute('data-theme', epubTheme);        }        function epubSetFont(delta) {            epubFontPct = Math.max(75, Math.min(170, epubFontPct + delta));            localStorage.setItem('volant_epub_font', String(epubFontPct));            const label = document.getElementById('epubFontLabel');            syncEpubPanelDisplays();            const r = window.__epubRendition;            if (!r) return;            try { r.themes.fontSize(epubFontPct + '%'); } catch (err) { /* ignore */ }
  // Reflow the current page so no line is ever clipped by the old page size
-            clearTimeout(window.__epubFontReflowT);            window.__epubFontReflowT = setTimeout(() => {                try {                    const loc = r.currentLocation();                    if (loc && loc.start && loc.start.cfi) r.display(loc.start.cfi).catch(() => {});                } catch (err) { /* ignore */ }            }, 220);            showToast('Font size ' + epubFontPct + '%', 'info');        }        function syncEpubPanelDisplays() {            const p = EPUB_THEMES[epubTheme] || EPUB_THEMES.light;            const fontLabel = document.getElementById('epubFontLabel');            if (fontLabel) fontLabel.textContent = epubFontPct + '%';            const railLabel = document.getElementById('epubRailFontLabel');            if (railLabel) railLabel.textContent = epubFontPct + '%';            const mobLabel = document.getElementById('epubMobileFontLabel');            if (mobLabel) mobLabel.textContent = epubFontPct + '%';            ['epubThemeBtn', 'epubRailThemeBtn', 'epubMobileThemeBtn'].forEach(id => {                const b = document.getElementById(id);                if (b) {                    b.innerHTML = '<i class="fas ' + p.icon + '"></i>';                    b.classList.toggle('epub-theme-active', epubTheme !== 'light');                    b.title = 'Theme: ' + p.name;                }            });            const panel = document.getElementById('epubCtrlPanel');            const menuBtn = document.getElementById('epubMenuBtn');            if (menuBtn) {                const open = !!(panel && panel.classList.contains('open'));                menuBtn.innerHTML = '<i class="fas ' + (open ? 'fa-chevron-left' : 'fa-chevron-right') + '"></i>';                menuBtn.setAttribute('aria-label', open ? 'Close reading menu' : 'Open reading menu');            }        }        function epubCycleTheme() {            const order = ['light', 'pearl', 'sepia', 'rose', 'green', 'slate', 'blue', 'lilac', 'espresso', 'dark', 'black'];            let i = order.indexOf(epubTheme);            if (i < 0) i = 0;            epubTheme = order[(i + 1) % order.length];            localStorage.setItem('volant_epub_theme', epubTheme);            epubApplyTheme();            syncEpubPanelDisplays();            showToast('Theme: ' + (EPUB_THEMES[epubTheme] || {}).name + ' (' + epubTheme + ')', 'info');        }        function epubFlip(dir) {            const r = window.__epubRendition;            if (!r || !epubLive) return;            (dir === 'next' ? r.next() : r.prev()).catch(() => {});        }        function buildEpubToc(listId) {            const book = window.__epubBook;            const list = listId ? document.getElementById(listId) : document.getElementById('epubTocList');            if (!book || !list) return;            if (list._epubTocBuilt) return;            list._epubTocBuilt = true;            list.innerHTML = '<div class="epub-toc-empty"><div class="spinner"></div><p>Loading contents…</p></div>';            const seenEntries = new Set();            let titledFiles = new Set();            const cleanLabel = (t) => {                const s = String(t || '').trim().replace(/\s+/g, ' ');                return /^\(?untitled\)?$/i.test(s) ? '' : s;            };            const appendItem = (entry, label, depth) => {                const a = document.createElement('a');                a.className = 'epub-toc-item';                a.style.paddingLeft = (12 + depth * 16) + 'px';                a.textContent = label || 'Untitled';                a.addEventListener('click', async () => {                    closeEpubToc();                    try {                        let cfi = null;                        try { if (book.locations && book.locations.length) cfi = book.locations.cfiFromHref(entry.href); } catch (e) { /* fallback */ }                        if (window.__epubRendition) await (cfi ? window.__epubRendition.display(cfi) : window.__epubRendition.display(entry.href));                    } catch (err) {                        console.warn('Could not jump to section:', err);                    }                });                list.appendChild(a);            };            const renderItems = (items, depth) => {                items.forEach(entry => {                    if (!entry || !entry.href) return;                    const label = cleanLabel(entry.label);                    const fileKey = String(entry.href).split('#')[0];                    const skip = !label && titledFiles.has(fileKey);                    const key = fileKey + '|' + label;                    if (entry.subitems && entry.subitems.length) {                        if (!skip && !seenEntries.has(key)) {                            seenEntries.add(key);                            appendItem(entry, label, depth);                        }                        renderItems(entry.subitems, depth + 1);                    } else if (!skip && !seenEntries.has(key)) {                        seenEntries.add(key);                        appendItem(entry, label, depth);                    }                });            };            book.loaded.navigation                .then(async nav => {                    const toc = (nav && nav.toc) || [];                    const spine = (book.spine && book.spine.spine) || [];                    titledFiles = new Set();                    const tocFiles = new Set();                    const scanTitled = (items) => {                        items.forEach(e => {                            if (!e) return;                            tocFiles.add(String(e.href || '').split('#')[0]);                            if (cleanLabel(e.label)) titledFiles.add(String(e.href || '').split('#')[0]);                            if (e.subitems && e.subitems.length) scanTitled(e.subitems);                        });                    };                    scanTitled(toc);                    const frontLabel = (href) => {                        const base = String(href || '').split('/').pop().toLowerCase();                        const pats = [/^cover|front-?cover|couverture/i, /title|t[ií]tulo/i, /dedicat/i, /copy(?:right)?/i, /epigraph/i, /preface|foreword/i, /half-?title/i];                        const names = ['Cover', 'Title Page', 'Dedication', 'Copyright', 'Epigraph', 'Preface', 'Half Title'];                        for (let i = 0; i < pats.length; i++) if (pats[i].test(base)) return names[i];                        return '';                    };                    const sniffFrontLabel = async (href) => {                        if (!book.archive || typeof book.archive.getText !== 'function') return '';                        try {                            const raw = await book.archive.getText(href);                            if (!raw) return '';                            const txt = String(raw).replace(/<[^>]+>/g, ' ').replace(/&nbsp;/gi, ' ').replace(/&amp;/gi, '&').replace(/\s+/g, ' ').trim();                            if (/copyright|all rights reserved/i.test(txt)) return 'Copyright';                            if (/^\s*(?:for every|dedicated|in loving|to the memory|for all|to everyone)/i.test(txt)) return 'Dedication';                            if (/^(?:“|"|\u201c)/.test(txt)) return 'Epigraph';                            if (/title page|poetry collection|a novel|collected poems|poems? by(?: the)?/i.test(txt)) return 'Title Page';                            const h = String(raw).match(/<h[1-6][^>]*>([\s\S]*?)<\/h[1-6]>/i);                            if (h) {                                const ht = h[1].replace(/<[^>]+>/g, '').trim();                                if (ht && ht.length <= 60) return ht;                            }                            return '';                        } catch (e) { return ''; }                    };                    const frontMatter = [];                    for (const sp of spine) {                        if (!sp || !sp.href) continue;                        const f = String(sp.href).split('#')[0];                        if (tocFiles.has(f)) break;                        frontMatter.push({ href: sp.href, label: frontLabel(sp.href) });                    }                    for (const fm of frontMatter) {                        if (!fm.label) fm.label = await sniffFrontLabel(fm.href);                    }                    const entries = frontMatter.concat(toc);                    if (!entries.length) { list.innerHTML = '<div class="epub-toc-empty">This book lists no contents.</div>'; return; }                    list.innerHTML = '';                    renderItems(entries, 0);                })                .catch(() => { list.innerHTML = '<div class="epub-toc-empty">Could not load contents.</div>'; });        }        function blurInside(el) {            const ae = document.activeElement;            if (ae && el && el.contains(ae) && typeof ae.blur === 'function') ae.blur();        }        function toggleEpubToc() {
+            clearTimeout(window.__epubFontReflowT);            window.__epubFontReflowT = setTimeout(() => {                try {                    const loc = r.currentLocation();                    if (loc && loc.start && loc.start.cfi) r.display(loc.start.cfi).catch(() => {});                } catch (err) { /* ignore */ }            }, 220);            showToast('Font size ' + epubFontPct + '%', 'info');        }        function syncEpubPanelDisplays() {            const p = EPUB_THEMES[epubTheme] || EPUB_THEMES.light;            const fontLabel = document.getElementById('epubFontLabel');            if (fontLabel) fontLabel.textContent = epubFontPct + '%';            const railLabel = document.getElementById('epubRailFontLabel');            if (railLabel) railLabel.textContent = epubFontPct + '%';            const mobLabel = document.getElementById('epubMobileFontLabel');            if (mobLabel) mobLabel.textContent = epubFontPct + '%';            ['epubThemeBtn', 'epubRailThemeBtn', 'epubMobileThemeBtn'].forEach(id => {                const b = document.getElementById(id);                if (b) {                    b.innerHTML = '<i class="fas ' + p.icon + '"></i>';                    b.classList.toggle('epub-theme-active', epubTheme !== 'light');                    b.title = 'Theme: ' + p.name;                }            });            const panel = document.getElementById('epubCtrlPanel');            const menuBtn = document.getElementById('epubMenuBtn');            if (menuBtn) {                const open = !!(panel && panel.classList.contains('open'));                menuBtn.innerHTML = '<i class="fas ' + (open ? 'fa-chevron-left' : 'fa-chevron-right') + '"></i>';                menuBtn.setAttribute('aria-label', open ? 'Close reading menu' : 'Open reading menu');            }        }        function epubCycleTheme() {            const order = ['light', 'pearl', 'sepia', 'rose', 'green', 'slate', 'blue', 'lilac', 'espresso', 'dark', 'black'];            let i = order.indexOf(epubTheme);            if (i < 0) i = 0;            epubTheme = order[(i + 1) % order.length];            localStorage.setItem('volant_epub_theme', epubTheme);            epubApplyTheme();            syncEpubPanelDisplays();            showToast('Theme: ' + (EPUB_THEMES[epubTheme] || {}).name + ' (' + epubTheme + ')', 'info');        }        function epubFlip(dir) {            const r = window.__epubRendition;            if (!r || !epubLive) return;            (dir === 'next' ? r.next() : r.prev()).catch(() => {});        }        function buildEpubToc(listId) {            const book = window.__epubBook;            const list = listId ? document.getElementById(listId) : document.getElementById('epubTocList');            if (!book || !list) return;            if (list._epubTocBuilt) return;            list._epubTocBuilt = true;            list.innerHTML = '<div class="epub-toc-empty"><div class="spinner"></div><p>Loading contentsâ€¦</p></div>';            const seenEntries = new Set();            let titledFiles = new Set();            const cleanLabel = (t) => {                const s = String(t || '').trim().replace(/\s+/g, ' ');                return /^\(?untitled\)?$/i.test(s) ? '' : s;            };            const appendItem = (entry, label, depth) => {                const a = document.createElement('a');                a.className = 'epub-toc-item';                a.style.paddingLeft = (12 + depth * 16) + 'px';                a.textContent = label || 'Untitled';                a.addEventListener('click', async () => {                    closeEpubToc();                    try {                        let cfi = null;                        try { if (book.locations && book.locations.length) cfi = book.locations.cfiFromHref(entry.href); } catch (e) { /* fallback */ }                        if (window.__epubRendition) await (cfi ? window.__epubRendition.display(cfi) : window.__epubRendition.display(entry.href));                    } catch (err) {                        console.warn('Could not jump to section:', err);                    }                });                list.appendChild(a);            };            const renderItems = (items, depth) => {                items.forEach(entry => {                    if (!entry || !entry.href) return;                    const label = cleanLabel(entry.label);                    const fileKey = String(entry.href).split('#')[0];                    const skip = !label && titledFiles.has(fileKey);                    const key = fileKey + '|' + label;                    if (entry.subitems && entry.subitems.length) {                        if (!skip && !seenEntries.has(key)) {                            seenEntries.add(key);                            appendItem(entry, label, depth);                        }                        renderItems(entry.subitems, depth + 1);                    } else if (!skip && !seenEntries.has(key)) {                        seenEntries.add(key);                        appendItem(entry, label, depth);                    }                });            };            book.loaded.navigation                .then(async nav => {                    const toc = (nav && nav.toc) || [];                    const spine = (book.spine && book.spine.spine) || [];                    titledFiles = new Set();                    const tocFiles = new Set();                    const scanTitled = (items) => {                        items.forEach(e => {                            if (!e) return;                            tocFiles.add(String(e.href || '').split('#')[0]);                            if (cleanLabel(e.label)) titledFiles.add(String(e.href || '').split('#')[0]);                            if (e.subitems && e.subitems.length) scanTitled(e.subitems);                        });                    };                    scanTitled(toc);                    const frontLabel = (href) => {                        const base = String(href || '').split('/').pop().toLowerCase();                        const pats = [/^cover|front-?cover|couverture/i, /title|t[iÃ­]tulo/i, /dedicat/i, /copy(?:right)?/i, /epigraph/i, /preface|foreword/i, /half-?title/i];                        const names = ['Cover', 'Title Page', 'Dedication', 'Copyright', 'Epigraph', 'Preface', 'Half Title'];                        for (let i = 0; i < pats.length; i++) if (pats[i].test(base)) return names[i];                        return '';                    };                    const sniffFrontLabel = async (href) => {                        if (!book.archive || typeof book.archive.getText !== 'function') return '';                        try {                            const raw = await book.archive.getText(href);                            if (!raw) return '';                            const txt = String(raw).replace(/<[^>]+>/g, ' ').replace(/&nbsp;/gi, ' ').replace(/&amp;/gi, '&').replace(/\s+/g, ' ').trim();                            if (/copyright|all rights reserved/i.test(txt)) return 'Copyright';                            if (/^\s*(?:for every|dedicated|in loving|to the memory|for all|to everyone)/i.test(txt)) return 'Dedication';                            if (/^(?:â€œ|"|\u201c)/.test(txt)) return 'Epigraph';                            if (/title page|poetry collection|a novel|collected poems|poems? by(?: the)?/i.test(txt)) return 'Title Page';                            const h = String(raw).match(/<h[1-6][^>]*>([\s\S]*?)<\/h[1-6]>/i);                            if (h) {                                const ht = h[1].replace(/<[^>]+>/g, '').trim();                                if (ht && ht.length <= 60) return ht;                            }                            return '';                        } catch (e) { return ''; }                    };                    const frontMatter = [];                    for (const sp of spine) {                        if (!sp || !sp.href) continue;                        const f = String(sp.href).split('#')[0];                        if (tocFiles.has(f)) break;                        frontMatter.push({ href: sp.href, label: frontLabel(sp.href) });                    }                    for (const fm of frontMatter) {                        if (!fm.label) fm.label = await sniffFrontLabel(fm.href);                    }                    const entries = frontMatter.concat(toc);                    if (!entries.length) { list.innerHTML = '<div class="epub-toc-empty">This book lists no contents.</div>'; return; }                    list.innerHTML = '';                    renderItems(entries, 0);                })                .catch(() => { list.innerHTML = '<div class="epub-toc-empty">Could not load contents.</div>'; });        }        function blurInside(el) {            const ae = document.activeElement;            if (ae && el && el.contains(ae) && typeof ae.blur === 'function') ae.blur();        }        function toggleEpubToc() {
  // Desktop build: collapse/expand the persistent sidebar instead of the phone drawer
             if (document.body.classList.contains('reader-epub') && isDesktop()) {                const s = document.getElementById('epubDesktopToc');                if (s) {                    const willOpen = s.classList.contains('collapsed');                    s.classList.toggle('collapsed', !willOpen);                    if (willOpen) buildEpubToc('epubDesktopTocList');                }                return;            }            const d = document.getElementById('epubTocDrawer');            if (!d) return;            const isOpen = d.classList.toggle('open');            const b = document.getElementById('epubTocBackdrop');            if (b) b.classList.toggle('open', isOpen);            if (!isOpen) blurInside(d);            d.setAttribute('aria-hidden', isOpen ? 'false' : 'true');            if (isOpen) buildEpubToc('epubTocList');        }        function closeEpubToc() {            const d = document.getElementById('epubTocDrawer');            const b = document.getElementById('epubTocBackdrop');            if (d) d.classList.remove('open');            if (b) b.classList.remove('open');            blurInside(d);            if (d) d.setAttribute('aria-hidden', 'true');        }        window.epubSetFont = epubSetFont;        window.epubCycleTheme = epubCycleTheme;        window.toggleEpubToc = toggleEpubToc;        window.closeEpubToc = closeEpubToc;        window.epubFlip = epubFlip;
  // ===== EPUB PHONE LEFT CONTROLS PANEL =====
@@ -4435,16 +4456,16 @@ function isDesktop() {            return window.matchMedia && window.matchMedia(
         let headerTimer = null;        function updatePdfChromeHandle() {            const h = document.getElementById('readerHeader');            const handle = document.getElementById('pdfChromeHandle');            if (!h || !handle) return;            const pdf = document.body.classList.contains('reader-pdf');            const hidden = h.classList.contains('hide-header');            const icon = handle.querySelector('#pdfChromeIcon');            handle.classList.toggle('show', pdf && (hidden || isDesktop()));            handle.setAttribute('aria-label', hidden ? 'Show reader controls' : 'Hide reader controls');            handle.setAttribute('title', hidden ? 'Show controls' : 'Hide controls');            if (icon) {                icon.classList.toggle('fa-chevron-down', pdf && hidden);                icon.classList.toggle('fa-chevron-up', pdf && !hidden);            }            document.body.classList.toggle('pdf-immersive', pdf && hidden);        }        function setReaderHeader(show, autoHide) {            const h = document.getElementById('readerHeader');            if (!h) return;            clearTimeout(headerTimer);            if (!show) {                h.classList.add('hide-header');            } else {                h.classList.remove('hide-header');            }            updatePdfChromeHandle();            if (show && autoHide) {                headerTimer = setTimeout(() => setReaderHeader(false), 5000);            }        }        function toggleReaderHeader() {            const h = document.getElementById('readerHeader');            if (h && h.classList.contains('hide-header')) setReaderHeader(true, true);            else setReaderHeader(false);        }        window.toggleReaderHeader = toggleReaderHeader;        document.addEventListener('mousemove', (e) => {            const h = document.getElementById('readerHeader');            const pdf = document.body.classList.contains('reader-pdf');            if (pdf && h && h.classList.contains('hide-header') && e.clientY < 80) {                setReaderHeader(true, true);                return;            }            if ((document.body.classList.contains('reader-epub') || pdf) && h && !h.classList.contains('hide-header')) {                clearTimeout(headerTimer);                headerTimer = setTimeout(() => setReaderHeader(false), 5000);            }        }, { passive: true });        window.addEventListener('message', (e) => {            if (e.data && e.data.type === 'pdf-chrome-tap' && document.body.classList.contains('reader-pdf')) {                toggleReaderHeader();            }        });        function openEpub(url) {            const el = document.getElementById('epubViewer');            if (!el || !window.ePub) return;            const showEpubError = () => { document.body.classList.remove('epub-booting');                el.innerHTML = `<div class="text-content-wrapper"><div class="text-content" style="text-align:center;padding:3rem 1.5rem;"><p style="color:#6f6252;margin-bottom:1rem;">Could not open this EPUB file.</p><a href="${escapeHtml2(url)}" target="_blank" rel="noopener" class="btn-back" style="display:inline-block;"><i class="fas fa-external-link-alt"></i> Open the file</a></div></div>`;            };            let book;            try {                book = window.ePub(url);            } catch (err) {                console.warn('Could not open EPUB:', err);                showEpubError();                return;            }            window.__epubBook = book;            try {                const rendition = book.renderTo('epubViewer', { width: '100%', height: '100%', spread: 'none', allowScriptedContent: true });                window.__epubRendition = rendition; rendition.on('rendered', () => { epubHideLoading(); document.body.classList.remove('epub-booting'); });
  // Typography: shared structural layout + saved font size (colors are
  // painted via a single rewritten style sheet, see epubApplyThemeInside)
-                rendition.themes.default(epubLayoutRules());                try { rendition.themes.fontSize(epubFontPct + '%'); } catch (err) { /* ignore */ }                epubApplyTheme();                syncEpubPanelDisplays();                const statusEl = document.getElementById('mainPageStatus');                if (statusEl) statusEl.textContent = 'Loading…';                book.loaded.spine                    .then(() => {                        epubLive = true;                        totalPages = epubSpineLen() || totalPages || 1;
+                rendition.themes.default(epubLayoutRules());                try { rendition.themes.fontSize(epubFontPct + '%'); } catch (err) { /* ignore */ }                epubApplyTheme();                syncEpubPanelDisplays();                const statusEl = document.getElementById('mainPageStatus');                if (statusEl) statusEl.textContent = 'Loadingâ€¦';                book.loaded.spine                    .then(() => {                        epubLive = true;                        totalPages = epubSpineLen() || totalPages || 1;
  // Open at the very first page (cover/title/dedication)
  // exactly like the PDF reader did, so front matter is
  // always reachable by flipping back from chapter 1.
                         const showFirst = () => rendition.display();                        const tryResumeByPct = async () => {                            const sp = epubSavedProgress || (await loadReadingProgress().catch(() => null));                            if (!sp || !(sp.percentage > 0)) return false;                            try {
  // Make sure the location map exists so a raw
  // percentage can be turned into a CFI.
-                                try {                                    if (book.locations) {                                        const has = typeof book.locations.length === 'function' ? book.locations.length() : (book.locations.length || 0);                                        if (!has) await book.locations.generate(1024);                                    }                                } catch (e) { /* try anyway */ }                                await rendition.display(Math.min(1, Math.max(0.01, (sp.percentage || 0) / 100)));                                console.log('📖 Resumed by progress: ' + (sp.percentage || 0) + '%');                                return true;                            } catch (e) { return false; }                        };                        const attempt = epubResumeCfi                            ? rendition.display(epubResumeCfi).catch(async () => {                                if (!(await tryResumeByPct())) await showFirst();                            })                            : (async () => {                                if (!(await tryResumeByPct())) await showFirst();                            })();                        attempt.catch(() => { epubLive = false; showEpubError(); });                        if (book.locations && !book.locations.length) {                            book.locations.generate(1024)                                .then(() => {                                    try {                                        const cur = rendition.currentLocation();                                        if (cur && cur.start && cur.start.cfi) {                                            const c2 = cur.start.cfi;                                            let p2 = NaN;                                            try {                                                const raw2 = book.locations.percentageFromCfi(c2);                                                if (typeof raw2 === 'number' && isFinite(raw2)) p2 = Math.round(raw2 * 100);                                            } catch (e2) { /* keep NaN */ }                                            const i2 = (cur.start.index != null ? cur.start.index + 1 : 0);                                            p2 = epubClampPct(p2, i2, true);                                            saveReadingProgress(i2 || 0, p2, c2);                                        }                                    } catch (err) { /* ignore */ }                                })                                .catch(() => {});                        }                    })                    .catch(() => { showEpubError(); });                rendition.on('relocated', (location) => {                    if (!location || !location.start) return;
+                                try {                                    if (book.locations) {                                        const has = typeof book.locations.length === 'function' ? book.locations.length() : (book.locations.length || 0);                                        if (!has) await book.locations.generate(1024);                                    }                                } catch (e) { /* try anyway */ }                                await rendition.display(Math.min(1, Math.max(0.01, (sp.percentage || 0) / 100)));                                console.log('ðŸ“– Resumed by progress: ' + (sp.percentage || 0) + '%');                                return true;                            } catch (e) { return false; }                        };                        const attempt = epubResumeCfi                            ? rendition.display(epubResumeCfi).catch(async () => {                                if (!(await tryResumeByPct())) await showFirst();                            })                            : (async () => {                                if (!(await tryResumeByPct())) await showFirst();                            })();                        attempt.catch(() => { epubLive = false; showEpubError(); });                        if (book.locations && !book.locations.length) {                            book.locations.generate(1024)                                .then(() => {                                    try {                                        const cur = rendition.currentLocation();                                        if (cur && cur.start && cur.start.cfi) {                                            const c2 = cur.start.cfi;                                            let p2 = NaN;                                            try {                                                const raw2 = book.locations.percentageFromCfi(c2);                                                if (typeof raw2 === 'number' && isFinite(raw2)) p2 = Math.round(raw2 * 100);                                            } catch (e2) { /* keep NaN */ }                                            const i2 = (cur.start.index != null ? cur.start.index + 1 : 0);                                            p2 = epubClampPct(p2, i2, true);                                            saveReadingProgress(i2 || 0, p2, c2);                                        }                                    } catch (err) { /* ignore */ }                                })                                .catch(() => {});                        }                    })                    .catch(() => { showEpubError(); });                rendition.on('relocated', (location) => {                    if (!location || !location.start) return;
  // Re-apply the active palette to the newly shown contents iframe
-                    try { epubApplyThemeInside(); } catch (err) { /* ignore */ }                    const cfi = location.start.cfi;                    const idx = (location.start.index != null) ? location.start.index + 1 : 0;                    currentPage = idx || 0;                    let pct = NaN;                    try {                        if (cfi && book.locations && book.locations.length) {                            const raw = book.locations.percentageFromCfi(cfi);                            if (typeof raw === 'number' && isFinite(raw)) pct = Math.round(raw * 100);                        }                    } catch (err) { /* keep NaN */ }                    pct = epubClampPct(pct, idx, true);                    totalPages = epubSpineLen() || totalPages || 1;                    if (statusEl) statusEl.textContent = (pct > 0 ? pct : '…') + '%';                    updateProgressUI(idx || 0, pct);                    if (currentUser && currentBook) {                        saveReadingProgress(idx || 0, pct, cfi);                    }                });            } catch (err) {                console.warn('EPUB render failed:', err);                showEpubError();            }        }
+                    try { epubApplyThemeInside(); } catch (err) { /* ignore */ }                    const cfi = location.start.cfi;                    const idx = (location.start.index != null) ? location.start.index + 1 : 0;                    currentPage = idx || 0;                    let pct = NaN;                    try {                        if (cfi && book.locations && book.locations.length) {                            const raw = book.locations.percentageFromCfi(cfi);                            if (typeof raw === 'number' && isFinite(raw)) pct = Math.round(raw * 100);                        }                    } catch (err) { /* keep NaN */ }                    pct = epubClampPct(pct, idx, true);                    totalPages = epubSpineLen() || totalPages || 1;                    if (statusEl) statusEl.textContent = (pct > 0 ? pct : 'â€¦') + '%';                    updateProgressUI(idx || 0, pct);                    if (currentUser && currentBook) {                        saveReadingProgress(idx || 0, pct, cfi);                    }                });            } catch (err) {                console.warn('EPUB render failed:', err);                showEpubError();            }        }
 
         function escapeHtml2(value) {
             return String(value || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
@@ -4473,7 +4494,7 @@ function isDesktop() {            return window.matchMedia && window.matchMedia(
             }
 
             const fmt = String(currentBook.bookFormat || '').toLowerCase();
-            const isEpub = fmt === 'epub' || /\.epub(\?|#|$)/i.test(currentBook.pdfUrl || '');            const epubControls = document.getElementById('epubControls');            if (epubControls) epubControls.classList.toggle('show', isEpub);            if (!isEpub) document.body.classList.remove('epub-booting');            if (isEpub && currentBook.pdfUrl) {                document.body.classList.add('reader-epub');                const dt = isDesktop();                content.innerHTML = `                    <div class="epub-desktop-shell">                        <aside class="epub-desktop-toc collapsed" id="epubDesktopToc" aria-label="Contents">                            <div class="epub-toc-header">                                <span><i class="fas fa-list-ul"></i> Contents</span>                                <button type="button" class="epub-toc-close" onclick="toggleEpubToc()" aria-label="Hide contents"><i class="fas fa-times"></i></button>                            </div>                            <div class="epub-desktop-toc-book">                                <span class="epub-toc-book-title" id="epubDesktopTocTitle"></span>                                <span class="epub-toc-book-author" id="epubDesktopTocAuthor"></span>                            </div>                            <nav class="epub-toc-body" id="epubDesktopTocList" aria-label="Table of contents"><div class="epub-toc-empty"><div class="spinner"></div><p>Loading contents…</p></div></nav>                        </aside>                        <div class="pdf-viewer-wrapper epub-frame epub-desktop-stage" style="position:relative; background:#efe9dc;">                            <div id="epubViewer" style="width:100%; height:100%;"></div>                            <div class="epub-tap-left" onclick="epubFlip('prev')" title="Previous page" aria-hidden="true"></div>                            <div class="epub-tap-right" onclick="epubFlip('next')" title="Next page" aria-hidden="true"></div>                            <div class="epub-tap-top" onclick="toggleReaderHeader()" title="Menu" aria-hidden="true"></div>                            <div class="epub-nav-pill" id="epubNavPill">                                <button type="button" id="epubMenuBtn" onclick="epubToggleMobilePanel()" aria-label="Open reading menu"><i class="fas fa-chevron-right"></i></button>                                <span class="epub-nav-pill-sep"></span>                                <button type="button" onclick="epubFlip('prev')" aria-label="Previous page"><i class="fas fa-chevron-left"></i></button>                                <span class="epub-nav-pill-sep"></span>                                <button type="button" onclick="epubFlip('next')" aria-label="Next page"><i class="fas fa-chevron-right"></i></button>                            </div>                        </div>                        <div class="epub-desktop-rail" id="epubDesktopRail">                            <button type="button" onclick="toggleEpubToc()" title="Contents" aria-label="Contents"><i class="fas fa-list-ul"></i></button>                            <button type="button" id="epubRailThemeBtn" onclick="toggleEpubSwatches(this)" title="Theme" aria-label="Theme"><i class="fas fa-moon"></i></button>                            <button type="button" onclick="epubSetFont(-10)" title="Decrease font size" aria-label="Decrease font size">A−</button>                            <span class="epub-rail-font" id="epubRailFontLabel">120%</span>                            <button type="button" onclick="epubSetFont(10)" title="Increase font size" aria-label="Increase font size">A+</button>                            <div class="share-dropdown">                                <button type="button" onclick="toggleShareDropdown(this)" class="share-btn" title="Share this book" aria-label="Share"><i class="fas fa-share-alt"></i></button>                                <div class="share-dropdown-content">                                    <button class="share-item" onclick="shareBook('whatsapp')"><i class="fab fa-whatsapp"></i> WhatsApp</button>                                    <button class="share-item" onclick="shareBook('twitter')"><i class="fab fa-twitter"></i> Twitter</button>                                    <button class="share-item" onclick="shareBook('facebook')"><i class="fab fa-facebook"></i> Facebook</button>                                    <button class="share-item" onclick="shareBook('email')"><i class="fas fa-envelope"></i> Email</button>                                    <button class="share-item" onclick="shareBook('copy')"><i class="fas fa-copy"></i> Copy Link</button>                                    <button class="share-item" onclick="shareBook('native')"><i class="fas fa-share-alt"></i> Share via...</button>                                </div>                            </div>                            <button type="button" class="rail-close" onclick="closeReader()" title="Close reader" aria-label="Close"><i class="fas fa-times"></i></button>                            <a class="rail-library" href="library.html" title="My Library" aria-label="My Library"><i class="fas fa-book-open"></i></a>                        </div>                    </div>                `;                document.body.classList.add('epub-booting');                renderEpub(currentBook.pdfUrl);                const tocTitle = document.getElementById('epubTocTitle');                if (tocTitle) tocTitle.textContent = currentBook.title || '';                const tocAuthor = document.getElementById('epubTocAuthor');                if (tocAuthor) tocAuthor.textContent = currentBook.authorName || '';                if (dt) {                    const tocTitle = document.getElementById('epubDesktopTocTitle');                    if (tocTitle) tocTitle.textContent = currentBook.title || '';                    const tocAuthor = document.getElementById('epubDesktopTocAuthor');                    if (tocAuthor) tocAuthor.textContent = currentBook.authorName || '';                    setReaderHeader(true, true);                    buildEpubToc('epubDesktopTocList');                } else {                    setReaderHeader(false);                }                return;            }            if (currentBook.pdfUrl) {                document.body.classList.remove('reader-epub');                document.body.classList.add('reader-pdf');                setReaderHeader(true, true);                updatePdfChromeHandle();                const isMobile = isPhoneDevice();
+            const isEpub = fmt === 'epub' || /\.epub(\?|#|$)/i.test(currentBook.pdfUrl || '');            const epubControls = document.getElementById('epubControls');            if (epubControls) epubControls.classList.toggle('show', isEpub);            if (!isEpub) document.body.classList.remove('epub-booting');            if (isEpub && currentBook.pdfUrl) {                document.body.classList.add('reader-epub');                const dt = isDesktop();                content.innerHTML = `                    <div class="epub-desktop-shell">                        <aside class="epub-desktop-toc collapsed" id="epubDesktopToc" aria-label="Contents">                            <div class="epub-toc-header">                                <span><i class="fas fa-list-ul"></i> Contents</span>                                <button type="button" class="epub-toc-close" onclick="toggleEpubToc()" aria-label="Hide contents"><i class="fas fa-times"></i></button>                            </div>                            <div class="epub-desktop-toc-book">                                <span class="epub-toc-book-title" id="epubDesktopTocTitle"></span>                                <span class="epub-toc-book-author" id="epubDesktopTocAuthor"></span>                            </div>                            <nav class="epub-toc-body" id="epubDesktopTocList" aria-label="Table of contents"><div class="epub-toc-empty"><div class="spinner"></div><p>Loading contentsâ€¦</p></div></nav>                        </aside>                        <div class="pdf-viewer-wrapper epub-frame epub-desktop-stage" style="position:relative; background:#efe9dc;">                            <div id="epubViewer" style="width:100%; height:100%;"></div>                            <div class="epub-tap-left" onclick="epubFlip('prev')" title="Previous page" aria-hidden="true"></div>                            <div class="epub-tap-right" onclick="epubFlip('next')" title="Next page" aria-hidden="true"></div>                            <div class="epub-tap-top" onclick="toggleReaderHeader()" title="Menu" aria-hidden="true"></div>                            <div class="epub-nav-pill" id="epubNavPill">                                <button type="button" id="epubMenuBtn" onclick="epubToggleMobilePanel()" aria-label="Open reading menu"><i class="fas fa-chevron-right"></i></button>                                <span class="epub-nav-pill-sep"></span>                                <button type="button" onclick="epubFlip('prev')" aria-label="Previous page"><i class="fas fa-chevron-left"></i></button>                                <span class="epub-nav-pill-sep"></span>                                <button type="button" onclick="epubFlip('next')" aria-label="Next page"><i class="fas fa-chevron-right"></i></button>                            </div>                        </div>                        <div class="epub-desktop-rail" id="epubDesktopRail">                            <button type="button" onclick="toggleEpubToc()" title="Contents" aria-label="Contents"><i class="fas fa-list-ul"></i></button>                            <button type="button" id="epubRailThemeBtn" onclick="toggleEpubSwatches(this)" title="Theme" aria-label="Theme"><i class="fas fa-moon"></i></button>                            <button type="button" onclick="epubSetFont(-10)" title="Decrease font size" aria-label="Decrease font size">Aâˆ’</button>                            <span class="epub-rail-font" id="epubRailFontLabel">120%</span>                            <button type="button" onclick="epubSetFont(10)" title="Increase font size" aria-label="Increase font size">A+</button>                            <div class="share-dropdown">                                <button type="button" onclick="toggleShareDropdown(this)" class="share-btn" title="Share this book" aria-label="Share"><i class="fas fa-share-alt"></i></button>                                <div class="share-dropdown-content">                                    <button class="share-item" onclick="shareBook('whatsapp')"><i class="fab fa-whatsapp"></i> WhatsApp</button>                                    <button class="share-item" onclick="shareBook('twitter')"><i class="fab fa-twitter"></i> Twitter</button>                                    <button class="share-item" onclick="shareBook('facebook')"><i class="fab fa-facebook"></i> Facebook</button>                                    <button class="share-item" onclick="shareBook('email')"><i class="fas fa-envelope"></i> Email</button>                                    <button class="share-item" onclick="shareBook('copy')"><i class="fas fa-copy"></i> Copy Link</button>                                    <button class="share-item" onclick="shareBook('native')"><i class="fas fa-share-alt"></i> Share via...</button>                                </div>                            </div>                            <button type="button" class="rail-close" onclick="closeReader()" title="Close reader" aria-label="Close"><i class="fas fa-times"></i></button>                            <a class="rail-library" href="library.html" title="My Library" aria-label="My Library"><i class="fas fa-book-open"></i></a>                        </div>                    </div>                `;                document.body.classList.add('epub-booting');                renderEpub(currentBook.pdfUrl);                const tocTitle = document.getElementById('epubTocTitle');                if (tocTitle) tocTitle.textContent = currentBook.title || '';                const tocAuthor = document.getElementById('epubTocAuthor');                if (tocAuthor) tocAuthor.textContent = currentBook.authorName || '';                if (dt) {                    const tocTitle = document.getElementById('epubDesktopTocTitle');                    if (tocTitle) tocTitle.textContent = currentBook.title || '';                    const tocAuthor = document.getElementById('epubDesktopTocAuthor');                    if (tocAuthor) tocAuthor.textContent = currentBook.authorName || '';                    setReaderHeader(true, true);                    buildEpubToc('epubDesktopTocList');                } else {                    setReaderHeader(false);                }                return;            }            if (currentBook.pdfUrl) {                document.body.classList.remove('reader-epub');                document.body.classList.add('reader-pdf');                setReaderHeader(true, true);                updatePdfChromeHandle();                const isMobile = isPhoneDevice();
                 const embeddedUrl = getPdfJsViewerUrl(currentBook.pdfUrl, !isMobile, currentPage);
                 
                 content.innerHTML = `
@@ -4537,7 +4558,7 @@ function isDesktop() {            return window.matchMedia && window.matchMedia(
                             title: freshData.title || 'Untitled',
                             authorName: freshData.authorName || 'Anonymous',
                             subtitle: freshData.subtitle || '',
-                            pdfUrl: freshData.pdfUrl || '',
+                            pdfUrl: await resolveFullFileUrl(freshData.id) || freshData.pdfUrl || '',
                             bookFormat: freshData.bookFormat || '',
                             content: freshData.content || '',
                             downloadLimit: freshData.downloadLimit || 5,
@@ -4545,7 +4566,7 @@ function isDesktop() {            return window.matchMedia && window.matchMedia(
                             currency: freshData.pricing?.currency || 'GHS'
                         };
                         saveBookToLocalStorage(bookData);
-                        console.log('✅ Fresh data fetched and cached');
+                        console.log('âœ… Fresh data fetched and cached');
                     }
                 } catch (err) {
                     console.warn('Could not fetch fresh data, using cache:', err);
@@ -4565,7 +4586,7 @@ function isDesktop() {            return window.matchMedia && window.matchMedia(
                     price: cachedBook.price || 0,
                     currency: cachedBook.currency || 'GHS'
                 };
-                console.log('📖 Using cached book data from localStorage');
+                console.log('ðŸ“– Using cached book data from localStorage');
             }
             
             if (!bookData && navigator.onLine) {
@@ -4580,7 +4601,7 @@ function isDesktop() {            return window.matchMedia && window.matchMedia(
                             title: freshData.title || 'Untitled',
                             authorName: freshData.authorName || 'Anonymous',
                             subtitle: freshData.subtitle || '',
-                            pdfUrl: freshData.pdfUrl || '',
+                            pdfUrl: await resolveFullFileUrl(freshData.id) || freshData.pdfUrl || '',
                             bookFormat: freshData.bookFormat || '',
                             content: freshData.content || '',
                             downloadLimit: freshData.downloadLimit || 5,
@@ -4588,7 +4609,7 @@ function isDesktop() {            return window.matchMedia && window.matchMedia(
                             currency: freshData.pricing?.currency || 'GHS'
                         };
                         saveBookToLocalStorage(bookData);
-                        console.log('✅ Book fetched from Firestore and cached');
+                        console.log('âœ… Book fetched from Firestore and cached');
                     }
                 } catch (err) {
                     console.warn('Could not fetch from Firestore:', err);
@@ -4673,7 +4694,7 @@ function isDesktop() {            return window.matchMedia && window.matchMedia(
                         document.getElementById('readerContent').innerHTML = `
                             <div class="not-owned-state">
                                 <i class="fas fa-clock"></i>
-                                <h3>Pre-order confirmed 🥳</h3>
+                                <h3>Pre-order confirmed ðŸ¥³</h3>
                                 <p>Your copy unlocks on <strong>${lockText}</strong>. We'll open it for you automatically on release day.</p>
                                 <a href="details.html?id=${bookId}" class="btn-back">
                                     <i class="fas fa-arrow-left"></i> View Details
@@ -4695,7 +4716,7 @@ function isDesktop() {            return window.matchMedia && window.matchMedia(
                 await updateDownloadButton();
                 
                 // Load saved reading progress
-                const savedProgress = await loadReadingProgress();                epubSavedProgress = savedProgress || null;                epubResumeCfi = (savedProgress && savedProgress.epubCfi) || null;                if (epubResumeCfi) console.log('📖 EPUB resume CFI available');                                displayBook();
+                const savedProgress = await loadReadingProgress();                epubSavedProgress = savedProgress || null;                epubResumeCfi = (savedProgress && savedProgress.epubCfi) || null;                if (epubResumeCfi) console.log('ðŸ“– EPUB resume CFI available');                                displayBook();
  // Save progress every 10 seconds as a fallback (in case page changes aren't caught)
                 if (progressInterval) clearInterval(progressInterval);                progressInterval = setInterval(() => {                    if (currentUser && currentBook && currentPage > 0) {                        const denom = Math.max(2, epubSpineLen() || totalPages || 2);                        const percentage = epubClampPct(Math.round((currentPage / denom) * 100), currentPage, false);                        saveReadingProgress(currentPage, percentage);                    }                }, 10000);
  // Every 10 seconds - less frequent since page changes trigger saves
@@ -4737,7 +4758,7 @@ function isDesktop() {            return window.matchMedia && window.matchMedia(
         updateConnectionStatus();
         
         if (!navigator.onLine) {
-            showToast('📶 You are offline. Loading from cache...', 'info');
+            showToast('ðŸ“¶ You are offline. Loading from cache...', 'info');
         }
         
         onAuthStateChanged(auth, async (user) => {
