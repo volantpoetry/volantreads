@@ -2,14 +2,22 @@
   "name": "volantreads-store1",
   "version": "1.0.0",
   "private": true,
-  "description": "Volant Reads — serverless helpers for the pre-order release flow.",
+  "description": "Volant Reads serverless functions for the sample-book and release flow.",
   "engines": {
     "node": ">=18"
   },
   "scripts": {
     "generate-sitemap": "node .github/scripts/generate-sitemap.js"
   },
+  "dependencies": {
+    "firebase-admin": "^11.11.1",
+    "jszip": "^3.10.1",
+    "pdf-lib": "^1.17.1"
+  },
   "optionalDependencies": {
-    "firebase-admin": "^11.11.1"
+    "glob": "^10.3.10"
+  },
+  "devDependencies": {
+    "vercel": "^34.2.5"
   }
 }
