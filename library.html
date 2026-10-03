@@ -39,7 +39,7 @@
 
   <script>
         if ('serviceWorker' in navigator && location.protocol === 'https:') {
-            navigator.serviceWorker.register('./sw.js?v=29', { scope: './' }).catch(function() {});
+            navigator.serviceWorker.register('./sw.js?v=32', { scope: './' }).catch(function() {});
         }
     </script>
 
@@ -1279,7 +1279,7 @@ nav {
           subtitle: b.subtitle,
           authorName: b.authorName,
           imageUrl: b.imageUrl,
-          pdfUrl: b.pdfUrl,
+          hasFile: b.hasFile,
           status: b.status,
           percentage: b.percentage,
           page: b.page,
@@ -1363,7 +1363,10 @@ nav {
                 ? (purchaseData.purchasedAt?.toDate?.() || new Date(purchaseData.purchasedAt) || new Date())
                 : (readData.lastReadAt?.toDate?.() || new Date(readData.lastReadAt) || new Date()),
               downloadCount: purchaseData.downloadCount || 0,
-              pdfUrl: bookData.pdfUrl || '',
+              // The full URL is not on the public doc any more; the reader
+              // resolves books/{id}/files/full after the entitlement check.
+              // The library only needs to know a file exists.
+              hasFile: bookData.hasFile === true || !!bookData.pdfUrl,
               status: isPurchased ? 'owned' : 'read',
               readCount: readData.readCount || 0,
               lastReadAt: readData.lastReadAt?.toDate?.() || null,
@@ -1524,7 +1527,7 @@ nav {
     const btnGroup = document.createElement('div');
     btnGroup.className = 'btn-group';
 
-    if (book.pdfUrl && !preorderLocked) {
+    if (book.hasFile && !preorderLocked) {
       const readBtn = document.createElement('button');
       readBtn.className = 'update-book-btn';
       readBtn.innerHTML = `<i class="fas fa-book-open"></i> ${book.status === 'read' ? 'Continue Reading' : 'Read Online'}`;
@@ -1534,7 +1537,7 @@ nav {
         window.location.href = `reader.html?id=${book.id}`;
       });
       btnGroup.appendChild(readBtn);
-    } else if (book.pdfUrl && preorderLocked) {
+    } else if (book.hasFile && preorderLocked) {
       const lockedBtn = document.createElement('button');
       lockedBtn.className = 'share-book-btn';
       lockedBtn.innerHTML = `<i class="fas fa-lock"></i> Unlocks ${book.preorderReleaseDate || 'on release'}`;

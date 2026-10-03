@@ -42,7 +42,7 @@
 
     <script>
         if ('serviceWorker' in navigator && location.protocol === 'https:') {
-            navigator.serviceWorker.register('./sw.js?v=29', { scope: './' }).catch(function() {});
+            navigator.serviceWorker.register('./sw.js?v=32', { scope: './' }).catch(function() {});
         }
     </script>
 
@@ -3130,9 +3130,6 @@
         .nav-right .btn-submit {
             order: 1 !important;
         }
-        .nav-right .btn-signin {
-            order: 1 !important;
-        }
         .nav-right .btn-notif {
             order: 4 !important;
         }
@@ -3774,73 +3771,6 @@
     flex-shrink: 0;
 }
 
-/* ===== COUPON / PROMO CODE ===== */
-.cart-coupon-row {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin: 0 0 0.6rem;
-}
-.cart-coupon-row .coupon-input {
-    flex: 1;
-    padding: 0.55rem 0.75rem;
-    border: 1px solid #e2dacf;
-    border-radius: 8px;
-    font-size: 0.85rem;
-    background: #fff;
-}
-.cart-coupon-row .coupon-input:focus {
-    outline: none;
-    border-color: #3b5bdb;
-}
-.coupon-apply {
-    flex-shrink: 0;
-}
-.btn-coupon-apply {
-    padding: 0.55rem 0.9rem;
-    border: none;
-    background: #4b2aad;
-    color: #fff;
-    border-radius: 8px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    cursor: pointer;
-}
-.btn-coupon-apply:hover { background: #3b218a; }
-.btn-coupon-apply:disabled { opacity: 0.6; cursor: not-allowed; }
-.coupon-remove {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin: 0.2rem 0 0;
-    font-size: 0.8rem;
-    color: #4b2aad;
-}
-.btn-coupon-remove {
-    border: none;
-    background: none;
-    color: #d64545;
-    cursor: pointer;
-    font-size: 0.8rem;
-    font-weight: 600;
-}
-.btn-coupon-remove:hover { text-decoration: underline; }
-.coupon-msg {
-    margin: 0.35rem 0 0;
-    font-size: 0.78rem;
-    color: #d64545;
-    min-height: 1rem;
-}
-.cart-discount {
-    display: flex;
-    justify-content: space-between;
-    padding: 0.15rem 0;
-    font-size: 0.85rem;
-    color: #2e7d32;
-    font-weight: 600;
-}
-.cart-discount-row.hidden { display: none !important; }
-
 /* ===== MOBILE FIX - ONLY PADDING & SPACING, NO FONT CHANGES ===== */
 @media (max-width: 480px) {
     .cart-overlay {
@@ -3921,6 +3851,73 @@
 .cart-payment-processing.active {
     display: block;
 }
+
+/* ===== COUPON / PROMO CODE ===== */
+.cart-coupon-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0 0 0.6rem;
+}
+.cart-coupon-row .coupon-input {
+    flex: 1;
+    padding: 0.55rem 0.75rem;
+    border: 1px solid #e2dacf;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    background: #fff;
+}
+.cart-coupon-row .coupon-input:focus {
+    outline: none;
+    border-color: #3b5bdb;
+}
+.coupon-apply {
+    flex-shrink: 0;
+}
+.btn-coupon-apply {
+    padding: 0.55rem 0.9rem;
+    border: none;
+    background: #4b2aad;
+    color: #fff;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+.btn-coupon-apply:hover { background: #3b218a; }
+.btn-coupon-apply:disabled { opacity: 0.6; cursor: not-allowed; }
+.coupon-remove {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0.2rem 0 0;
+    font-size: 0.8rem;
+    color: #4b2aad;
+}
+.btn-coupon-remove {
+    border: none;
+    background: none;
+    color: #d64545;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+.btn-coupon-remove:hover { text-decoration: underline; }
+.coupon-msg {
+    margin: 0.35rem 0 0;
+    font-size: 0.78rem;
+    color: #d64545;
+    min-height: 1rem;
+}
+.cart-discount {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.15rem 0;
+    font-size: 0.85rem;
+    color: #2e7d32;
+    font-weight: 600;
+}
+.cart-discount-row.hidden { display: none !important; }
 .cart-payment-processing .spinner-small {
     display: inline-block;
     width: 24px;
@@ -4288,7 +4285,7 @@ header .logo-header {
 <!-- ===== HEADER WITH LOGO ===== -->
 <header>
     <nav>
-        <a href="store/index.html" class="logo" style="text-decoration:none;">
+        <a href="index.html" class="logo" style="text-decoration:none;">
             <img src="https://volantpoetry.vercel.app/images/logokk.png" alt="Volant Reads Logo" class="nav-logo-img">
             <span class="logo-text">
                 <span class="logo-highlight">Volant</span> Reads
@@ -4328,7 +4325,7 @@ header .logo-header {
         <!-- rendered by JS -->
     </div>
 <div class="cart-footer">
-    <div class="cart-coupon-row">
+<div class="cart-coupon-row">
         <input type="text" id="couponInput" placeholder="Promo code (e.g. WELCOME10)" maxlength="40" autocomplete="off" class="coupon-input" />
         <button class="btn-coupon-apply" id="couponApplyBtn">Apply</button>
     </div>
@@ -4623,7 +4620,6 @@ const cartPaymentProcessing = document.getElementById('cartPaymentProcessing');
 const couponInput = document.getElementById('couponInput');
 const couponApplyBtn = document.getElementById('couponApplyBtn');
 const couponRemoveBtn = document.getElementById('couponRemoveBtn');
-const couponRemoveRow = document.getElementById('couponRemoveRow');
 const couponCodeLabel = document.getElementById('couponCodeLabel');
 const couponMsg = document.getElementById('couponMsg');
 const cartDiscountRow = document.getElementById('cartDiscountRow');
@@ -4697,13 +4693,40 @@ function getCartCount() {
 
 let cartCount = getCartCount();
 
-// ===== COUPON / PROMO SYSTEM =====
+// ===== COUPON SYSTEM =====
 const COUPON_KEY = 'volant_coupon_code';
+
 function round2(n) { return Math.round((Number(n) || 0) * 100) / 100; }
+
+// Purchases are recorded SERVER-SIDE by /api/verify-paystack-transaction.
+// The client sends a Firebase ID token (so the server knows WHO is buying)
+// plus the per-book amounts it charged, and the server does the Firestore
+// write. Never write a purchase doc for a paid book from the client.
+async function getIdTokenForPurchase() {
+    if (!currentUser) return null;
+    try {
+        return await currentUser.getIdToken();
+    } catch (e) {
+        console.warn('Could not get ID token:', e);
+        return null;
+    }
+}
+
+// Build the server-side purchase payload for a set of cart items.
+// priceInGHS/discountGHS mirror what the client charged; the server checks
+// that sum(price) - sum(discount) equals the Paystack-verified amount.
+function buildPurchaseItems(entries) {
+    return (entries || []).map((e) => ({
+        bookId: e.bookId,
+        priceInGHS: round2(e.priceInGHS),
+        discountGHS: round2(e.discountGHS)
+    }));
+}
 
 function getAppliedCouponCode() {
     try { return (localStorage.getItem(COUPON_KEY) || '').trim().toUpperCase(); } catch { return ''; }
 }
+
 function saveAppliedCouponCode(code) {
     try {
         if (code && code.trim()) localStorage.setItem(COUPON_KEY, code.trim().toUpperCase());
@@ -4756,27 +4779,26 @@ async function computeCouponDiscount(code, items) {
     if (!eligible.length) return { ok: false, error: "This coupon doesn't apply to any books in your cart." };
     const itemDiscounts = {};
     let discount = 0;
-    if (coupon.type === 'fixed') {
-        const eligibleTotal = round2(eligible.reduce((s, it) => s + (Number(it.priceInGHS) || 0), 0));
-        let remaining = Math.min(Math.max(Number(coupon.value) || 0, 0), eligibleTotal);
-        discount = round2(remaining);
-        eligible.forEach((it, idx) => {
-            const last = idx === eligible.length - 1;
-            let d = last ? round2(remaining) : round2((Number(it.priceInGHS || 0) / (eligibleTotal || 1)) * discount);
-            if (d > (Number(it.priceInGHS) || 0)) d = Number(it.priceInGHS) || 0;
-            if (d < 0) d = 0;
-            itemDiscounts[it.id] = round2(d);
-            remaining = round2(remaining - d);
-        });
-    } else {
-        for (const it of eligible) {
-            const d = round2((Number(it.priceInGHS) || 0) * ((Number(coupon.value) || 0) / 100));
-            itemDiscounts[it.id] = d;
+    if (coupon.type === 'percent') {
+        const percent = Math.min(Number(coupon.value) || 0, 100);
+        for (const item of eligible) {
+            const d = round2((Number(item.priceInGHS) || 0) * (percent / 100));
+            itemDiscounts[item.id] = d;
             discount += d;
         }
-        discount = round2(discount);
+    } else {
+        const eligibleTotal = eligible.reduce((s, item) => s + (Number(item.priceInGHS) || 0), 0);
+        const fixedVal = Math.min(Number(coupon.value) || 0, eligibleTotal);
+        const applied = Math.min(fixedVal, eligibleTotal);
+        for (const item of eligible) {
+            const share = eligibleTotal > 0 ? round2((Number(item.priceInGHS) || 0) / eligibleTotal * applied) : 0;
+            itemDiscounts[item.id] = share;
+        }
+        discount = round2(eligible.reduce((s, item) => s + (itemDiscounts[item.id] || 0), 0));
     }
-    return { ok: true, coupon, eligible, itemDiscounts, discount };
+    discount = round2(Math.min(discount, eligible.reduce((s, item) => s + (Number(item.priceInGHS) || 0), 0)));
+    if (discount <= 0) return { ok: true, coupon, discount: 0, itemDiscounts };
+    return { ok: true, coupon, discount, itemDiscounts };
 }
 
 async function refreshCouponUI(items) {
@@ -4813,29 +4835,6 @@ async function refreshCouponUI(items) {
         cartDiscountRow.style.display = 'none';
         couponMsg.textContent = res.error;
     }
-}
-
-// ===== DOWNLOAD LIMIT HELPERS =====
-async function getUserDownloadCount(userId, bookId) {
-    try {
-        const purchaseRef = doc(db, "purchases", `${userId}_${bookId}`);
-        const purchaseSnap = await getDoc(purchaseRef);
-        if (purchaseSnap.exists()) {
-            return purchaseSnap.data().downloadCount || 0;
-        }
-        return 0;
-    } catch (err) {
-        console.error('Error getting user download count:', err);
-        return 0;
-    }
-}
-
-async function canUserDownload(userId, bookId, limit) {
-    if (limit === 'unlimited' || limit === 'Unlimited') return true;
-    const maxLimit = parseInt(limit);
-    if (isNaN(maxLimit) || maxLimit < 1) return true;
-    const count = await getUserDownloadCount(userId, bookId);
-    return count < maxLimit;
 }
 
 // ===== CURRENCY CONVERSION FUNCTION =====
@@ -5157,6 +5156,27 @@ async function initiateCartPayment(amount, email, items, couponData = null) {
         return;
     }
 
+    // ===== APPLY COUPON DISCOUNT =====
+    let discountGHS = 0;
+    const itemDiscounts = {};
+    if (couponData && couponData.res && couponData.res.ok) {
+        itemDiscounts = couponData.res.itemDiscounts || {};
+        discountGHS = round2(Object.values(itemDiscounts).reduce((s, v) => s + (Number(v) || 0), 0));
+    }
+    const chargedTotalGHS = round2(Math.max(0, totalGHS - discountGHS));
+
+    // Free path: 100% coupon discount
+    if (chargedTotalGHS <= 0) {
+        await handleCartPaymentCallback(
+            {
+                reference: `coupon_${(couponData && couponData.code) || 'FREE'}_${Date.now()}`,
+                customer: { email: email }
+            },
+            { items: convertedItems, chargedTotalGHS: 0, couponData: couponData && couponData.res ? { code: couponData.code, coupon: couponData.res.coupon, itemDiscounts: couponData.res.itemDiscounts, discount: discountGHS } : null }
+        );
+        return;
+    }
+
     // ===== GET AUTHOR SUBACCOUNTS FOR EACH ITEM =====
     const authorGroups = {};
     let hasAllSubaccounts = true;
@@ -5267,21 +5287,6 @@ async function initiateCartPayment(amount, email, items, couponData = null) {
 
     const bookTitles = items.map(item => item.title).join(', ');
 
-    let discountGHS = 0;
-    if (couponData && couponData.discountGHS > 0) discountGHS = Number(couponData.discountGHS) || 0;
-    if (discountGHS > totalGHS) discountGHS = totalGHS;
-    const chargedTotalGHS = Math.round((totalGHS - discountGHS) * 100) / 100;
-
-    // ===== 100% DISCOUNT (free via coupon) → RECORD DIRECTLY, NO PAYMENT NEEDED =====
-    if (chargedTotalGHS <= 0) {
-        const freeResponse = {
-            reference: 'coupon_' + (couponData && couponData.code ? couponData.code : 'free') + '_' + Date.now(),
-            customer: { email: email }
-        };
-        await handleCartPaymentCallback(freeResponse, { items, chargedTotalGHS: 0, couponData: couponData && couponData.res ? { code: couponData.code, coupon: couponData.res.coupon, itemDiscounts: couponData.res.itemDiscounts, discount: discountGHS } : null });
-        return;
-    }
-
     try {
         const paymentConfig = {
             key: PAYSTACK_PUBLIC_KEY,
@@ -5298,7 +5303,7 @@ async function initiateCartPayment(amount, email, items, couponData = null) {
                 ]
             },
             callback: function(response) {
-                handleCartPaymentCallback(response, { items, chargedTotalGHS, couponData: couponData && couponData.res ? { code: couponData.code, coupon: couponData.res.coupon, itemDiscounts: couponData.res.itemDiscounts, discount: discountGHS } : null });
+                handleCartPaymentCallback(response, { items: convertedItems, chargedTotalGHS, couponData: couponData && couponData.res ? { code: couponData.code, coupon: couponData.res.coupon, itemDiscounts: couponData.res.itemDiscounts, discount: discountGHS } : null });
             },
             onClose: function() {
                 isProcessingPayment = false;
@@ -5349,121 +5354,72 @@ async function handleCartPaymentCallback(response, ctx) {
         return;
     }
 
-    // ===== VERIFY ONCE WITH THE ACTUAL CHARGED TOTAL (supports multi-book carts + coupons) =====
+    // ===== SERVER RECORDS THE PURCHASE =====
+    // One call handles both a real Paystack charge (chargedTotalGHS > 0) and
+    // a 100% coupon (mode:'coupon', no money). The server verifies the
+    // payment/coupon, then writes purchases/{uid}_{bookId} itself.
     let verified = false;
-    if (chargedTotalGHS > 0) {
-        try {
-            const verificationResponse = await fetch('https://volantpoetry.vercel.app/api/verify-paystack-transaction', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    reference: response.reference,
-                    amount: chargedTotalGHS,
-                    email: currentUser.email,
-                    bookId: items[0] ? items[0].id : '',
-                    authorId: ''
-                })
-            });
-            const verificationResult = await verificationResponse.json();
-            verified = verificationResult.success === true;
-            if (!verified) {
-                console.warn('Verification failed:', verificationResult);
-            }
-        } catch (error) {
-            console.error('Verification error:', error);
-            verified = false;
+    let failureMessage = '';
+    try {
+        const idToken = await getIdTokenForPurchase();
+        const itemDiscounts = (couponData && couponData.itemDiscounts) || {};
+        const purchaseItems = buildPurchaseItems(
+            items.map((it) => ({
+                bookId: it.id,
+                priceInGHS: it.priceInGHS,
+                discountGHS: itemDiscounts[it.id] || 0
+            }))
+        );
+        const isCouponOnly = !(chargedTotalGHS > 0);
+        const verificationResponse = await fetch('https://volantpoetry.vercel.app/api/verify-paystack-transaction', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                reference: isCouponOnly ? undefined : response.reference,
+                amount: chargedTotalGHS,
+                email: currentUser.email,
+                bookId: items[0] ? items[0].id : '',
+                authorId: '',
+                token: idToken,
+                items: purchaseItems,
+                couponCode: couponCode || undefined,
+                mode: isCouponOnly ? 'coupon' : undefined
+            })
+        });
+        const verificationResult = await verificationResponse.json();
+        verified = verificationResult.success === true;
+        if (!verified) {
+            console.warn('Verification failed:', verificationResult);
+            failureMessage = verificationResult.message || '';
         }
-    } else {
-        verified = true;
+    } catch (error) {
+        console.error('Verification error:', error);
+        verified = false;
     }
 
     if (!verified) {
-        showToast('⚠️ Payment verification failed. Please contact support.', 'error');
+        showToast(`⚠️ ${failureMessage || 'Payment verification failed. Please contact support.'}`, 'error');
         isProcessingPayment = false;
+        isCartCheckout = false;
         cartPaymentProcessing.classList.remove('active');
         checkoutBtn.disabled = false;
         checkoutBtn.innerHTML = '<i class="fas fa-credit-card"></i> Checkout with Paystack';
         return;
     }
 
-    const transactionRef = response.reference || 'paystack_' + Date.now();
 
-    // ===== RECORD PURCHASE FOR EACH ITEM =====
-    let allSuccess = true;
+    // ===== COLLECT TITLES FOR THE SUCCESS MESSAGE =====
+    // The server already wrote every purchase (and incremented coupon usage).
+    const allSuccess = true;
     const successfulItems = [];
 
     for (const item of items) {
         try {
-            const bookRef = doc(db, "books", item.id);
-            const bookSnap = await getDoc(bookRef);
-            if (!bookSnap.exists()) {
-                allSuccess = false;
-                continue;
-            }
-            const bookData = bookSnap.data();
-            const authorId = bookData.submittedBy || null;
-            const bookTitle = bookData.title || item.title || 'Unknown';
-
-            let poPreorder = item.preorder === true;
-            let poReleaseDate = item.preorderReleaseDate || null;
-            try {
-                const bkSnap = await getDoc(doc(db, "books", item.id));
-                if (bkSnap.exists()) {
-                    const bd = bkSnap.data();
-                    poPreorder = bd.preorder === true;
-                    poReleaseDate = bd.preorderReleaseDate || null;
-                }
-            } catch (err) { /* use cart values */ }
-
-            let amount = item.price || 0;
-            let currency = item.currency || 'GHS';
-            let discountGHS = 0;
-            if (couponData && couponData.itemDiscounts && couponData.itemDiscounts[item.id]) {
-                discountGHS = round2(Number(couponData.itemDiscounts[item.id]) || 0);
-                amount = round2(amount - discountGHS);
-                currency = 'GHS';
-                if (amount < 0) amount = 0;
-            }
-
-            const success = await recordPurchase(
-                currentUser.uid,
-                item.id,
-                transactionRef,
-                {
-                    amount: amount,
-                    currency: currency,
-                    customerEmail: response.customer?.email || currentUser.email,
-                    verifiedBy: 'serverless-api',
-                    authorId: authorId,
-                    bookTitle: bookTitle,
-                    preorder: poPreorder,
-                    preorderReleaseDate: poReleaseDate,
-                    released: false,
-                    couponCode: couponCode || null,
-                    discountGHS: discountGHS,
-                    chargedTotalGHS: chargedTotalGHS
-                }
-            );
-            if (success) {
-                successfulItems.push(bookTitle);
-            } else {
-                allSuccess = false;
-            }
+            const bookSnap = await getDoc(doc(db, "books", item.id));
+            if (!bookSnap.exists()) continue;
+            successfulItems.push(bookSnap.data().title || item.title || 'Unknown');
         } catch (error) {
-            console.error('Error recording purchase for item:', item.id, error);
-            allSuccess = false;
-        }
-    }
-
-    // ===== INCREMENT COUPON USAGE =====
-    if (couponData && couponData.coupon && couponData.coupon.id) {
-        try {
-            await updateDoc(doc(db, "coupons", couponData.coupon.id), {
-                uses: increment(1),
-                lastUsedAt: serverTimestamp()
-            });
-        } catch (err) {
-            console.warn('Could not increment coupon usage:', err);
+            console.warn('Could not read book title:', error);
         }
     }
 
@@ -5476,6 +5432,7 @@ async function handleCartPaymentCallback(response, ctx) {
         await renderCart();
         closeCart();
 
+        // 👈 REFRESH EARNINGS AFTER PURCHASE
         if (currentUser) {
             await loadEarnings(currentUser.uid);
         }
@@ -5515,10 +5472,43 @@ function updateWishlistBadge() {
     if (badge) badge.textContent = wishlistCount;
 }
 
+// ===== HELPERS: DOWNLOAD LIMIT =====
+async function getUserDownloadCount(userId, bookId) {
+    try {
+        const q = query(collection(db, "purchases"), where("userId", "==", userId), where("bookId", "==", bookId));
+        const snap = await getDocs(q);
+        if (snap.empty) return 0;
+        let count = 0;
+        snap.forEach(d => {
+            const data = d.data();
+            count += typeof data.downloadCount === 'number' ? data.downloadCount : (typeof data.downloads === 'number' ? data.downloads : 0);
+        });
+        return count;
+    } catch (error) {
+        console.error('getUserDownloadCount error:', error);
+        return 0;
+    }
+}
+
+async function canUserDownload(userId, bookId, limit) {
+    if (limit === 'unlimited' || limit === 'Unlimited') return true;
+    const maxLimit = parseInt(limit);
+    if (isNaN(maxLimit) || maxLimit < 1) return true;
+    try {
+        const count = await getUserDownloadCount(userId, bookId);
+        return count < maxLimit;
+    } catch (error) {
+        console.error('canUserDownload error:', error);
+        return true;
+    }
+}
+
 // ===== RENDER CART =====
 async function renderCart() {
     const items = getCartItems();
     if (items.length === 0) {
+        if (couponRemoveRow) { couponRemoveRow.style.display = 'none'; couponMsg.textContent = ''; couponMsg.style.color = ''; }
+        if (cartDiscountRow) { cartDiscountRow.style.display = 'none'; cartDiscountAmount.textContent = '0.00'; }
         cartBody.innerHTML = `
             <div class="empty-cart">
                 <i class="fas fa-shopping-cart"></i>
@@ -5528,9 +5518,6 @@ async function renderCart() {
         `;
         cartTotalAmount.textContent = 'GHS 0.00';
         checkoutBtn.disabled = true;
-        if (couponMsg) couponMsg.textContent = '';
-        if (cartDiscountRow) cartDiscountRow.style.display = 'none';
-        if (couponRemoveRow) couponRemoveRow.style.display = 'none';
         return;
     }
 
@@ -5558,7 +5545,6 @@ async function renderCart() {
                 `;
             } catch (error) {
                 console.warn('Conversion failed:', error);
-                ghsAmount = amount;
                 priceDisplay = `${currency} ${amount.toFixed(2)}`;
             }
         }
@@ -5566,24 +5552,27 @@ async function renderCart() {
         let isOwned = false;
         let limitReached = false;
         if (currentUser) {
-            const purchased = await checkPurchaseStatus(currentUser.uid, item.id);
-            isOwned = purchased;
-            if (purchased) {
+            isOwned = await checkPurchaseStatus(currentUser.uid, item.id);
+            if (isOwned) {
+                // Honour the author's own download limit. A hard-coded 5 here
+                // capped every book at 5 uses regardless of what the seller
+                // actually allowed.
                 const bookRef = doc(db, "books", item.id);
                 const bookSnap = await getDoc(bookRef);
                 if (bookSnap.exists()) {
                     const bookData = bookSnap.data();
                     const limit = bookData.downloadLimit || bookData.downloads || 5;
-                    const canDownload = await canUserDownload(currentUser.uid, item.id, limit);
-                    limitReached = !canDownload;
+                    limitReached = !(await canUserDownload(currentUser.uid, item.id, limit));
                 }
             }
-            if (!isOwned) hasUnpurchasedItems = true;
+            if (!(isOwned && !limitReached)) {
+                hasUnpurchasedItems = true;
+            }
         } else {
             hasUnpurchasedItems = true;
         }
         
-        // Already-owned books with downloads remaining are excluded from the total.
+        // Already-owned books with download uses remaining are excluded from the total.
         if (!(isOwned && !limitReached)) {
             totalGHS += ghsAmount;
         }
@@ -5703,6 +5692,13 @@ if (couponRemoveBtn) {
     });
 }
 
+couponInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        couponApplyBtn.click();
+    }
+});
+
 // ===== CHECKOUT BUTTON =====
 checkoutBtn.addEventListener('click', async function() {
     if (!currentUser) {
@@ -5752,11 +5748,10 @@ checkoutBtn.addEventListener('click', async function() {
 
     const email = currentUser.email || currentUser.displayName || 'customer@example.com';
 
-    // ===== VALIDATE APPLIED COUPON & COMPUTE DISCOUNT =====
     let couponData = null;
     const couponCode = getAppliedCouponCode();
     if (couponCode) {
-        const pricedItems = [];
+        const priced = [];
         for (const item of purchasableItems) {
             let authorId = item.authorId || '';
             if (!authorId) {
@@ -5765,20 +5760,18 @@ checkoutBtn.addEventListener('click', async function() {
                     if (s.exists()) authorId = s.data().submittedBy || '';
                 } catch (e) {}
             }
-            pricedItems.push({ id: item.id, title: item.title, priceInGHS: item.price || 0, authorId });
+            priced.push({ id: item.id, title: item.title, priceInGHS: item.price || 0, authorId });
         }
-        const res = await computeCouponDiscount(couponCode, pricedItems);
-        if (res.ok) {
-            if (res.discount > 0) {
-                couponData = { code: res.coupon.code, res, discountGHS: res.discount };
-                showToast(`🎟️ Coupon applied: ${res.coupon.code} (GHS ${res.discount.toFixed(2)} off)`, 'success');
-            } else {
-                showToast('🎟️ Coupon applied — this order is free!', 'success');
-            }
-        } else {
-            saveAppliedCouponCode('');
+        const res = await computeCouponDiscount(couponCode, priced);
+        if (!res.ok) {
             couponMsg.textContent = res.error;
-            showToast(`❌ ${res.error}`, 'error');
+            couponMsg.style.color = '#d64545';
+            saveAppliedCouponCode('');
+            showToast('❌ ' + res.error, 'error');
+            return;
+        }
+        if (res.discount > 0) {
+            couponData = { code: couponCode, type: res.coupon.type, value: res.coupon.value, res };
         }
     }
 
@@ -6209,9 +6202,14 @@ async function renderHeader(user) {
 // ========== NOTIFICATIONS (BELL + PANEL) ==========
 let notifUnsubs = [];
 let msgNotifUnsubs = [];
+let convNotifUnsubs = [];
 const msgSeen = new Map();
+const convSeen = new Map();
 let notifUnreadCount = 0;
 let msgUnreadCount = 0;
+let convUnreadCount = 0;
+let notifBodyCache = '';
+let notifLoadGen = 0;
 
 function closeNotifPanel() {
     const panel = document.getElementById('notifPanel');
@@ -6226,15 +6224,19 @@ function stopNotifWatcher() {
     notifUnsubs = [];
     msgNotifUnsubs.forEach(u => { try { u(); } catch (e) {} });
     msgNotifUnsubs = [];
+    convNotifUnsubs.forEach(u => { try { u(); } catch (e) {} });
+    convNotifUnsubs = [];
     msgSeen.clear();
+    convSeen.clear();
     notifUnreadCount = 0;
     msgUnreadCount = 0;
+    convUnreadCount = 0;
 }
 
 function updateNotifBadge() {
     const badge = document.getElementById('notifBadge');
     if (!badge) return;
-    const n = notifUnreadCount + msgUnreadCount;
+    const n = notifUnreadCount + msgUnreadCount + convUnreadCount;
     badge.textContent = n > 9 ? '9+' : String(n);
     badge.classList.toggle('visible', n > 0);
 }
@@ -6287,6 +6289,26 @@ function startNotifWatcher(uid) {
         msgNotifUnsubs.push(attach(query(collection(db, "messages"), where("toUserId", "==", uid))));
         msgNotifUnsubs.push(attach(query(collection(db, "messages"), where("authorId", "==", uid))));
     } catch (e) { /* ignore */ }
+    try {
+        const uc = onSnapshot(query(collection(db, "conversations"), where("participants", "array-contains", uid)), async (snap) => {
+            snap.docChanges().forEach(ch => {
+                const id = ch.doc.id;
+                if (ch.type === 'removed') convSeen.delete(id);
+                else convSeen.set(id, ch.doc);
+            });
+            convUnreadCount = 0;
+            for (const [id] of convSeen) {
+                try {
+                    const ss = await getDocs(query(collection(db, "conversations/" + id + "/messages"), where("read", "==", false)));
+                    ss.forEach(m => { if (m.data().senderId !== uid) convUnreadCount++; });
+                } catch (e) { /* ignore */ }
+            }
+            updateNotifBadge();
+            const panel = document.getElementById('notifPanel');
+            if (panel && panel.classList.contains('open')) loadNotifList(uid);
+        }, () => { /* ignore */ });
+        convNotifUnsubs.push(uc);
+    } catch (e) { /* ignore */ }
 }
 
 function fmtNotifTime(ts) {
@@ -6318,7 +6340,7 @@ function notifText(d) {
     if (t === 'comment') return (name ? name + ' commented' : 'Someone commented') + (poemT ? ' on your poem: ' + poemT : ' on your poem') + (d.commentText ? ': ' + short(d.commentText) : '');
     if (t === 'reply') return (name ? name + ' replied' : 'Someone replied') + (poemT ? ' on your poem: ' + poemT : ' on your poem') + (d.replyText ? ': ' + short(d.replyText) : '');
     if (t === 'follow') return (name ? name + ' started following you' : 'Someone started following you');
-    if (d.extra && typeof d.extra === 'object' && d.extra.body) return short(d.extra.body);
+if (d.extra && typeof d.extra === 'object' && d.extra.body) return short(d.extra.body);
     return short(cleanMsg(d.message || d.body || d.title || 'You have a new notification'));
 }
 
@@ -6372,7 +6394,7 @@ function notifPlatformValue(d) {
   async function notifTextHTML(d) {
     const t = d.type;
     const esc = escHtml;
-    const base = 'https://volantpoetry.vercel.app';
+    const base = '';
     const userName = d.fromUserName || d.fromName || d.senderName || 'Someone';
     const uid = d.fromUser || d.fromUid || '';
     const userLink = (uid && uid !== 'system')
@@ -6462,9 +6484,15 @@ function notifPlatformValue(d) {
   }
 
   async function loadNotifList(uid) {
+    const gen = ++notifLoadGen;
     const list = document.getElementById('notifList');
     if (!list) return;
-    list.innerHTML = '<div class="notif-empty">Loading…</div>';
+    if (notifBodyCache) {
+        list.innerHTML = notifBodyCache;
+        bindNotifMsgItems();
+    } else {
+        list.innerHTML = '<div class="notif-empty">Loading…</div>';
+    }
     const tsMillis = (t) => t ? (t.toMillis ? t.toMillis() : (t.seconds ? t.seconds * 1000 : new Date(t).getTime())) : 0;
     const entries = [];
     try {
@@ -6486,6 +6514,22 @@ function notifPlatformValue(d) {
             </div>` });
         }
     } catch (e) { /* ignore */ }
+    try {
+        convSeen.forEach(ds => {
+            const d = ds.data() || {};
+            const participants = Array.isArray(d.participants) ? d.participants : [];
+            const otherUid = participants.find(p => p !== uid) || '';
+            const pd = d.participantDetails || {};
+            const other = pd[otherUid] || {};
+            const sender = other.username || other.displayName || 'Poet';
+            const last = d.lastMessage || '';
+            if (!last) return;
+            entries.push({ ts: tsMillis(d.lastMessageTime), convId: ds.id, html: `<div class="notif-item unread msg-item" data-conv-dm="${ds.id}">
+                <div class="notif-msg">💬 <strong>${escHtml(sender)}</strong> — ${escHtml(String(last).slice(0, 60))}</div>
+                <div class="notif-time">${fmtNotifTime(d.lastMessageTime)}</div>
+            </div>` });
+        });
+    } catch (e) { /* ignore */ }
     msgSeen.forEach(ds => {
         const d = ds.data();
         const sender = escHtml(d.senderName || d.fromUserName || d.fromUserId || 'Reader');
@@ -6498,13 +6542,23 @@ function notifPlatformValue(d) {
     });
     entries.sort((a, b) => b.ts - a.ts);
     const combined = entries.slice(0, 20).map(e => e.html).join('');
-    if (!combined) {
-        list.innerHTML = '<div class="notif-empty">No notifications yet 🎉</div>';
-        return;
-    }
-    list.innerHTML = combined;
+    if (gen !== notifLoadGen) return;
+    notifBodyCache = combined || '<div class="notif-empty">No notifications yet 🎉</div>';
+    list.innerHTML = notifBodyCache;
+    bindNotifMsgItems();
+}
+
+function bindNotifMsgItems() {
+    const list = document.getElementById('notifList');
+    if (!list) return;
     list.querySelectorAll('.msg-item').forEach(el => {
         el.addEventListener('click', () => {
+            const convId = el.getAttribute('data-conv-dm');
+            if (convId) {
+                try { sessionStorage.setItem('volant_open_conv', convId); } catch (e) {}
+                window.location.href = 'https://volantpoetry.vercel.app/messages.html';
+                return;
+            }
             sessionStorage.setItem('volant_reads_current_page', 'messages');
             window.location.href = 'dashboard.html';
         });
@@ -6516,9 +6570,12 @@ async function markAllRead(docs) {
     const list = docs || [];
     if (list.length === 0 && uid) {
         try {
-            const q = query(collection(db, "notifications"), where("userId", "==", uid), where("read", "==", false));
-            const snap = await getDocs(q);
-            list.push(...snap.docs);
+            const q1 = query(collection(db, "notifications"), where("userId", "==", uid));
+            const q2 = query(collection(db, "notifications"), where("forUser", "==", uid));
+            const [s1, s2] = await Promise.all([getDocs(q1), getDocs(q2)]);
+            const seen = new Set();
+            s1.forEach(ds => { if (!seen.has(ds.id)) { seen.add(ds.id); list.push(ds); } });
+            s2.forEach(ds => { if (!seen.has(ds.id)) { seen.add(ds.id); list.push(ds); } });
         } catch (e) { return; }
     }
     const batch = writeBatch(db);
@@ -6570,7 +6627,7 @@ document.addEventListener('click', (e) => {
 onAuthStateChanged(auth, async (user) => {
     currentUser = user;
     await renderHeader(user);
-    if (user) startNotifWatcher(user.uid); else stopNotifWatcher();
+    if (user) { startNotifWatcher(user.uid); loadNotifList(user.uid); } else stopNotifWatcher();
     if (cartOverlay.classList.contains('open')) {
         await renderCart();
     }

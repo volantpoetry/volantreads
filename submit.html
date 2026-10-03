@@ -2374,10 +2374,11 @@
             }
         }
     </script>
+
 <script type="module">
         import { initializeApp } from "firebase/app";
         import {
-            getFirestore, collection, addDoc, serverTimestamp, doc, getDoc, updateDoc
+            getFirestore, collection, addDoc, serverTimestamp, doc, getDoc, updateDoc, setDoc
         } from "firebase/firestore";
         import {
             getAuth, onAuthStateChanged
@@ -3921,6 +3922,7 @@ document.addEventListener('DOMContentLoaded', setupBackLink);
                 imageUrl = await uploadWithProgress(coverFile, 'image', 'cover image');
                 progressStatus.textContent = 'Uploading manuscript...';
                 pdfUrl = await uploadWithProgress(pdfFile, 'raw', 'book file');
+
                 progressStatus.textContent = 'Saving to database...';
                 progressFill.style.width = '100%';
                 progressText.textContent = '100%';
@@ -3953,7 +3955,11 @@ document.addEventListener('DOMContentLoaded', setupBackLink);
                     ...preorderData,
                     otherDetails: otherDetails || null,
                     imageUrl,
-                    pdfUrl,
+                    // The full file URL is never stored on the public book doc.
+                    // It lives in books/{id}/files/full, which only the buyer,
+                    // the author and admins may read; previews get a
+                    // truncated sample.
+                    hasFile: true,
                     bookFormat,
                     pricing: { currency, amount: parseFloat(price) },
                     submittedBy: currentUser.uid,
@@ -3964,7 +3970,15 @@ document.addEventListener('DOMContentLoaded', setupBackLink);
                     submittedAt: serverTimestamp(),
                     updatedAt: serverTimestamp()
                 };
-                await addDoc(collection(db, "books"), bookData);
+                const bookRef = await addDoc(collection(db, "books"), bookData);
+
+                // The purchaser-only copy of the file. Rules gate reads of this
+                // subcollection to the buyer, the author and admins.
+                await setDoc(doc(bookRef, "files", "full"), {
+                    url: pdfUrl,
+                    submittedBy: currentUser.uid,
+                    updatedAt: serverTimestamp()
+                });
                 
                 discardDraft();
                 showProgress(false);

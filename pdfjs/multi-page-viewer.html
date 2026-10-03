@@ -451,7 +451,27 @@
 
             async function renderPreview() {
                 try {
-                    const pdf = await pdfjsLib.getDocument(file).promise;
+                    // Fetch the bytes ourselves with caching fully disabled, then
+                    // hand the buffer to PDF.js. Passing a URL straight to
+                    // getDocument() lets whatever response the browser (or an
+                    // older, still-installed service worker) hands back reach
+                    // PDF.js unchecked, which is how a cached empty 204 became
+                    // "Unexpected server response (204)". Verifying the status
+                    // here means PDF.js only ever sees a real 200 PDF body.
+                    const fetchOpts = { cache: 'no-store', credentials: 'same-origin' };
+                    const probe = await fetch(file, { ...fetchOpts, method: 'GET' });
+                    if (!probe.ok) {
+                        const err = new Error('Unexpected server response (' + probe.status + ') while retrieving PDF "' + file + '".');
+                        err.name = 'UnexpectedResponseException';
+                        throw err;
+                    }
+                    const buf = await probe.arrayBuffer();
+                    if (!buf || buf.byteLength === 0) {
+                        const err = new Error('Unexpected server response (204) while retrieving PDF "' + file + '".');
+                        err.name = 'UnexpectedResponseException';
+                        throw err;
+                    }
+                    const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(buf) }).promise;
                     const actualTotalPages = pdf.numPages;
                     
                     console.log('📄 PDF loaded:', { actualTotalPages, requestedEnd: endPage });
@@ -625,9 +645,45 @@
                     
                 } catch (error) {
                     console.error('❌ Error loading PDF:', error);
+                    const servedBy = location.protocol + '//' + location.host;
+                    // PDF.js reports the bare status; read it so the advice
+                    // matches the real cause instead of always blaming the
+                    // server type.
+                    const statusMatch = /Unexpected server response \((\d+)\)/.exec(error.message || '');
+                    const status = statusMatch ? Number(statusMatch[1]) : null;
+                    let hint = '';
+                    if (status === 404) {
+                        hint = `<p style="font-size:0.8rem;color:#b8860b;margin-top:14px;max-width:430px;line-height:1.55;text-align:left;">
+                            The server at <code>${servedBy}</code> answered 404, so it never ran
+                            <code>/api/*</code> - that means it is a static-only dev server
+                            (VS Code Live Server, <code>python -m http.server</code>, a
+                            <code>file://</code> path).<br><br>
+                            Use <code>npm run local</code> and browse
+                            <code>http://localhost:3000/</code>, or keep Live Server and let it
+                            proxy <code>/api</code> to port 3000 via
+                            <code>liveServer.settings.proxy</code> in
+                            <code>.vscode/settings.json</code> (then restart Live Server).
+                        </p>`;
+                    } else if (status === 204 || (status !== null && status >= 500)) {
+                        hint = `<p style="font-size:0.8rem;color:#b8860b;margin-top:14px;max-width:430px;line-height:1.55;text-align:left;">
+                            The server at <code>${servedBy}</code> answered ${status} with an empty
+                            body instead of a PDF. That is almost always a stale service worker
+                            intercepting <code>/api/*</code>.<br><br>
+                            Open DevTools &rarr; Application &rarr; Service Workers, tick
+                            <em>Update on reload</em>, click <em>Unregister</em>, then clear
+                            <em>Cache storage</em> and hard-reload (Ctrl+Shift+R).
+                        </p>`;
+                    } else if (status === 401 || status === 403) {
+                        hint = `<p style="font-size:0.8rem;color:#b8860b;margin-top:14px;max-width:430px;line-height:1.55;text-align:left;">
+                            The sample endpoint refused the request (${status}). Signed tiers need a
+                            valid <code>SAMPLE_SIGN_SECRET</code> on the server; locally it is missing
+                            from <code>.env.local</code>.
+                        </p>`;
+                    }
                     loadingState.innerHTML = `
                         <p>❌ Error loading preview</p>
                         <p style="font-size:0.85rem;color:#999;margin-top:8px;">${error.message}</p>
+                        ${hint}
                     `;
                 }
             }

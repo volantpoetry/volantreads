@@ -1,4 +1,4 @@
-﻿// store/sw.js
+// store/sw.js
 // v29: every previous version of this app's caches is dropped when this worker
 // takes over, and the new shell is always fetched past the HTTP disk cache.
 // v21 -> v22: ships the standalone EPUB preview page in the app shell.
@@ -19,6 +19,21 @@
 // v28 -> v29: EPUB previews route back to the standalone store/epub-preview.html,
 // which loads its viewer from ./preview/reader.html + ./preview/ libs; the
 // shell ships those assets so previews keep working offline.
+// v29 -> v30: /api/* is never cached or intercepted. Sample previews were
+// getting a replayed empty (204) or auth (401) response from the worker's own
+// cache, so PDF.js refused the file with "Unexpected server response (204)".
+// Bumping the tag also forces this worker to take over and drop the v29 cache
+// that still holds the old pdfjs/multi-page-viewer.html.
+// v30 -> v31: epub-preview.html gates its first render on book.ready, which
+// epub.js resolves through Promise.all over internal deferreds. One of them
+// only settles when the package carries
+// META-INF/com.apple.ibooks.display-options.xml, so the server-truncated
+// sample left book.ready pending forever: display() was never called and the
+// preview showed an empty background with no console error. The page now
+// waits on manifest/spine/metadata, clears its loading placeholder on first
+// render, and times out visibly. Bumping the tag drops the v30 shell that
+// still precaches the broken preview document, so returning users get the
+// fix without a hard refresh.
 //
 // Cache ownership matters here: this worker is scoped to the store, but
 // CacheStorage is shared by every worker on the origin. An earlier version
@@ -27,7 +42,7 @@
 // limited to the prefixes this app owns.
 const APP_TAG = 'store1';
 const CACHE_PREFIX = `volant-${APP_TAG}-`;
-const CACHE_NAME = `${CACHE_PREFIX}v29`;
+const CACHE_NAME = `${CACHE_PREFIX}v32`;
 
 // Downloaded books are user data, not a version, so this cache survives upgrades.
 const BOOK_CACHE = 'volant-reads-pdfs';
@@ -263,6 +278,15 @@ self.addEventListener('fetch', event => {
     const hostname = url.hostname;
     const pathname = url.pathname;
     const request = event.request;
+
+    // --- API calls: straight to the network, never cached ---
+    // /api/* is per-user and per-request: sample PDFs, entitlements, signed
+    // URLs and auth failures. Caching them replays a stale 401/204/404 to
+    // PDF.js on every later load ("Unexpected server response (204)").
+    if (pathname.startsWith('/api/')) {
+        event.respondWith(fetch(request));
+        return;
+    }
 
     // --- Book files (PDF/EPUB): network-first, cache-first from the dedicated
     // --- book cache when offline. ---

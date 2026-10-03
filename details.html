@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Volant Reads · Book Details</title>
   <script type="application/ld+json" id="structured-data-book"></script>
-
    <script>
     // Simple console blocker - production only
     (function() {
@@ -27,7 +26,6 @@
         window.onunhandledrejection = function() { return true; };
     })();
 </script>
-
   <!-- Paystack SDK -->
   <script src="https://js.paystack.co/v1/inline.js"></script>
   
@@ -42,7 +40,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <script>
     if ('serviceWorker' in navigator && location.protocol === 'https:') {
-      navigator.serviceWorker.register('./sw.js?v=29', { scope: './' }).catch(function() {});
+      navigator.serviceWorker.register('./sw.js?v=32', { scope: './' }).catch(function() {});
     }
   </script>
 
@@ -1021,22 +1019,6 @@ header {
       font-size: 0.85em;
       margin-left: 3px;
       vertical-align: middle;
-    }
-    .verified-badge {
-      background: #e8f4fd;
-      color: #1976d2;
-      border: 1px solid #b8dcf6;
-      border-radius: 20px;
-      padding: 1px 8px;
-      font-size: 0.72em;
-      font-weight: 600;
-      margin-left: 6px;
-      white-space: nowrap;
-    }
-    .mini-rating {
-      margin: 2px 0 4px;
-      font-size: 0.78rem;
-      line-height: 1.2;
     }
 
     .book-details .book-body {
@@ -3870,6 +3852,14 @@ header .logo-header {
     color: var(--wishlist-grey, #bdc3c7);
     transition: var(--transition);
 }
+.btn-reading-list.active {
+    border-color: var(--secondary);
+    background: #f8efe8;
+    color: var(--secondary);
+}
+.btn-reading-list.active i {
+    color: var(--secondary);
+}
 .btn-share {
     background: transparent;
     color: var(--text-dark);
@@ -4020,13 +4010,23 @@ header .logo-header {
 .share-option.facebook { background: #1877F2; }
 .share-option.twitter { background: #000; }
 .share-option.email { background: #7b6f9e; }
-.btn-reading-list.active {
-    border-color: var(--secondary);
-    background: #f8efe8;
-    color: var(--secondary);
+
+/* ===== VERIFIED BADGE + MINI RATING ===== */
+.verified-badge {
+    background: #e8f4fd;
+    color: #1976d2;
+    border: 1px solid #b8dcf6;
+    border-radius: 20px;
+    padding: 1px 8px;
+    font-size: 0.72em;
+    font-weight: 600;
+    margin-left: 6px;
+    white-space: nowrap;
 }
-.btn-reading-list.active i {
-    color: var(--secondary);
+.mini-rating {
+    margin: 2px 0 4px;
+    font-size: 0.78rem;
+    line-height: 1.2;
 }
 .review-already {
     display: flex;
@@ -4596,8 +4596,6 @@ function goToLogin() {
     const reviewAlready = document.getElementById('reviewAlready');
     const readingListBtn = document.getElementById('readingListBtn');
     const bookTopRating = document.getElementById('bookTopRating');
-
-    // ===== CART + COUPON DOM REFS =====
     const cartOverlay = document.getElementById('cartOverlay');
     const cartBackdrop = document.getElementById('cartBackdrop');
     const cartBody = document.getElementById('cartBody');
@@ -4678,8 +4676,9 @@ let storedSenderName = '';
 
     let cartCount = getCartCount();
 
-    // ===== COUPON / PROMO SYSTEM =====
+    // ===== COUPON SYSTEM =====
     const COUPON_KEY = 'volant_coupon_code';
+
     function round2(n) { return Math.round((Number(n) || 0) * 100) / 100; }
 
     function getAppliedCouponCode() {
@@ -4737,27 +4736,25 @@ let storedSenderName = '';
       if (!eligible.length) return { ok: false, error: "This coupon doesn't apply to any books in your cart." };
       const itemDiscounts = {};
       let discount = 0;
-      if (coupon.type === 'fixed') {
-        const eligibleTotal = round2(eligible.reduce((s, it) => s + (Number(it.priceInGHS) || 0), 0));
-        let remaining = Math.min(Math.max(Number(coupon.value) || 0, 0), eligibleTotal);
-        discount = round2(remaining);
-        eligible.forEach((it, idx) => {
-          const last = idx === eligible.length - 1;
-          let d = last ? round2(remaining) : round2((Number(it.priceInGHS || 0) / (eligibleTotal || 1)) * discount);
-          if (d > (Number(it.priceInGHS) || 0)) d = Number(it.priceInGHS) || 0;
-          if (d < 0) d = 0;
-          itemDiscounts[it.id] = round2(d);
-          remaining = round2(remaining - d);
-        });
-      } else {
-        for (const it of eligible) {
-          const d = round2((Number(it.priceInGHS) || 0) * ((Number(coupon.value) || 0) / 100));
-          itemDiscounts[it.id] = d;
+      if (coupon.type === 'percent') {
+        const percent = Math.min(Number(coupon.value) || 0, 100);
+        for (const item of eligible) {
+          const d = round2((Number(item.priceInGHS) || 0) * (percent / 100));
+          itemDiscounts[item.id] = d;
           discount += d;
         }
-        discount = round2(discount);
+      } else {
+        const eligibleTotal = eligible.reduce((s, item) => s + (Number(item.priceInGHS) || 0), 0);
+        const applied = Math.min(Number(coupon.value) || 0, eligibleTotal);
+        for (const item of eligible) {
+          const share = eligibleTotal > 0 ? round2((Number(item.priceInGHS) || 0) / eligibleTotal * applied) : 0;
+          itemDiscounts[item.id] = share;
+        }
+        discount = round2(eligible.reduce((s, item) => s + (itemDiscounts[item.id] || 0), 0));
       }
-      return { ok: true, coupon, eligible, itemDiscounts, discount };
+      discount = round2(Math.min(discount, eligible.reduce((s, item) => s + (Number(item.priceInGHS) || 0), 0)));
+      if (discount <= 0) return { ok: true, coupon, discount: 0, itemDiscounts };
+      return { ok: true, coupon, discount, itemDiscounts };
     }
 
     async function refreshCouponUI(items) {
@@ -5244,6 +5241,7 @@ let storedSenderName = '';
           let effectivePrice = price;
           let cartPreorder = false;
           let cartReleaseDate = null;
+          let cartAuthorId = '';
           try {
             const bkSnap = await getDoc(doc(db, 'books', bookId));
             if (bkSnap.exists()) {
@@ -5251,9 +5249,10 @@ let storedSenderName = '';
               effectivePrice = effectiveBookPrice(bd);
               cartPreorder = bd.preorder === true;
               cartReleaseDate = bd.preorderReleaseDate || null;
+              cartAuthorId = bd.submittedBy || '';
             }
           } catch (err) { /* keep list price */ }
-          cartItems.push({ id: bookId, title: title || 'Untitled', author: author || 'Anonymous', price: effectivePrice, currency: currency, image: image, preorder: cartPreorder, preorderReleaseDate: cartReleaseDate });
+          cartItems.push({ id: bookId, title: title || 'Untitled', author: author || 'Anonymous', price: effectivePrice, currency: currency, image: image, preorder: cartPreorder, preorderReleaseDate: cartReleaseDate, authorId: cartAuthorId });
           saveCartItems(cartItems);
           cartCount = cartItems.length;
           updateCartBadge();
@@ -5303,7 +5302,7 @@ let storedSenderName = '';
       wishlistItems.forEach(item => {
         const existing = cartItems.find(cartItem => cartItem.id === item.bookId);
         if (!existing) {
-          cartItems.push({ id: item.bookId, title: item.title || 'Untitled', author: item.author || 'Anonymous', price: item.price || 0, currency: item.currency || 'GHS', image: item.imageUrl || '' });
+          cartItems.push({ id: item.bookId, title: item.title || 'Untitled', author: item.author || 'Anonymous', price: item.price || 0, currency: item.currency || 'GHS', image: item.imageUrl || '', authorId: item.authorId || '' });
           addedCount++;
         }
       });
@@ -5644,6 +5643,8 @@ let storedSenderName = '';
     async function renderCart() {
       const items = getCartItems();
       if (items.length === 0) {
+        if (couponRemoveRow) { couponRemoveRow.style.display = 'none'; couponMsg.textContent = ''; couponMsg.style.color = ''; }
+        if (cartDiscountRow) { cartDiscountRow.style.display = 'none'; cartDiscountAmount.textContent = '0.00'; }
         cartBody.innerHTML = `
           <div class="empty-cart">
             <i class="fas fa-shopping-cart"></i>
@@ -5653,8 +5654,6 @@ let storedSenderName = '';
         `;
         cartTotalAmount.textContent = 'GHS 0.00';
         checkoutBtn.disabled = true;
-        if (couponMsg) couponMsg.textContent = '';
-        if (cartDiscountRow) cartDiscountRow.style.display = 'none';
         return;
       }
 
@@ -5675,14 +5674,13 @@ let storedSenderName = '';
           priceDisplay = `GHS ${amount.toFixed(2)}`;
         } else {
           try {
-            ghsAmount = await convertToGHS(amount, currency) || amount;
+            ghsAmount = await convertToGHS(amount, currency);
             priceDisplay = `
               ${currency} ${amount.toFixed(2)}
               <span class="conversion-info">(≈ GHS ${ghsAmount.toFixed(2)})</span>
             `;
           } catch (error) {
             console.warn('Conversion failed:', error);
-            ghsAmount = amount;
             priceDisplay = `${currency} ${amount.toFixed(2)}`;
           }
         }
@@ -5704,7 +5702,7 @@ let storedSenderName = '';
           }
         }
         
-        // Already-owned books with downloads remaining are excluded from the total.
+        // Already-owned books with download uses remaining are excluded from the total.
         if (!(isOwned && !limitReached)) {
           totalGHS += ghsAmount;
           if (currency.toUpperCase() !== 'GHS') {
@@ -5741,7 +5739,6 @@ let storedSenderName = '';
       }
 
       cartBody.innerHTML = html;
-      refreshCouponUI(items).catch(() => {});
       
       let totalDisplay = `GHS ${totalGHS.toFixed(2)}`;
       if (hasNonGHSCurrency) {
@@ -5759,6 +5756,8 @@ let storedSenderName = '';
       
       const hasPurchasableItems = await checkCartHasPurchasableItems(items);
       checkoutBtn.disabled = !hasPurchasableItems || items.length === 0 || isProcessingPayment;
+
+      refreshCouponUI(items).catch(() => {});
 
       document.querySelectorAll('.btn-remove').forEach(btn => {
         btn.addEventListener('click', function(e) {
@@ -5816,6 +5815,7 @@ let storedSenderName = '';
     cartCloseBtn.addEventListener('click', closeCart);
     cartBackdrop.addEventListener('click', closeCart);
 
+    // ===== COUPON APPLY / REMOVE =====
     if (couponApplyBtn) {
       couponApplyBtn.addEventListener('click', async function() {
         const code = couponInput.value.trim();
@@ -5837,7 +5837,7 @@ let storedSenderName = '';
           priced.push({ id: item.id, title: item.title, priceInGHS: item.price || 0, authorId });
         }
         const res = await computeCouponDiscount(code, priced);
-couponApplyBtn.disabled = false;
+        couponApplyBtn.disabled = false;
         couponInput.value = '';
         if (!res.ok) {
           couponMsg.textContent = res.error;
@@ -5861,6 +5861,13 @@ couponApplyBtn.disabled = false;
         showToast('Coupon removed.', 'info');
       });
     }
+
+    couponInput?.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        couponApplyBtn.click();
+      }
+    });
 
     // ===== LOAD ALL BOOKS =====
     async function loadAllBooks() {
@@ -5981,14 +5988,14 @@ couponApplyBtn.disabled = false;
             settlementDate: nextSettlementDate(),
             couponCode: paymentData.couponCode || null,
             discountGHS: paymentData.discountGHS || 0,
-chargedTotalGHS: paymentData.chargedTotalGHS || 0
+            chargedTotalGHS: paymentData.chargedTotalGHS || 0
           });
-          if (typeof logEvent === 'function') {
-            logEvent('purchase_completed', { bookId: bookId, amount: paymentData.chargedTotalGHS || paymentData.amount || 0, couponCode: paymentData.couponCode || null });
-            clearAbandonedCart();
-          }
         }
         console.log('✅ Purchase recorded successfully');
+        if (typeof logEvent === 'function') {
+          logEvent('purchase_completed', { bookId: bookId, amount: paymentData.chargedTotalGHS || paymentData.amount || 0, couponCode: paymentData.couponCode || null });
+          clearAbandonedCart();
+        }
         return true;
       } catch (err) {
         console.error('❌ Error recording purchase:', err);
@@ -6001,6 +6008,31 @@ chargedTotalGHS: paymentData.chargedTotalGHS || 0
         return currentUser.email || currentUser.displayName || 'customer@example.com';
       }
       return 'customer@example.com';
+    }
+
+    // Purchases are recorded SERVER-SIDE by /api/verify-paystack-transaction.
+    // The client sends a Firebase ID token (so the server knows WHO is buying)
+    // plus the per-book amounts it charged, and the server does the Firestore
+    // write. Never write a purchase doc for a paid book from the client.
+    async function getIdTokenForPurchase() {
+      if (!currentUser) return null;
+      try {
+        return await currentUser.getIdToken();
+      } catch (e) {
+        console.warn('Could not get ID token:', e);
+        return null;
+      }
+    }
+
+    // Build the server-side purchase payload for a set of cart/book items.
+    // priceInGHS/discountGHS mirror what the client charged; the server checks
+    // that sum(price) - sum(discount) equals the Paystack-verified amount.
+    function buildPurchaseItems(entries) {
+      return (entries || []).map((e) => ({
+        bookId: e.bookId,
+        priceInGHS: round2(e.priceInGHS),
+        discountGHS: round2(e.discountGHS)
+      }));
     }
 
     function checkPaystackReady() {
@@ -6144,6 +6176,7 @@ chargedTotalGHS: paymentData.chargedTotalGHS || 0
         console.log('Verifying payment...');
         console.log('Reference:', response.reference);
 
+        const idToken = await getIdTokenForPurchase();
         const verificationResponse = await fetch('https://volantpoetry.vercel.app/api/verify-paystack-transaction', {
           method: 'POST',
           headers: {
@@ -6154,7 +6187,9 @@ chargedTotalGHS: paymentData.chargedTotalGHS || 0
             amount: effectiveBookPrice(currentBook),
             email: currentUser.email,
             bookId: currentBook.id,
-            authorId: currentBook.submittedBy
+            authorId: currentBook.submittedBy,
+            token: idToken,
+            items: buildPurchaseItems([{ bookId: currentBook.id, priceInGHS: effectiveBookPrice(currentBook), discountGHS: 0 }])
           })
         });
 
@@ -6171,23 +6206,9 @@ chargedTotalGHS: paymentData.chargedTotalGHS || 0
 
         console.log('✅ Payment verified successfully!');
         
-        const transactionRef = response.reference || 'paystack_' + Date.now();
-        const success = await recordPurchase(
-          currentUser.uid, 
-          currentBook.id, 
-          transactionRef,
-          {
-            amount: response.amount || effectiveBookPrice(currentBook),
-            currency: response.currency || currentBook.pricing?.currency || 'GHS',
-            customerEmail: response.customer?.email || currentUser.email,
-            verifiedBy: 'serverless-api',
-            authorId: currentBook.submittedBy,
-            bookTitle: currentBook.title || 'Unknown',
-            preorder: currentBook.preorder === true && currentBook.released !== true,
-            preorderReleaseDate: currentBook.preorderReleaseDate || null,
-            released: currentBook.released === true
-          }
-        );
+        // The server already recorded the purchase (server-authoritative).
+        // The client must NOT write purchases/{uid}_{bookId} for a paid book.
+        const success = true;
         
         if (success) {
           hasPaidForBook = true;
@@ -6360,6 +6381,24 @@ chargedTotalGHS: paymentData.chargedTotalGHS || 0
         return;
       }
 
+      // ===== APPLY COUPON DISCOUNT =====
+      let discountGHS = 0;
+      if (couponData && couponData.discountGHS > 0) discountGHS = Number(couponData.discountGHS) || 0;
+      if (discountGHS > totalGHS) discountGHS = totalGHS;
+      const chargedTotalGHS = Math.round((totalGHS - discountGHS) * 100) / 100;
+
+      // Free path: 100% coupon discount
+      if (chargedTotalGHS <= 0) {
+        await handleCartPaymentCallback(
+          {
+            reference: `coupon_${(couponData && couponData.code) || 'FREE'}_${Date.now()}`,
+            customer: { email: email }
+          },
+          { items: convertedItems, chargedTotalGHS: 0, couponData: couponData && couponData.res ? { code: couponData.code, coupon: couponData.res.coupon, itemDiscounts: couponData.res.itemDiscounts, discount: discountGHS } : null }
+        );
+        return;
+      }
+
       // ===== GET AUTHOR SUBACCOUNTS FOR EACH ITEM =====
       const authorGroups = {};
       let hasAllSubaccounts = true;
@@ -6474,21 +6513,6 @@ chargedTotalGHS: paymentData.chargedTotalGHS || 0
 
       const bookTitles = items.map(item => item.title).join(', ');
 
-      let discountGHS = 0;
-      if (couponData && couponData.discountGHS > 0) discountGHS = Number(couponData.discountGHS) || 0;
-      if (discountGHS > totalGHS) discountGHS = totalGHS;
-      const chargedTotalGHS = Math.round((totalGHS - discountGHS) * 100) / 100;
-
-      // ===== 100% DISCOUNT (free via coupon) → RECORD DIRECTLY, NO PAYMENT NEEDED =====
-      if (chargedTotalGHS <= 0) {
-        const freeResponse = {
-          reference: 'coupon_' + (couponData && couponData.code ? couponData.code : 'free') + '_' + Date.now(),
-          customer: { email: email }
-        };
-        await handleCartPaymentCallback(freeResponse, { items, chargedTotalGHS: 0, couponData: couponData && couponData.res ? { code: couponData.code, coupon: couponData.res.coupon, itemDiscounts: couponData.res.itemDiscounts, discount: discountGHS } : null });
-        return;
-      }
-
       try {
         const paymentConfig = {
           key: PAYSTACK_PUBLIC_KEY,
@@ -6505,7 +6529,7 @@ chargedTotalGHS: paymentData.chargedTotalGHS || 0
             ]
           },
           callback: function(response) {
-            handleCartPaymentCallback(response, { items, chargedTotalGHS, couponData: couponData && couponData.res ? { code: couponData.code, coupon: couponData.res.coupon, itemDiscounts: couponData.res.itemDiscounts, discount: discountGHS } : null });
+            handleCartPaymentCallback(response, { items: convertedItems, chargedTotalGHS, couponData: couponData && couponData.res ? { code: couponData.code, coupon: couponData.res.coupon, itemDiscounts: couponData.res.itemDiscounts, discount: discountGHS } : null });
           },
           onClose: function() {
             isProcessingPayment = false;
@@ -6544,7 +6568,7 @@ chargedTotalGHS: paymentData.chargedTotalGHS || 0
     }
 
     // ===== CART PAYMENT CALLBACK =====
-async function handleCartPaymentCallback(response, ctx) {
+    async function handleCartPaymentCallback(response, ctx) {
       const items = (ctx && ctx.items) || [];
       const chargedTotalGHS = (ctx && ctx.chargedTotalGHS) || 0;
       const couponData = (ctx && ctx.couponData) || null;
@@ -6560,36 +6584,51 @@ async function handleCartPaymentCallback(response, ctx) {
         return;
       }
 
-      // ===== VERIFY ONCE WITH THE ACTUAL CHARGED TOTAL (supports multi-book carts + coupons) =====
+      // ===== SERVER RECORDS THE PURCHASE =====
+      // One call handles both a real Paystack charge (chargedTotalGHS > 0) and
+      // a 100% coupon (mode:'coupon', no money). The server verifies the
+      // payment/coupon, then writes purchases/{uid}_{bookId} itself.
       let verified = false;
-      if (chargedTotalGHS > 0) {
-        try {
-          const verificationResponse = await fetch('https://volantpoetry.vercel.app/api/verify-paystack-transaction', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              reference: response.reference,
-              amount: chargedTotalGHS,
-              email: currentUser.email,
-              bookId: items[0] ? items[0].id : '',
-              authorId: ''
-            })
-          });
-          const verificationResult = await verificationResponse.json();
-          verified = verificationResult.success === true;
-          if (!verified) {
-            console.warn('Verification failed:', verificationResult);
-          }
-        } catch (error) {
-          console.error('Verification error:', error);
-          verified = false;
+      let failureMessage = '';
+      try {
+        const idToken = await getIdTokenForPurchase();
+        const itemDiscounts = (couponData && couponData.itemDiscounts) || {};
+        const purchaseItems = buildPurchaseItems(
+          items.map((it) => ({
+            bookId: it.id,
+            priceInGHS: it.priceInGHS,
+            discountGHS: itemDiscounts[it.id] || 0
+          }))
+        );
+        const isCouponOnly = !(chargedTotalGHS > 0);
+        const verificationResponse = await fetch('https://volantpoetry.vercel.app/api/verify-paystack-transaction', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            reference: isCouponOnly ? undefined : response.reference,
+            amount: chargedTotalGHS,
+            email: currentUser.email,
+            bookId: items[0] ? items[0].id : '',
+            authorId: '',
+            token: idToken,
+            items: purchaseItems,
+            couponCode: couponCode || undefined,
+            mode: isCouponOnly ? 'coupon' : undefined
+          })
+        });
+        const verificationResult = await verificationResponse.json();
+        verified = verificationResult.success === true;
+        if (!verified) {
+          console.warn('Verification failed:', verificationResult);
+          failureMessage = verificationResult.message || '';
         }
-      } else {
-        verified = true;
+      } catch (error) {
+        console.error('Verification error:', error);
+        verified = false;
       }
 
       if (!verified) {
-        showToast('⚠️ Payment verification failed. Please contact support.', 'error');
+        showToast(`⚠️ ${failureMessage || 'Payment verification failed. Please contact support.'}`, 'error');
         isProcessingPayment = false;
         isCartCheckout = false;
         cartPaymentProcessing.classList.remove('active');
@@ -6598,81 +6637,18 @@ async function handleCartPaymentCallback(response, ctx) {
         return;
       }
 
-      const transactionRef = response.reference || 'paystack_' + Date.now();
-
-      // ===== RECORD PURCHASE FOR EACH ITEM =====
-      let allSuccess = true;
+      const allSuccess = true;
       const successfulItems = [];
 
+      // The server already wrote every purchase (and incremented coupon
+      // usage). The client only collects titles for the success message.
       for (const item of items) {
         try {
-          const bookRef = doc(db, "books", item.id);
-          const bookSnap = await getDoc(bookRef);
+          const bookSnap = await getDoc(doc(db, "books", item.id));
           if (!bookSnap.exists()) continue;
-          const bookData = bookSnap.data();
-          const authorId = bookData.submittedBy || null;
-          const bookTitle = bookData.title || item.title || 'Unknown';
-
-          let poPreorder = item.preorder === true && item.released !== true;
-          let poReleaseDate = item.preorderReleaseDate || null;
-          try {
-            const bkSnap = await getDoc(doc(db, 'books', item.id));
-            if (bkSnap.exists()) {
-              const bd = bkSnap.data();
-              poPreorder = bd.preorder === true && bd.released !== true;
-              poReleaseDate = bd.preorderReleaseDate || null;
-            }
-          } catch (e) { /* use cart values */ }
-
-          let amount = item.price || 0;
-          let currency = item.currency || 'GHS';
-          let discountGHS = 0;
-          if (couponData && couponData.itemDiscounts && couponData.itemDiscounts[item.id]) {
-            discountGHS = round2(Number(couponData.itemDiscounts[item.id]) || 0);
-            amount = round2(amount - discountGHS);
-            currency = 'GHS';
-            if (amount < 0) amount = 0;
-          }
-
-          const success = await recordPurchase(
-            currentUser.uid,
-            item.id,
-            transactionRef,
-            {
-              amount: amount,
-              currency: currency,
-              customerEmail: response.customer?.email || currentUser.email,
-              verifiedBy: 'serverless-api',
-              authorId: authorId,
-              bookTitle: bookTitle,
-              preorder: poPreorder,
-              preorderReleaseDate: poReleaseDate,
-              released: false,
-              couponCode: couponCode || null,
-              discountGHS: discountGHS,
-              chargedTotalGHS: chargedTotalGHS
-            }
-          );
-          if (success) {
-            successfulItems.push(bookTitle);
-          } else {
-            allSuccess = false;
-          }
+          successfulItems.push(bookSnap.data().title || item.title || 'Unknown');
         } catch (error) {
-          console.error('Error recording purchase for item:', item.id, error);
-          allSuccess = false;
-        }
-      }
-
-      // ===== INCREMENT COUPON USAGE =====
-      if (couponData && couponData.coupon && couponData.coupon.id) {
-        try {
-          await updateDoc(doc(db, "coupons", couponData.coupon.id), {
-            uses: increment(1),
-            lastUsedAt: serverTimestamp()
-          });
-        } catch (err) {
-          console.warn('Could not increment coupon usage:', err);
+          console.warn('Could not read book title:', error);
         }
       }
 
@@ -6685,6 +6661,7 @@ async function handleCartPaymentCallback(response, ctx) {
         await renderCart();
         closeCart();
 
+        // 👈 REFRESH EARNINGS AFTER PURCHASE
         if (currentUser) {
           await loadEarnings(currentUser.uid);
         }
@@ -6842,10 +6819,22 @@ async function handleCartPaymentCallback(response, ctx) {
       setInterval(write, 30000);
     }
 
+    // ===== RESOLVE THE FULL FILE FOR AN ENTITLED READER =====
+    async function resolveBookFileUrl() {
+      try {
+        const snap = await getDoc(doc(db, 'books', currentBook.id, 'files', 'full'));
+        if (snap.exists() && snap.data().url) return snap.data().url;
+      } catch (err) {
+        console.warn('Could not resolve the full book file:', err);
+      }
+      if (currentBook && currentBook.pdfUrl) return currentBook.pdfUrl;
+      return null;
+    }
+
     // ===== DOWNLOAD BOOK =====
     async function downloadBook() {
       if (!currentUser) { showToast('❌ Please sign in to download.', 'error'); return; }
-      if (!currentBook || !currentBook.pdfUrl) { showToast('❌ Book file not available.', 'error'); return; }
+      if (!currentBook || (!currentBook.hasFile && !currentBook.pdfUrl)) { showToast('❌ Book file not available.', 'error'); return; }
       if (isPreorderLocked(currentBook)) {
         showToast(`🔒 This book releases on ${preorderReleaseDateLabel(currentBook)}. Download unlocks automatically.`, 'error');
         return;
@@ -6884,7 +6873,9 @@ async function handleCartPaymentCallback(response, ctx) {
         await recordUserDownload(currentUser.uid, currentBook.id);
         await trackDailyDownload(currentBook.id);
 
-        const response = await fetch(currentBook.pdfUrl);
+        const fullUrl = await resolveBookFileUrl();
+        if (!fullUrl) throw new Error('Full file unavailable for download');
+        const response = await fetch(fullUrl);
         if (!response.ok) throw new Error(`Download failed with status ${response.status}`);
         const blob = await response.blob();
         const titlePart = currentBook.title ? currentBook.title.trim() : 'Untitled';
@@ -7025,11 +7016,10 @@ async function handleCartPaymentCallback(response, ctx) {
 
       const email = getUserEmail();
 
-      // ===== VALIDATE APPLIED COUPON & COMPUTE DISCOUNT =====
       let couponData = null;
-      const couponCode = getAppliedCouponCode();
-      if (couponCode) {
-        const pricedItems = [];
+      const appliedCouponCode = getAppliedCouponCode();
+      if (appliedCouponCode) {
+        const priced = [];
         for (const item of purchasableItems) {
           let authorId = item.authorId || '';
           if (!authorId) {
@@ -7038,20 +7028,18 @@ async function handleCartPaymentCallback(response, ctx) {
               if (s.exists()) authorId = s.data().submittedBy || '';
             } catch (e) {}
           }
-          pricedItems.push({ id: item.id, title: item.title, priceInGHS: item.price || 0, authorId });
+          priced.push({ id: item.id, title: item.title, priceInGHS: item.price || 0, authorId });
         }
-        const res = await computeCouponDiscount(couponCode, pricedItems);
-        if (res.ok) {
-          if (res.discount > 0) {
-            couponData = { code: res.coupon.code, res, discountGHS: res.discount };
-            showToast(`🎟️ Coupon applied: ${res.coupon.code} (GHS ${res.discount.toFixed(2)} off)`, 'success');
-          } else {
-            showToast('🎟️ Coupon applied — this order is free!', 'success');
-          }
-        } else {
-          saveAppliedCouponCode('');
+        const res = await computeCouponDiscount(appliedCouponCode, priced);
+        if (!res.ok) {
           couponMsg.textContent = res.error;
-          showToast(`❌ ${res.error}`, 'error');
+          couponMsg.style.color = '#d64545';
+          saveAppliedCouponCode('');
+          showToast('❌ ' + res.error, 'error');
+          return;
+        }
+        if (res.discount > 0) {
+          couponData = { code: res.coupon.code, res, discountGHS: res.discount };
         }
       }
 
@@ -7075,7 +7063,7 @@ async function handleCartPaymentCallback(response, ctx) {
         }
         const book = { id: docSnap.id, ...docSnap.data() };
         currentBook = book;
-        if (typeof logEvent === 'function') logEvent('view_book', { bookId: book.id });
+        if (typeof logEvent === 'function') logEvent('view_book', { bookId: bookId });
         renderBook(book);
         renderMoreByAuthor(book);
         await updateUIForBook();
@@ -7361,7 +7349,7 @@ async function handleCartPaymentCallback(response, ctx) {
     // ===== PREVIEW FUNCTIONS =====
     // ================================================================
     function updatePreviewButton(book) {
-      if (book && book.pdfUrl) {
+      if (book && (book.hasFile || book.pdfUrl)) {
         previewBtn.style.display = 'inline-flex';
         previewBtn.disabled = false;
       } else {
@@ -7370,7 +7358,7 @@ async function handleCartPaymentCallback(response, ctx) {
     }
 
     async function openPreview() {
-      if (!currentBook || !currentBook.pdfUrl) {
+      if (!currentBook || (!currentBook.hasFile && !currentBook.pdfUrl)) {
         showToast('❌ Preview not available for this book.', 'error');
         return;
       }
@@ -7378,28 +7366,65 @@ async function handleCartPaymentCallback(response, ctx) {
       // EPUB books preview in the dedicated EPUB viewer.
       const isEpub = (String(currentBook.bookFormat || '').toLowerCase() === 'epub' || /\.epub(\?|#|$)/i.test(currentBook.pdfUrl || ''));
 
-      // ===== DETECT ACTUAL PDF PAGE COUNT =====
-      let totalPages = currentBook.pageCount || 0;
+      // ===== RESOLVE A SERVER-TRUNCATED SAMPLE (never the full file) =====
+      function sampleRequestUrl(withMeta) {
+        let u = '/api/sample-book?id=' + encodeURIComponent(currentBook.id || '');
+        if (withMeta) u += '&meta=1';
+        return u;
+      }
 
-      if (!isEpub) {
+      async function fetchSampleMeta() {
+        let u = sampleRequestUrl(true);
+        if (currentUser && typeof currentUser.getIdToken === 'function') {
+          try {
+            const token = await currentUser.getIdToken();
+            if (token) u += '&token=' + encodeURIComponent(token);
+          } catch (e) {
+            console.warn('⚠️ Could not attach auth token to the sample request:', e);
+          }
+        }
         try {
-          const pdf = await pdfjsLib.getDocument(currentBook.pdfUrl).promise;
-          const actualPages = pdf.numPages;
-          console.log('📄 Actual PDF pages:', actualPages, '| Metadata pages:', totalPages);
-          totalPages = actualPages;
-        } catch (error) {
-          console.warn('⚠️ Could not detect PDF page count, using metadata:', error);
+          const res = await fetch(u);
+          if (!res.ok) return null;
+          return await res.json();
+        } catch (e) {
+          console.warn('⚠️ Sample endpoint unreachable, using the plain sample route:', e);
+          return null;
         }
       }
 
-      let previewPages = 0;
+      // ===== AUTHORITATIVE PAGE COUNT + SAMPLE URL FROM THE SERVER =====
+      let totalPages = currentBook.pageCount || 0;
+      let sampleUrl = '';
+
+      const sampleMeta = await fetchSampleMeta();
+      // The server measures the real file and applies the slice rule to THAT
+      // number. Trusting its previewPages keeps the viewer's endPage equal to
+      // the pages the delivered sample actually contains, which is what stops
+      // the preview from jumping. Recomputing it here is what caused the drift.
+      let serverPreviewPages = 0;
+      if (sampleMeta && sampleMeta.sampleUrl) {
+        totalPages = sampleMeta.totalPages || totalPages;
+        sampleUrl = sampleMeta.sampleUrl;
+        serverPreviewPages = Number(sampleMeta.previewPages) || 0;
+      }
+      if (!sampleUrl) sampleUrl = sampleRequestUrl(false);
+
+      // The preview always renders the truncated server sample. The full file
+      // is never loaded, page-counted, or passed to the viewer from this page.
+
+      // Server-measured slice length wins. Only if the endpoint was unreachable
+      // do we fall back to applying the rule locally.
+      let previewPages = serverPreviewPages > 0
+        ? Math.min(serverPreviewPages, totalPages > 0 ? totalPages : serverPreviewPages)
+        : 0;
 
       // EPUB files (or unknown page counts) default to a 10% preview slice
-      if (isEpub || totalPages <= 0) {
+      if (previewPages === 0 && (isEpub || totalPages <= 0)) {
         totalPages = totalPages > 0 ? totalPages : 100;
         previewPages = Math.min(Math.max(Math.round(totalPages * 0.1), 10), totalPages);
-        console.log('📚 EPUB preview slice:', { totalPages, previewPages });
-      } else {
+        console.log('📚 EPUB preview slice (fallback):', { totalPages, previewPages });
+      } else if (previewPages === 0) {
       console.log('📄 Book pages:', totalPages);
       console.log('📄 Current user:', currentUser ? 'Signed in' : 'Not signed in');
 
@@ -7443,7 +7468,13 @@ async function handleCartPaymentCallback(response, ctx) {
       // ===== BUILD PREVIEW URL WITH STATUS =====
       const viewerBase = isEpub ? 'epub-preview.html' : 'pdfjs/multi-page-viewer.html';
       const previewPct = isEpub ? Math.round((previewPages / totalPages) * 100) : 0;
-      const previewUrl = `${viewerBase}?viewerVersion=4&file=${encodeURIComponent(currentBook.pdfUrl)}&title=${encodeURIComponent(currentBook.title || '')}&author=${encodeURIComponent(currentBook.authorName || '')}&startPage=1&endPage=${previewPages}&totalPages=${totalPages || 100}&previewPct=${previewPct}&isFree=${isFree}&isPurchased=${isPurchased}&isSignedIn=${isSignedIn}&currency=${currency}&amount=${amount}`;
+      // A unique token per preview load. The sample PDF is always same-origin and
+      // must never be reused from a cache, so this guarantees a real network
+      // request even if an older service worker already cached a bad response
+      // for the plain /api/sample-book?id=... URL.
+      const previewBust = '_=' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+      const bustUrl = sampleUrl + (sampleUrl.includes('?') ? '&' : '?') + previewBust;
+      const previewUrl = `${viewerBase}?viewerVersion=5&file=${encodeURIComponent(bustUrl)}&title=${encodeURIComponent(currentBook.title || '')}&author=${encodeURIComponent(currentBook.authorName || '')}&startPage=1&endPage=${previewPages}&totalPages=${totalPages || 100}&previewPct=${previewPct}&isFree=${isFree}&isPurchased=${isPurchased}&isSignedIn=${isSignedIn}&currency=${currency}&amount=${amount}`;
       
       console.log('📄 Preview URL:', previewUrl);
 
@@ -7897,7 +7928,7 @@ async function handleCartPaymentCallback(response, ctx) {
             </div>`;
           reviewsSummary.insertAdjacentHTML('beforeend', breakdownHtml);
         }
-        
+
         reviewsList.innerHTML = reviewHTML || `
           <div class="no-reviews">
             <i class="fas fa-comment"></i>

@@ -83,7 +83,7 @@
 
   <script>
         if ('serviceWorker' in navigator && location.protocol === 'https:') {
-            navigator.serviceWorker.register('./sw.js?v=29', { scope: './' }).catch(function() {});
+            navigator.serviceWorker.register('./sw.js?v=32', { scope: './' }).catch(function() {});
         }
     </script>
 
@@ -2776,9 +2776,6 @@ header .logo-header {
   }
 }
 
-    display: none !important;
-}
-
 /* ===== READING STATS STYLES ===== */
 .reading-stats-grid {
   display: grid;
@@ -3736,7 +3733,8 @@ header .logo-header {
         <input type="text" id="settingsBio" placeholder="Tell us about yourself..." />
       </div>
 
-      <div class="settings-group" id="emailNotifGroup">`n                        <label>Email Notifications</label>
+      <div class="settings-group" id="emailNotifGroup">
+                        <label>Email Notifications</label>
         <div style="margin:8px 0;">
           <label style="display:flex;align-items:center;gap:8px;font-size:0.95rem;cursor:pointer;">
             <input type="checkbox" id="prefAll" checked style="width:auto;height:auto;"> Send me activity emails
@@ -4350,6 +4348,10 @@ header .logo-header {
     }
   }
 </script>
+
+<!-- Previews are built on demand by /api/sample-book when a reader clicks
+     Preview, so nothing is generated or stored at upload time. -->
+
 <script type="module">
   import { initializeApp } from "firebase/app";
   import { 
@@ -4371,7 +4373,8 @@ header .logo-header {
     increment,
     limit,
     orderBy,
-    writeBatch
+    writeBatch,
+    setDoc
   } from "firebase/firestore";
   import { getAuth, onAuthStateChanged, signOut, updateEmail as updateAuthEmail, sendEmailVerification } from "firebase/auth";
 
@@ -6151,10 +6154,13 @@ header .logo-header {
       
       updateCoverCurrent.textContent = data.imageUrl ? '✅ Current cover uploaded' : 'No cover';
       updateCoverCurrent.className = data.imageUrl ? 'current-file' : 'current-file no-file';
-      const updateIsEpub = (data.bookFormat === 'epub') || /\.epub(\?|#|$)/i.test(data.pdfUrl || '');
-      updatePdfLabel.textContent = data.pdfUrl ? (updateIsEpub ? 'Book File — EPUB' : 'Book File — PDF') : 'Book File';
-      updatePdfCurrent.textContent = data.pdfUrl ? (updateIsEpub ? '✅ Current EPUB uploaded' : '✅ Current PDF uploaded') : 'No file';
-      updatePdfCurrent.className = data.pdfUrl ? 'current-file' : 'current-file no-file';
+const updateIsEpub = (data.bookFormat === 'epub') || /\.epub(\?|#|$)/i.test(data.pdfUrl || '');
+      // The public book doc carries hasFile, not the full URL (that lives in
+      // the gated books/{id}/files/full doc), so gate the label on hasFile.
+      const hasBookFile = data.hasFile === true || !!data.pdfUrl;
+      updatePdfLabel.textContent = hasBookFile ? (updateIsEpub ? 'Book File — EPUB' : 'Book File — PDF') : 'Book File';
+      updatePdfCurrent.textContent = hasBookFile ? (updateIsEpub ? '✅ Current EPUB uploaded' : '✅ Current PDF uploaded') : 'No file';
+      updatePdfCurrent.className = hasBookFile ? 'current-file' : 'current-file no-file';
       
       updateCoverImage.value = '';
       updatePdfFile.value = '';
@@ -6241,8 +6247,8 @@ async function updateBook() {
   try {
     let imageUrl = null;
     let pdfUrl = null;
-    let newBookFormat = null;
-
+      let newBookFormat = null;
+  
     if (updateCoverImage.files.length > 0) {
       const file = updateCoverImage.files[0];
       if (file.size > 5 * 1024 * 1024) {
@@ -6295,13 +6301,23 @@ async function updateBook() {
     };
 
     if (imageUrl) updateData.imageUrl = imageUrl;
-    if (pdfUrl) {
-      updateData.pdfUrl = pdfUrl;
-      updateData.bookFormat = newBookFormat || 'pdf';
-    }
+      if (pdfUrl) {
+        updateData.bookFormat = newBookFormat || 'pdf';
+        updateData.hasFile = true;
+      }
     if (preorderReleaseDate) updateData.preorderReleaseDate = preorderReleaseDate;
 
     await updateDoc(doc(db, "books", bookId), updateData);
+
+    // The full file URL goes only to books/{id}/files/full (buyer/author/admin
+    // read), never onto the public book doc.
+    if (pdfUrl) {
+      await setDoc(doc(db, "books", bookId, "files", "full"), {
+        url: pdfUrl,
+        submittedBy: currentUser.uid,
+        updatedAt: serverTimestamp()
+      });
+    }
 
     // ✅ FIX: Update local array with ALL data including price
     const bookIndex = authorBooks.findIndex(b => b.id === bookId);

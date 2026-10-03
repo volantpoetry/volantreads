@@ -29,8 +29,8 @@
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
     <!-- Favicons -->
-    <link rel="icon" type="image/png" href="../images/volant-reads-favicon.png" />
-    <link rel="apple-touch-icon" href="../images/volant-reads-favicon.png" />
+    <link rel="icon" type="image/png" href="https://volantpoetry.vercel.app/images/volant-reads-favicon.png" />
+    <link rel="apple-touch-icon" href="https://volantpoetry.vercel.app/images/volant-reads-favicon.png" />
     <style>
         * {
             margin: 0;
@@ -1598,7 +1598,7 @@
                     Reviews submitted by readers appear here. Delete offensive or spam reviews.
                 </span>
             </div>
-            <iframe id="reviewsFrame" data-src="../admin/manage%20reads%20review.html" style="width:100%; min-height:1400px; border:1px solid #ede7df; border-radius:12px; background:#fff;" title="Manage Reads Reviews"></iframe>
+            <iframe id="reviewsFrame" data-src="https://volantpoetry.vercel.app/admin/manage%20reads%20review.html" style="width:100%; min-height:1400px; border:1px solid #ede7df; border-radius:12px; background:#fff;" title="Manage Reads Reviews"></iframe>
         </div>
 
         <!-- Coupons Tab -->
@@ -1688,8 +1688,8 @@
             Current user: <span id="currentUserEmail">Unknown</span>
         </p>
         <div>
-            <a href="../admin/admin-login.html" class="btn"><i class="fas fa-sign-in-alt"></i> Admin Login</a>
-            <a href="../index.html" class="btn" style="background: #6f6252;"><i class="fas fa-arrow-left"></i> Return Home</a>
+            <a href="https://volantpoetry.vercel.app/admin/admin-login.html" class="btn"><i class="fas fa-sign-in-alt"></i> Admin Login</a>
+            <a href="/index.html" class="btn" style="background: #6f6252;"><i class="fas fa-arrow-left"></i> Return Home</a>
         </div>
     </div>
 
@@ -1697,7 +1697,7 @@
         <i class="fas fa-lock"></i>
         <h2>Sign In Required</h2>
         <p>Please sign in to access the admin panel.</p>
-        <a href="../admin/admin-login.html" class="btn"><i class="fas fa-sign-in-alt"></i> Admin Login</a>
+        <a href="https://volantpoetry.vercel.app/admin/admin-login.html" class="btn"><i class="fas fa-sign-in-alt"></i> Admin Login</a>
     </div>
 </div>
 
@@ -1989,6 +1989,39 @@
         showToast('✅ Download started!', 'success');
     };
 
+    // ========== FULL FILE RESOLUTION ==========
+    // The full URL is no longer on the public book doc; it lives in
+    // books/{id}/files/full, which rules gate to the author and admins.
+    // Approvals is an author/admin surface, so it can read it on demand.
+    async function resolveFullFileUrl(bookId) {
+        if (!bookId) return '';
+        try {
+            const snap = await getDoc(doc(db, "books", bookId, "files", "full"));
+            if (snap.exists() && snap.data().url) return snap.data().url;
+        } catch (err) {
+            console.warn('Could not resolve the full book file:', err);
+        }
+        return '';
+    }
+
+    window.viewBookFile = async function(bookId, title, format, author) {
+        const url = await resolveFullFileUrl(bookId);
+        if (!url) {
+            showToast('❌ No book file available.', 'error');
+            return;
+        }
+        window.viewPDF(url, title, format, author);
+    };
+
+    window.downloadBookFile = async function(bookId, title, format) {
+        const url = await resolveFullFileUrl(bookId);
+        if (!url) {
+            showToast('❌ No book file available.', 'error');
+            return;
+        }
+        window.downloadPDF(url, title, format);
+    };
+
     // ========== DELETE BOOK ==========
     window.deleteBook = async function(bookId, bookTitle) {
         if (!bookId) return;
@@ -2267,8 +2300,10 @@ Volant Reads Team
     }
     function renderBookCard(book) {
         const imageUrl = book.imageUrl || '';
-        const pdfUrl = book.pdfUrl || '';
-        const bookFormat = book.bookFormat || ((/\.epub(\?|#|$)/i).test(pdfUrl) ? 'epub' : 'pdf');
+        // The full URL lives in books/{id}/files/full and is resolved on click
+        // by window.viewBookFile / window.downloadBookFile.
+        const hasFile = book.hasFile === true || !!book.pdfUrl;
+        const bookFormat = book.bookFormat || ((/\.epub(\?|#|$)/i).test(book.pdfUrl || '') ? 'epub' : 'pdf');
         const priceDisplay = book.preorder === true
             ? (book.pricing?.currency || 'GHS') + ' ' + (Number(book.preorderPrice) > 0 ? Number(book.preorderPrice).toFixed(2) : (book.pricing?.amount || 0).toFixed(2)) + ' (pre-order)'
             : (book.pricing?.currency 
@@ -2420,11 +2455,11 @@ Volant Reads Team
                             <i class="fas fa-image"></i> View Image
                         </a>
                     ` : ''}
-                    ${pdfUrl ? `
-                        <button onclick="window.viewPDF('${pdfUrl}', '${safeTitle}', '${bookFormat}', '${safeAuthor}')" class="view-pdf">
+                    ${hasFile ? `
+                        <button onclick="window.viewBookFile('${book.id}', '${safeTitle}', '${bookFormat}', '${safeAuthor}')" class="view-pdf">
                             <i class="fas fa-eye"></i> View ${bookFormat === 'epub' ? 'EPUB' : 'PDF'}
                         </button>
-                        <button onclick="window.downloadPDF('${pdfUrl}', '${safeTitle}', '${bookFormat}')" class="download-pdf">
+                        <button onclick="window.downloadBookFile('${book.id}', '${safeTitle}', '${bookFormat}')" class="download-pdf">
                             <i class="fas fa-download"></i> Download ${bookFormat === 'epub' ? 'EPUB' : 'PDF'}
                         </button>
                     ` : `
@@ -3148,7 +3183,7 @@ ${msg.message || msg.content || ''}
     window.adminSignOut = async function() {
         try {
             await signOut(auth);
-            window.location.href = '../admin/admin-login.html';
+            window.location.href = 'https://volantpoetry.vercel.app/admin/admin-login.html';
         } catch (err) {
             // Silent fail
         }
@@ -3168,7 +3203,7 @@ ${msg.message || msg.content || ''}
                 <i class="fas fa-sync"></i> Retry
             </button>
             <br><br>
-            <a href="../admin/admin-login.html" class="btn" style="background: #6f6252;">
+            <a href="https://volantpoetry.vercel.app/admin/admin-login.html" class="btn" style="background: #6f6252;">
                 <i class="fas fa-sign-in-alt"></i> Go to Login
             </a>
         `;
@@ -3564,7 +3599,7 @@ ${msg.message || msg.content || ''}
         signInRequired.style.display = 'none';
 
         if (!user) {
-            window.location.href = "admin-login.html?redirect=store/approve.html";
+            window.location.href = "https://volantpoetry.vercel.app/admin/admin-login.html";
             return;
         }
 
@@ -3604,7 +3639,7 @@ ${msg.message || msg.content || ''}
     console.log('💬 Messages: View, copy, reset, delete messages sent to authors');
 </script>
 
-<script src="../shared/return-url-handler.js"></script>
+<script src="return-url-handler.js"></script>
 <script type="module" src="./admin-ops.js"></script>
 </body>
 </html>

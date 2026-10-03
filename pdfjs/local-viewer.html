@@ -331,16 +331,26 @@
       }
     }
 
+    function topPageIndex() {
+      var top = viewerWrap.scrollTop;
+      var best = 0;
+      var bestDist = Infinity;
+      for (var i = 0; i < pageCanvases.length; i++) {
+        var d = Math.abs(pageCanvases[i].offsetTop - top);
+        if (d < bestDist) {
+          bestDist = d;
+          best = i;
+        }
+      }
+      return best;
+    }
+
     async function renderDocument(resetPosition) {
       if (!pdfDoc || isRendering) return;
       isRendering = true;
-      var previousScrollTop = viewerWrap.scrollTop;
-      pdfPages.innerHTML = '';
-      pageCanvases = [];
-      if (resetPosition !== false) {
-        pageNum = 1;
-        previousScrollTop = 0;
-      }
+      var anchorIndex = resetPosition !== false ? 0 : topPageIndex();
+      var fragment = document.createDocumentFragment();
+      var canvases = [];
 
       try {
         var renderedPageLimit = pageCount;
@@ -352,14 +362,23 @@
         for (var index = 1; index <= renderedPageLimit; index++) {
           var pageCanvas = document.createElement('canvas');
           pageCanvas.className = 'pdf-page';
-          pdfPages.appendChild(pageCanvas);
-          pageCanvases.push(pageCanvas);
-          await renderPage(index);
+          fragment.appendChild(pageCanvas);
+          canvases.push(pageCanvas);
         }
-        viewerWrap.scrollTop = previousScrollTop;
-        updatePageStatus();
+        pageCanvases = canvases;
+
+        for (var r = 0; r < canvases.length; r++) {
+          await renderPage(r + 1);
+        }
       } finally {
+        pdfPages.innerHTML = '';
+        pdfPages.appendChild(fragment);
+        if (pageCanvases.length) {
+          var anchorCanvas = pageCanvases[anchorIndex] || pageCanvases[0];
+          viewerWrap.scrollTop = anchorCanvas.offsetTop - 4;
+        }
         isRendering = false;
+        updateVisiblePage();
       }
     }
 
@@ -393,7 +412,9 @@
       updatePageStatus();
     }
 
-    // Debounced resize handler
+    // Debounced resize handler (width changes only; height-only changes such
+    // as the reader chrome showing/hiding must NOT re-render the document)
+    var lastRenderWidth = 0;
     var resizeTimeout = null;
     function handleResize() {
       if (resizeTimeout) {
@@ -401,7 +422,10 @@
       }
       resizeTimeout = setTimeout(function() {
         resizeTimeout = null;
-        renderDocument();
+        var width = viewerWrap.clientWidth;
+        if (!pdfDoc || Math.abs(width - lastRenderWidth) < 2) return;
+        lastRenderWidth = width;
+        renderDocument(false);
       }, 200);
     }
 
@@ -502,7 +526,7 @@
         if (isPreviewMode) {
           pageCount = Math.max(1, Math.ceil(pdf.numPages * (previewLimitPercent / 100)));
         }
-        updatePageStatus();
+        lastRenderWidth = viewerWrap.clientWidth;
         await renderDocument();
         if (startPage > 1) {
           scrollToPage(Math.min(startPage, pageCount));
