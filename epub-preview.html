@@ -1405,7 +1405,7 @@
 
                 // Still bound the wait, so any other open failure surfaces as a
                 // visible error instead of an empty background.
-                const READY_TIMEOUT_MS = 20000;
+                const READY_TIMEOUT_MS = 30000;
                 readyWatchdog = setTimeout(function () {
                     if (renderSettled) return;
                     renderSettled = true;
