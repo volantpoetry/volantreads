@@ -7167,17 +7167,29 @@ let storedSenderName = '';
       }
 
       const currency = book.pricing?.currency || 'GHS';
-      const amount = book.pricing?.amount || 0;
+      const amount = effectiveBookPrice(book);
       
       // ===== DISPLAY PRICE WITH CURRENCY CONVERSION =====
       if (currency.toUpperCase() === 'GHS') {
-        bookPrice.innerHTML = `GHS ${amount.toFixed(2)}`;
+        if (book.preorder === true && book.released !== true && Number(book.preorderPrice) > 0) {
+          bookPrice.innerHTML = `GHS ${amount.toFixed(2)} <span style="text-decoration:line-through;color:#999;font-size:0.8em;margin-left:4px;">GHS ${(book.pricing?.amount || 0).toFixed(2)}</span>`;
+        } else {
+          bookPrice.innerHTML = `GHS ${amount.toFixed(2)}`;
+        }
         exchangeRateWidget.style.display = 'none';
       } else {
-        bookPrice.innerHTML = `
-          ${currency} ${amount.toFixed(2)}
-          <span class="currency-conversion">≈ GHS <span id="ghsEquivalent">...</span></span>
-        `;
+        if (book.preorder === true && book.released !== true && Number(book.preorderPrice) > 0) {
+          bookPrice.innerHTML = `
+            ${currency} ${amount.toFixed(2)}
+            <span style="text-decoration:line-through;color:#999;font-size:0.8em;margin-left:4px;">${currency} ${(book.pricing?.amount || 0).toFixed(2)}</span>
+            <span class="currency-conversion">≈ GHS <span id="ghsEquivalent">...</span></span>
+          `;
+        } else {
+          bookPrice.innerHTML = `
+            ${currency} ${amount.toFixed(2)}
+            <span class="currency-conversion">≈ GHS <span id="ghsEquivalent">...</span></span>
+          `;
+        }
         // Show exchange rate widget
         exchangeRateWidget.style.display = 'block';
         
